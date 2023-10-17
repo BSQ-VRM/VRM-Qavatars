@@ -1,18 +1,23 @@
 #include "main.hpp"
+#include "arrayUtils.hpp"
+
+#include "gltf/UnityMeshData.hpp"
+
 #include "GlobalNamespace/MainMenuViewController.hpp"
+
 #include "UnityEngine/Mesh.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/MeshFilter.hpp"
 #include "UnityEngine/MeshRenderer.hpp"
 #include "UnityEngine/Rendering/IndexFormat.hpp"
+
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "tinygltf/tiny_gltf.h"
 
 using namespace tinygltf;
-using namespace UnityEngine;
 
 static ModInfo modInfo;
 
@@ -31,27 +36,6 @@ inline bool exists(const std::string& name) {
     return f.good();
 }
 
-//Based off https://github.com/KhronosGroup/UnityGLTF/blob/master/UnityGLTF/Assets/UnityGLTF/Runtime/Scripts/GLTFSceneImporter.cs#L41
-struct UnityMeshData
-{
-    std::vector<Vector3> vertices;
-    std::vector<Vector3> normals;
-    std::vector<Vector4> tangents;
-    std::vector<Vector2> uv1;
-    std::vector<Vector2> uv2;
-    std::vector<Vector2> uv3;
-    std::vector<Vector2> uv4;
-    std::vector<Color> colors;
-    std::vector<BoneWeight> boneWeights;
-
-    std::vector<std::vector<Vector3>> morphTargetVertices;
-    std::vector<std::vector<Vector3>> morphTargetNormals;
-    std::vector<std::vector<Vector3>> morphTargetTangents;
-
-    std::vector<MeshTopology> topology;
-    std::vector<std::vector<int>> indices;
-};
-
 int getVertexCount(tinygltf::Primitive primitive, tinygltf::Model model)
 {
     const tinygltf::Accessor& accessor = model.accessors[primitive.attributes["POSITION"]];
@@ -63,27 +47,17 @@ bool hasAttribKey(std::string key, tinygltf::Primitive primitive)
     return primitive.attributes.contains(key);
 }
 
-template <typename T>
-void allocateInto2DArray(int x, int y, std::vector<std::vector<T>>& vector)
-{
-    vector = std::vector<std::vector<T>>(x);
-    for (int i = 0; i < x; i++)
-    {
-        vector[i] = std::vector<T>(y);
-    }
-}
-
-MeshTopology getTopology(int mode)
+UnityEngine::MeshTopology getTopology(int mode)
 {
     switch (mode)
     {
-        case TINYGLTF_MODE_POINTS: return MeshTopology::Points;
-        case TINYGLTF_MODE_LINE: return MeshTopology::Lines;
-        case TINYGLTF_MODE_LINE_STRIP: return MeshTopology::LineStrip;
-        case TINYGLTF_MODE_TRIANGLES: return MeshTopology::Triangles;
+        case TINYGLTF_MODE_POINTS: return UnityEngine::MeshTopology::Points;
+        case TINYGLTF_MODE_LINE: return UnityEngine::MeshTopology::Lines;
+        case TINYGLTF_MODE_LINE_STRIP: return UnityEngine::MeshTopology::LineStrip;
+        case TINYGLTF_MODE_TRIANGLES: return UnityEngine::MeshTopology::Triangles;
     }
     getLogger().error("mode does not exist: %d", mode);
-    return MeshTopology::Points;
+    return UnityEngine::MeshTopology::Points;
 }
 
 std::vector<int> generateIndices(int vertCount)
@@ -112,12 +86,12 @@ bool approx(float one, float two)
     return (std::abs(one - two) < 0.001f);
 }
 
-Vector4 divideVec4(Vector4 vector, float value)
+UnityEngine::Vector4 divideVec4(UnityEngine::Vector4 vector, float value)
 {
-    return Vector4(vector.x / value, vector.y / value, vector.z / value, vector.w / value);
+    return UnityEngine::Vector4(vector.x / value, vector.y / value, vector.z / value, vector.w / value);
 }
 
-void createBoneWeightArray(std::vector<Vector4> joints, std::vector<Vector4> weights, std::vector<BoneWeight>& destArr, int offset = 0)
+void createBoneWeightArray(std::vector<UnityEngine::Vector4> joints, std::vector<UnityEngine::Vector4> weights, std::vector<UnityEngine::BoneWeight>& destArr, int offset = 0)
 {
 	// normalize weights (built-in normalize function only normalizes three components)
 	for (int i = 0; i < weights.size(); i++)
@@ -145,75 +119,75 @@ void createBoneWeightArray(std::vector<Vector4> joints, std::vector<Vector4> wei
 }
 
 //https://github.com/syoyo/tinygltf/wiki/Accessing-vertex-data
-std::vector<Vector3> getVec3Data(tinygltf::Model model, tinygltf::Primitive primitive, std::string key)
+std::vector<UnityEngine::Vector3> getVec3Data(tinygltf::Model model, tinygltf::Primitive primitive, std::string key)
 {
     tinygltf::Accessor& accessor = model.accessors[primitive.attributes[key]];
     tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
     tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
     float* values = reinterpret_cast<float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
-    std::vector<Vector3> positions = std::vector<Vector3>(accessor.count);
+    std::vector<UnityEngine::Vector3> positions = std::vector<UnityEngine::Vector3>(accessor.count);
     for (size_t i = 0; i < accessor.count; ++i) {
          float x = values[i * 3 + 0];
          float y = values[i * 3 + 1];
          float z = values[i * 3 + 2];
-         positions[i] = Vector3(x, y, z);
+         positions[i] = UnityEngine::Vector3(x, y, z);
     }
     return positions;
 }
 
-std::vector<Vector3> getVec3DataTarget(tinygltf::Model model, int target)
+std::vector<UnityEngine::Vector3> getVec3DataTarget(tinygltf::Model model, int target)
 {
     tinygltf::Accessor& accessor = model.accessors[target];
     tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
     tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
     float* values = reinterpret_cast<float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
-    std::vector<Vector3> positions = std::vector<Vector3>(accessor.count);
+    std::vector<UnityEngine::Vector3> positions = std::vector<UnityEngine::Vector3>(accessor.count);
     for (size_t i = 0; i < accessor.count; ++i) {
          float x = values[i * 3 + 0];
          float y = values[i * 3 + 1];
          float z = values[i * 3 + 2];
-         positions[i] = Vector3(x, y, z);
+         positions[i] = UnityEngine::Vector3(x, y, z);
     }
     return positions;
 }
 
-std::vector<Vector2> getVec2Data(tinygltf::Model model, tinygltf::Primitive primitive, std::string key)
+std::vector<UnityEngine::Vector2> getVec2Data(tinygltf::Model model, tinygltf::Primitive primitive, std::string key)
 {
     tinygltf::Accessor& accessor = model.accessors[primitive.attributes[key]];
     tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
     tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
     float* values = reinterpret_cast<float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
-    std::vector<Vector2> positions = std::vector<Vector2>(accessor.count);
+    std::vector<UnityEngine::Vector2> positions = std::vector<UnityEngine::Vector2>(accessor.count);
     for (size_t i = 0; i < accessor.count; ++i) {
          float x = values[i * 2 + 0];
          float y = values[i * 2 + 1];
-         positions[i] = Vector2(x, y);
+         positions[i] = UnityEngine::Vector2(x, y);
     }
     return positions;
 }
 
-std::vector<Vector4> getVec4Data(tinygltf::Model model, tinygltf::Primitive primitive, std::string key)
+std::vector<UnityEngine::Vector4> getVec4Data(tinygltf::Model model, tinygltf::Primitive primitive, std::string key)
 {
     tinygltf::Accessor& accessor = model.accessors[primitive.attributes[key]];
     tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
     tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
     float* values = reinterpret_cast<float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
-    std::vector<Vector4> positions = std::vector<Vector4>(accessor.count);
+    std::vector<UnityEngine::Vector4> positions = std::vector<UnityEngine::Vector4>(accessor.count);
     for (size_t i = 0; i < accessor.count; ++i) {
          float x = values[i * 4 + 0];
          float y = values[i * 4 + 1];
          float z = values[i * 4 + 2];
          float w = values[i * 4 + 3];
-         positions[i] = Vector4(x, y, z, w);
+         positions[i] = UnityEngine::Vector4(x, y, z, w);
     }
     return positions;
 }
 
-std::vector<Color> getColorData(tinygltf::Model model, tinygltf::Primitive primitive, std::string key)
+std::vector<UnityEngine::Color> getColorData(tinygltf::Model model, tinygltf::Primitive primitive, std::string key)
 {
     tinygltf::Accessor& accessor = model.accessors[primitive.attributes[key]];
     tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
@@ -222,13 +196,13 @@ std::vector<Color> getColorData(tinygltf::Model model, tinygltf::Primitive primi
 
     bool hasAlpha = bufferView.byteStride > 3;
 
-    std::vector<Color> positions = std::vector<Color>(accessor.count);
+    std::vector<UnityEngine::Color> positions = std::vector<UnityEngine::Color>(accessor.count);
     for (size_t i = 0; i < accessor.count; ++i) {
          float x = values[i * bufferView.byteStride + 0];
          float y = values[i * bufferView.byteStride + 1];
          float z = values[i * bufferView.byteStride + 2];
          float a = hasAlpha ? values[i * bufferView.byteStride + 3] : 1.0f;
-         positions[i] = Color(x, y, z, a);
+         positions[i] = UnityEngine::Color(x, y, z, a);
     }
     return positions;
 }
@@ -248,17 +222,6 @@ std::vector<int> getIntData(tinygltf::Model model, tinygltf::Primitive primitive
     return data;
 }
 
-template <typename T>
-ArrayW<T> vector2ArrayW(std::vector<T> vector)
-{
-    ArrayW<T> arr = ArrayW<T>(vector.size());
-    for (int i = 0; i < vector.size(); i++)
-    {
-        arr[i] = vector[i];
-    }
-    return arr;
-}
-
 void convertAttributeAccessorsToUnityTypes(tinygltf::Primitive primData, tinygltf::Model model, UnityMeshData& unityData, int vertOffset, int indexOffset)
 {
     auto meshAttributes = primData.attributes;
@@ -270,7 +233,7 @@ void convertAttributeAccessorsToUnityTypes(tinygltf::Primitive primData, tinyglt
          ? getIntData(model, primData, "INDICES")
          : generateIndices(vertexCount);
 
-    if (unityData.topology[indexOffset] == MeshTopology::Triangles)
+    if (unityData.topology[indexOffset] == UnityEngine::MeshTopology::Triangles)
         flipTriangleFaces(indices);
     
     unityData.indices[indexOffset] = indices;
@@ -398,50 +361,50 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
 
     getLogger().info("Starting Intermediate Mesh Construction");
 
-    meshData.vertices = std::vector<Vector3>(vertexCount);
-    meshData.normals = hasAttribKey("NORMAL", firstPrim) ? std::vector<Vector3>(vertexCount) : std::vector<Vector3>();
-    meshData.tangents = hasAttribKey("TANGENT", firstPrim) ? std::vector<Vector4>(vertexCount) : std::vector<Vector4>();
+    meshData.vertices = std::vector<UnityEngine::Vector3>(vertexCount);
+    meshData.normals = hasAttribKey("NORMAL", firstPrim) ? std::vector<UnityEngine::Vector3>(vertexCount) : std::vector<UnityEngine::Vector3>();
+    meshData.tangents = hasAttribKey("TANGENT", firstPrim) ? std::vector<UnityEngine::Vector4>(vertexCount) : std::vector<UnityEngine::Vector4>();
 
-    meshData.uv1 = hasAttribKey("TEXCOORD_0", firstPrim) ? std::vector<Vector2>(vertexCount) : std::vector<Vector2>();
-    meshData.uv2 = hasAttribKey("TEXCOORD_1", firstPrim) ? std::vector<Vector2>(vertexCount) : std::vector<Vector2>();
-    meshData.uv3 = hasAttribKey("TEXCOORD_2", firstPrim) ? std::vector<Vector2>(vertexCount) : std::vector<Vector2>();
-    meshData.uv4 = hasAttribKey("TEXCOORD_3", firstPrim) ? std::vector<Vector2>(vertexCount) : std::vector<Vector2>();
+    meshData.uv1 = hasAttribKey("TEXCOORD_0", firstPrim) ? std::vector<UnityEngine::Vector2>(vertexCount) : std::vector<UnityEngine::Vector2>();
+    meshData.uv2 = hasAttribKey("TEXCOORD_1", firstPrim) ? std::vector<UnityEngine::Vector2>(vertexCount) : std::vector<UnityEngine::Vector2>();
+    meshData.uv3 = hasAttribKey("TEXCOORD_2", firstPrim) ? std::vector<UnityEngine::Vector2>(vertexCount) : std::vector<UnityEngine::Vector2>();
+    meshData.uv4 = hasAttribKey("TEXCOORD_3", firstPrim) ? std::vector<UnityEngine::Vector2>(vertexCount) : std::vector<UnityEngine::Vector2>();
 
-    meshData.colors = hasAttribKey("COLOR_0", firstPrim) ? std::vector<Color>(vertexCount) : std::vector<Color>();
-    meshData.boneWeights = hasAttribKey("WEIGHTS_0", firstPrim) ? std::vector<BoneWeight>(vertexCount) : std::vector<BoneWeight>();
+    meshData.colors = hasAttribKey("COLOR_0", firstPrim) ? std::vector<UnityEngine::Color>(vertexCount) : std::vector<UnityEngine::Color>();
+    meshData.boneWeights = hasAttribKey("WEIGHTS_0", firstPrim) ? std::vector<UnityEngine::BoneWeight>(vertexCount) : std::vector<UnityEngine::BoneWeight>();
     
     getLogger().info("Intermediate Mesh initialized, initializing morph values");
 
     if(firstPrim.targets.size() > 0 && firstPrim.targets[0].contains("POSITION"))
     {
-        allocateInto2DArray<Vector3>((int)firstPrim.targets.size(), vertexCount, meshData.morphTargetVertices);
+        ArrayUtils::allocateInto2DArray<UnityEngine::Vector3>((int)firstPrim.targets.size(), vertexCount, meshData.morphTargetVertices);
     }
     else
     {
-        meshData.morphTargetVertices = std::vector<std::vector<Vector3>>();
+        meshData.morphTargetVertices = std::vector<std::vector<UnityEngine::Vector3>>();
     }
 
     if(firstPrim.targets.size() > 0 && firstPrim.targets[0].contains("NORMAL"))
     {
-        allocateInto2DArray<Vector3>((int)firstPrim.targets.size(), vertexCount, meshData.morphTargetNormals);
+        ArrayUtils::allocateInto2DArray<UnityEngine::Vector3>((int)firstPrim.targets.size(), vertexCount, meshData.morphTargetNormals);
     }
     else
     {
-        meshData.morphTargetNormals = std::vector<std::vector<Vector3>>();
+        meshData.morphTargetNormals = std::vector<std::vector<UnityEngine::Vector3>>();
     }
 
     if(firstPrim.targets.size() > 0 && firstPrim.targets[0].contains("TANGENT"))
     {
-        allocateInto2DArray<Vector3>((int)firstPrim.targets.size(), vertexCount, meshData.morphTargetTangents);
+        ArrayUtils::allocateInto2DArray<UnityEngine::Vector3>((int)firstPrim.targets.size(), vertexCount, meshData.morphTargetTangents);
     }
     else
     {
-        meshData.morphTargetTangents = std::vector<std::vector<Vector3>>();
+        meshData.morphTargetTangents = std::vector<std::vector<UnityEngine::Vector3>>();
     }
 
     getLogger().info("morph values initialized");
 
-    meshData.topology = std::vector<MeshTopology>(mesh.primitives.size());
+    meshData.topology = std::vector<UnityEngine::MeshTopology>(mesh.primitives.size());
     meshData.indices = std::vector<std::vector<int>>(mesh.primitives.size());
 
     getLogger().info("initialized topology and indices, loading primitives");
@@ -471,15 +434,15 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
     
     getLogger().info("Mesh object created, setting values");
 
-    unityMesh->set_vertices(vector2ArrayW(meshData.vertices));
-    unityMesh->set_normals(vector2ArrayW(meshData.normals));
-    unityMesh->set_tangents(vector2ArrayW(meshData.tangents));
-    unityMesh->set_uv(vector2ArrayW(meshData.uv1));
-    unityMesh->set_uv2(vector2ArrayW(meshData.uv2));
-    unityMesh->set_uv3(vector2ArrayW(meshData.uv3));
-    unityMesh->set_uv4(vector2ArrayW(meshData.uv4));
-    unityMesh->set_colors(vector2ArrayW(meshData.colors));
-    unityMesh->set_boneWeights(vector2ArrayW(meshData.boneWeights));
+    unityMesh->set_vertices(ArrayUtils::vector2ArrayW(meshData.vertices));
+    unityMesh->set_normals(ArrayUtils::vector2ArrayW(meshData.normals));
+    unityMesh->set_tangents(ArrayUtils::vector2ArrayW(meshData.tangents));
+    unityMesh->set_uv(ArrayUtils::vector2ArrayW(meshData.uv1));
+    unityMesh->set_uv2(ArrayUtils::vector2ArrayW(meshData.uv2));
+    unityMesh->set_uv3(ArrayUtils::vector2ArrayW(meshData.uv3));
+    unityMesh->set_uv4(ArrayUtils::vector2ArrayW(meshData.uv4));
+    unityMesh->set_colors(ArrayUtils::vector2ArrayW(meshData.colors));
+    unityMesh->set_boneWeights(ArrayUtils::vector2ArrayW(meshData.boneWeights));
 
     getLogger().info("values setting, loading in indices");
 
@@ -487,7 +450,7 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
     uint baseVertex = 0;
 	for (int i = 0; i < meshData.indices.size(); i++)
 	{
-		unityMesh->SetIndices(ArrayW<int>(vector2ArrayW(meshData.indices[i])), meshData.topology[i], i, false, (int)baseVertex);
+		unityMesh->SetIndices(ArrayW<int>(ArrayUtils::vector2ArrayW(meshData.indices[i])), meshData.topology[i], i, false, (int)baseVertex);
 		baseVertex += getVertexCount(mesh.primitives[i], model);
 	}
     unityMesh->RecalculateBounds();
@@ -500,25 +463,25 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
 		{
 		    auto targetName = "Morphtarget " + std::to_string(i);
 			unityMesh->AddBlendShapeFrame(targetName, 100,
-				vector2ArrayW(meshData.morphTargetVertices[i]),
-				meshData.morphTargetNormals.size() > 0 ? vector2ArrayW(meshData.morphTargetNormals[i]) : nullptr,
-				meshData.morphTargetTangents.size() > 0 ? vector2ArrayW(meshData.morphTargetTangents[i]) : nullptr
+				ArrayUtils::vector2ArrayW(meshData.morphTargetVertices[i]),
+				meshData.morphTargetNormals.size() > 0 ? ArrayUtils::vector2ArrayW(meshData.morphTargetNormals[i]) : nullptr,
+				meshData.morphTargetTangents.size() > 0 ? ArrayUtils::vector2ArrayW(meshData.morphTargetTangents[i]) : nullptr
 			);
 		}
 	}
 
     getLogger().info("morph targets loaded, recalculating any missing normals");
 
-	if (meshData.normals.size() < 1 && meshData.topology[0] == MeshTopology::Triangles)
+	if (meshData.normals.size() < 1 && meshData.topology[0] == UnityEngine::MeshTopology::Triangles)
 	{
 		unityMesh->RecalculateNormals();
 	}
 
     getLogger().info("Unity Mesh Constructed :DDDDDDDDDD, creating renderer");
 
-    auto Root = GameObject::New_ctor("GLTF");
-    GameObject::DontDestroyOnLoad(Root);
-    auto meshObj = GameObject::New_ctor("mesh");
+    auto Root = UnityEngine::GameObject::New_ctor("GLTF");
+    UnityEngine::GameObject::DontDestroyOnLoad(Root);
+    auto meshObj = UnityEngine::GameObject::New_ctor("mesh");
     meshObj->get_transform()->set_parent(Root->get_transform());
     
     getLogger().info("obj created, adding components");
