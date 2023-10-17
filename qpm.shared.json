@@ -1,0 +1,131 @@
+{
+  "config": {
+    "sharedDir": "shared",
+    "dependenciesDir": "extern",
+    "info": {
+      "name": "VRM Qavatars",
+      "id": "vrm-qavatars",
+      "version": "0.1.0",
+      "url": null,
+      "additionalData": {
+        "overrideSoName": "libvrm-qavatars.so",
+        "cmake": true
+      }
+    },
+    "dependencies": [
+      {
+        "id": "beatsaber-hook",
+        "versionRange": "^3.8.0",
+        "additionalData": {
+          "extraFiles": [
+            "src/inline-hook"
+          ]
+        }
+      },
+      {
+        "id": "modloader",
+        "versionRange": "=1.2.3",
+        "additionalData": {}
+      },
+      {
+        "id": "codegen",
+        "versionRange": "^0.33.0",
+        "additionalData": {}
+      },
+      {
+        "id": "custom-types",
+        "versionRange": "=0.15.24",
+        "additionalData": {}
+      }
+    ],
+    "workspace": {
+      "scripts": {
+        "build": [
+          "pwsh ./scripts/build.ps1"
+        ],
+        "copy": [
+          "pwsh ./scripts/copy.ps1"
+        ],
+        "logcat": [
+          "pwsh ./scripts/start-logging.ps1"
+        ],
+        "qmod": [
+          "pwsh ./scripts/build.ps1",
+          "pwsh ./scripts/createqmod.ps1"
+        ],
+        "restart": [
+          "pwsh ./scripts/restart-game.ps1"
+        ],
+        "stack": [
+          "pwsh ./scripts/ndk-stack.ps1"
+        ],
+        "tomb": [
+          "pwsh ./scripts/pull-tombstone.ps1"
+        ]
+      }
+    }
+  },
+  "restoredDependencies": [
+    {
+      "dependency": {
+        "id": "modloader",
+        "versionRange": "=1.2.3",
+        "additionalData": {
+          "soLink": "https://github.com/sc2ad/QuestLoader/releases/download/v1.2.3/libmodloader64.so",
+          "overrideSoName": "libmodloader.so",
+          "branchName": "version-v1.2.3"
+        }
+      },
+      "version": "1.2.3"
+    },
+    {
+      "dependency": {
+        "id": "libil2cpp",
+        "versionRange": "=0.2.3",
+        "additionalData": {
+          "headersOnly": true
+        }
+      },
+      "version": "0.2.3"
+    },
+    {
+      "dependency": {
+        "id": "beatsaber-hook",
+        "versionRange": "=3.14.0",
+        "additionalData": {
+          "soLink": "https://github.com/sc2ad/beatsaber-hook/releases/download/v3.14.0/libbeatsaber-hook_3_14_0.so",
+          "debugSoLink": "https://github.com/sc2ad/beatsaber-hook/releases/download/v3.14.0/debug_libbeatsaber-hook_3_14_0.so",
+          "branchName": "version-v3.14.0"
+        }
+      },
+      "version": "3.14.0"
+    },
+    {
+      "dependency": {
+        "id": "custom-types",
+        "versionRange": "=0.15.24",
+        "additionalData": {
+          "soLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.24/libcustom-types.so",
+          "debugSoLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.24/debug_libcustom-types.so",
+          "overrideSoName": "libcustom-types.so",
+          "modLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.24/CustomTypes.qmod",
+          "branchName": "version-v0.15.24"
+        }
+      },
+      "version": "0.15.24"
+    },
+    {
+      "dependency": {
+        "id": "codegen",
+        "versionRange": "=0.33.0",
+        "additionalData": {
+          "soLink": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.33.0/libcodegen.so",
+          "overrideSoName": "libcodegen.so",
+          "modLink": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.33.0/Codegen.qmod",
+          "branchName": "version-v0.33.0"
+        }
+      },
+      "version": "0.33.0"
+    }
+  ]
+}
