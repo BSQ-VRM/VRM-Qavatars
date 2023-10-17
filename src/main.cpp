@@ -482,7 +482,9 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
     auto Root = UnityEngine::GameObject::New_ctor("GLTF");
     UnityEngine::GameObject::DontDestroyOnLoad(Root);
     auto meshObj = UnityEngine::GameObject::New_ctor("mesh");
-    meshObj->get_transform()->set_parent(Root->get_transform());
+    meshObj->get_transform()->SetParent(Root->get_transform(), false);
+    Root->get_transform()->set_position(UnityEngine::Vector3(0.0f, 1.0f, 0.0f));
+    Root->get_transform()->set_localScale(UnityEngine::Vector3(1000.0f, 1000.0f, 1000.0f));
     
     getLogger().info("obj created, adding components");
 
