@@ -1,7 +1,26 @@
 #include "shaderLoader.hpp"
+#include "main.hpp"
 
 #include "UnityEngine/AssetBundleCreateRequest.hpp"
 #include "UnityEngine/AssetBundleRequest.hpp"
+
+custom_types::Helpers::Coroutine VRM::ShaderLoader::LoadBundleFromFileAsync(std::string_view filePath, UnityEngine::AssetBundle*& out)
+    {
+        if (!fileexists(filePath))
+        {
+            getLogger().error("File %s did not exist", filePath);
+            out = nullptr;
+            co_return;
+        }
+
+        auto req = UnityEngine::AssetBundle::LoadFromFileAsync(filePath);
+        req->set_allowSceneActivation(true);
+        while (!req->get_isDone())
+            co_yield nullptr;
+
+        out = req->get_assetBundle();
+        co_return;
+    }
 
 custom_types::Helpers::Coroutine VRM::ShaderLoader::LoadBundleFromMemoryAsync(ArrayW<uint8_t> bytes, UnityEngine::AssetBundle*& out)
 {

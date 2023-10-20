@@ -36,6 +36,11 @@
         "id": "custom-types",
         "versionRange": "=0.15.24",
         "additionalData": {}
+      },
+      {
+        "id": "questui",
+        "versionRange": "^0.17.12",
+        "additionalData": {}
       }
     ],
     "workspace": {
@@ -126,6 +131,25 @@
         }
       },
       "version": "0.33.0"
+    },
+    {
+      "dependency": {
+        "id": "questui",
+        "versionRange": "=0.17.12",
+        "additionalData": {
+          "soLink": "https://github.com/darknight1050/QuestUI/releases/download/v0.17.12/libquestui.so",
+          "debugSoLink": "https://github.com/darknight1050/QuestUI/releases/download/v0.17.12/debug_libquestui.so",
+          "overrideSoName": "libquestui.so",
+          "modLink": "https://github.com/darknight1050/QuestUI/releases/download/v0.17.12/QuestUI.qmod",
+          "branchName": "version-v0.17.12",
+          "compileOptions": {
+            "systemIncludes": [
+              "shared/cppcodec"
+            ]
+          }
+        }
+      },
+      "version": "0.17.12"
     }
   ]
 }

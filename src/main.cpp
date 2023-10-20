@@ -1,5 +1,7 @@
 #include "main.hpp"
 #include "arrayUtils.hpp"
+#include "shaderLoader.hpp"
+#include "ShaderSO.hpp"
 
 #include <fstream>
 
@@ -14,14 +16,21 @@
 
 #include "GlobalNamespace/MainMenuViewController.hpp"
 
+#include "UnityEngine/Light.hpp"
+#include "UnityEngine/Resources.hpp"
+#include "UnityEngine/Material.hpp"
+#include "UnityEngine/Shader.hpp"
 #include "UnityEngine/Mesh.hpp"
 #include "UnityEngine/PrimitiveType.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/MeshFilter.hpp"
 #include "UnityEngine/SkinnedMeshRenderer.hpp"
+#include "UnityEngine/MeshRenderer.hpp"
 #include "UnityEngine/Rendering/IndexFormat.hpp"
 #include "UnityEngine/Matrix4x4.hpp"
+
+#include "questui/shared/ArrayUtil.hpp"
 
 static ModInfo modInfo;
 
@@ -42,7 +51,7 @@ inline bool exists(const std::string& name) {
 
 std::vector<UnityEngine::Transform*> boneObjs;
 
-void constructUnityMesh(const char* name, UnityMeshData meshData, aiMesh* assimpMesh, UnityEngine::SkinnedMeshRenderer* renderer)
+void constructUnityMesh(const char* name, UnityMeshData meshData, aiMesh* assimpMesh, UnityEngine::MeshRenderer* renderer)
 {
     UnityEngine::Mesh* unityMesh = UnityEngine::Mesh::New_ctor();
     unityMesh->set_name(name);
@@ -71,13 +80,13 @@ void constructUnityMesh(const char* name, UnityMeshData meshData, aiMesh* assimp
 
     for (size_t i = 0; i < meshData.boneWeights.size(); i++)
     {
-        getLogger().info("%zu", i);
+        //getLogger().info("%zu", i);
         convertedBW[i] = meshData.boneWeights[i].convert();
     }
 
     getLogger().info("loaded bones");
     
-    unityMesh->set_boneWeights(ArrayUtils::vector2ArrayW(convertedBW));
+    //unityMesh->set_boneWeights(ArrayUtils::vector2ArrayW(convertedBW));
 
     unityMesh->set_subMeshCount(meshData.indices.size());
     uint baseVertex = 0;
@@ -114,32 +123,31 @@ void constructUnityMesh(const char* name, UnityMeshData meshData, aiMesh* assimp
         bindPoses[i] = boneObjs[i]->get_worldToLocalMatrix() * renderer->get_transform()->get_localToWorldMatrix();
     }
 
-    unityMesh->set_bindposes(ArrayUtils::vector2ArrayW(bindPoses));
-    
-    renderer->set_sharedMesh(unityMesh);
+    renderer->get_gameObject()->AddComponent<UnityEngine::MeshFilter*>()->set_mesh(unityMesh);
 
-    renderer->set_rootBone(boneObjs.front());
-    renderer->set_bones(ArrayUtils::vector2ArrayW(boneObjs));
+    //unityMesh->set_bindposes(ArrayUtils::vector2ArrayW(bindPoses));
+    
+    //renderer->set_sharedMesh(unityMesh);
+
+    //renderer->set_rootBone(boneObjs.front());
+    //renderer->set_bones(ArrayUtils::vector2ArrayW(boneObjs));
     
     getLogger().info("mesh components setup");
 }
 
 UnityMeshData loadMesh(aiMesh* mesh)
 {
-    getLogger().info("x");
     UnityMeshData meshData;
     for (size_t i = 0; i < mesh->mNumVertices; i++)
     {
         auto vert = mesh->mVertices[i];
         meshData.vertices.push_back(UnityEngine::Vector3(vert.x, vert.y, vert.z));
     }
-    getLogger().info("x1");
     for (size_t i = 0; i < mesh->mNumVertices; i++)
     {
         auto norm = mesh->mNormals[i];
         meshData.normals.push_back(UnityEngine::Vector3(norm.x, norm.y, norm.z));
     }
-    getLogger().info("x2");
     if (mesh->mTangents != nullptr)
     {
         for (size_t i = 0; i < mesh->mNumVertices; i++)
@@ -148,7 +156,6 @@ UnityMeshData loadMesh(aiMesh* mesh)
             meshData.tangents.push_back(UnityEngine::Vector4(tang.x, tang.y, tang.z, 0.0f));
         }
     }
-    getLogger().info("x3");
     if (mesh->mTextureCoords[0] != nullptr)
     {
         for (size_t i = 0; i < mesh->mNumVertices; i++)
@@ -181,7 +188,6 @@ UnityMeshData loadMesh(aiMesh* mesh)
             meshData.uv4.push_back(UnityEngine::Vector2(tex.x, tex.y));
         }
     }
-    getLogger().info("x4");
     if (mesh->mColors[0] != nullptr)
     {
         for (size_t i = 0; i < mesh->mNumVertices; i++)
@@ -191,7 +197,6 @@ UnityMeshData loadMesh(aiMesh* mesh)
         }
     }
     meshData.indices.push_back(std::vector<int>(0));
-    getLogger().info("x5");
     meshData.topology.push_back(UnityEngine::MeshTopology::Triangles);
     if (mesh->mFaces != nullptr)
     {
@@ -212,43 +217,111 @@ UnityMeshData loadMesh(aiMesh* mesh)
         std::string BoneName(mesh->mBones[i]->mName.data);
 
         for (uint j = 0 ; j < mesh->mBones[i]->mNumWeights ; j++) {
-            //save for submeshing?
+                            //save for submeshing?
             uint VertexID = /*m_Entries[MeshIndex].BaseVertex*/ + mesh->mBones[i]->mWeights[j].mVertexId;
             float Weight = mesh->mBones[i]->mWeights[j].mWeight;
             meshData.boneWeights[VertexID].AddBoneData(BoneIndex, Weight);
         }
     }
-    
-    getLogger().info("x6");
     return meshData;
 }
 
+static SafePtrUnity<UnityEngine::Material> body = nullptr;
+static SafePtrUnity<UnityEngine::Material> hair = nullptr;
+static SafePtrUnity<UnityEngine::Material> detail = nullptr;
+static SafePtrUnity<UnityEngine::Material> face = nullptr;
+
+void PrewarmAllShadersOnMaterial(UnityEngine::Material* mat)
+    {
+        if (!mat)
+            return;
+
+        // all shader variant stuff is stripped so resolve icall
+        static auto createFunc = reinterpret_cast<function_ptr_t<void, Il2CppObject*>>(il2cpp_functions::resolve_icall("UnityEngine.ShaderVariantCollection::Internal_Create"));
+        static auto addFunc = reinterpret_cast<function_ptr_t<bool, Il2CppObject*, Il2CppObject*, int, ArrayW<StringW>>>(il2cpp_functions::resolve_icall("UnityEngine.ShaderVariantCollection::AddVariant"));
+        static auto warmupFunc = reinterpret_cast<function_ptr_t<void, Il2CppObject*>>(il2cpp_functions::resolve_icall("UnityEngine.ShaderVariantCollection::WarmUp"));
+        Il2CppObject* obj = UnityEngine::Object::New_ctor();
+        createFunc(obj);
+
+        addFunc(obj, mat->get_shader(), 0, mat->get_shaderKeywords());
+
+        warmupFunc(obj);
+    }
+
 int test = -2;
-void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool isBones)
+void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool isBones, const aiScene* scene)
 {
     test++;
 
     bool nextBones = isBones;
-
-    //TODO: proper solution AAAAAAAAA, requires that root bone obj is named Root plus that the meshes always come after bones
-    if(strcmp(node->mName.C_Str(), "Root") == 0) nextBones = true;
 
     auto pos = node->mTransformation;
 
     UnityEngine::Transform* obj;
     if(node->mNumMeshes > 0)
     {
+        //unideal because this breaks parenting, will be solved when merging meshes into submeshes is implemented
+        for (size_t i = 0; i < node->mNumMeshes; i++)
+        {
+            auto aMesh = scene->mMeshes[node->mMeshes[i]];
+            auto name = aMesh->mName.C_Str();
+            obj = UnityEngine::GameObject::New_ctor()->get_transform();
+            obj->get_gameObject()->set_name(name);
+            obj->SetParent(parentObj, false);
+            obj->set_localPosition(UnityEngine::Vector3(pos.a4, pos.b4, pos.c4));
+
+            auto renderer = obj->get_gameObject()->AddComponent<UnityEngine::MeshRenderer*>();
+            getLogger().info("%s", name);
+            if(strstr(name, "Body"))
+            {
+                getLogger().info("body");
+                renderer->set_material(body.ptr());
+            }
+
+            if(strstr(name, "Face (merged).baked-0") || strstr(name, "Face (merged).baked-2"))
+            {
+                getLogger().info("face");
+                renderer->set_material(face.ptr());
+            }
+
+            if(strstr(name, "Face (merged).baked-1") || strstr(name, "Face (merged).baked-3"))
+            {
+                getLogger().info("face2");
+                renderer->set_material(detail.ptr());
+            }
+
+            if(strstr(name, "Hair"))
+            {
+                getLogger().info("hair");
+                renderer->set_material(hair.ptr());
+            }
+
+            auto mesh = loadMesh(aMesh);
+
+            auto material = scene->mMaterials[aMesh->mMaterialIndex];
+            //getLogger().info("%s", material->GetName().C_Str());
+            for (size_t i = 0; i < material->mNumProperties; i++)
+            {
+                auto prop = material->mProperties[i];
+                //getLogger().info("%s: (%d){%s}", prop->mKey.C_Str(), prop->mType, prop->mData);;
+            }
+            
+
+            constructUnityMesh(node->mName.C_Str(), mesh, aMesh, renderer);
+        }
+    }
+    else
+    {
         obj = UnityEngine::GameObject::New_ctor()->get_transform();
         obj->get_gameObject()->set_name(node->mName.C_Str());
         obj->SetParent(parentObj, false);
         obj->set_localPosition(UnityEngine::Vector3(pos.a4, pos.b4, pos.c4));
     }
-    else
+
+    //TODO: proper solution AAAAAAAAA, requires that root bone obj is named Root plus that the meshes always come after bones
+    if(strcmp(node->mName.C_Str(), "Root") == 0) 
     {
-        obj = UnityEngine::GameObject::CreatePrimitive(UnityEngine::PrimitiveType::Sphere)->get_transform();
-        obj->get_gameObject()->set_name(node->mName.C_Str());
-        obj->SetParent(parentObj, false);
-        obj->set_localPosition(UnityEngine::Vector3(pos.a4, pos.b4, pos.c4) * 60.0f);
+        nextBones = true;
     }
 
     if(nextBones)
@@ -256,16 +329,48 @@ void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool is
         boneObjs.push_back(obj);
     }
 
-    getLogger().info("%d     %s%s children: %d  locpos: %f,%f,%f", test, std::string(depth, '-').c_str(), node->mName.C_Str(), node->mNumChildren, pos.a4, pos.b4, pos.c4);
+    getLogger().info("%d     %s%s children: %d  locpos: %f,%f,%f,%f", test, std::string(depth, '-').c_str(), node->mName.C_Str(), node->mNumChildren, pos.a4, pos.b4, pos.c4, pos.d4);
     for (size_t i = 0; i < node->mNumChildren; i++)
     {
-        logNode(obj, node->mChildren[i], depth + 1, nextBones);
+        logNode(obj, node->mChildren[i], depth + 1, nextBones, scene);
     }
 }
- 
-MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidActivate, void, GlobalNamespace::MainMenuViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
-    MainMenuUIHook(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+
+#define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
+
+custom_types::Helpers::Coroutine LoadAvatar()
+{
     getLogger().info("Starting Load!");
+
+    UnityEngine::AssetBundle* ass;
+
+    co_yield coro(VRM::ShaderLoader::LoadBundleFromFileAsync("sdcard/ModData/shaders.sbund", ass));
+
+    if (!ass)
+    {
+        getLogger().error("Couldn't load bundle from file, dieing...");
+        co_return;
+    }
+
+    VRMData::ShaderSO* data = nullptr;
+
+    co_yield coro(VRM::ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", reinterpret_cast<System::Type*>(csTypeOf(VRMData::ShaderSO*)), reinterpret_cast<UnityEngine::Object*&>(data)));
+
+    if(data == nullptr)
+    {
+        getLogger().error("Couldn't load asset...");
+        co_return;
+    }
+
+    body = UnityEngine::Object::Instantiate(data->body);
+    hair = UnityEngine::Object::Instantiate(data->hair);
+    face = UnityEngine::Object::Instantiate(data->face);
+    detail = UnityEngine::Object::Instantiate(data->detail);
+
+    PrewarmAllShadersOnMaterial(body.ptr());
+    PrewarmAllShadersOnMaterial(hair.ptr());
+    PrewarmAllShadersOnMaterial(face.ptr());
+    PrewarmAllShadersOnMaterial(detail.ptr());
 
     Assimp::Importer importer;
 
@@ -275,12 +380,20 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
     auto Root = UnityEngine::GameObject::New_ctor("GLTF");
     UnityEngine::GameObject::DontDestroyOnLoad(Root);
     Root->get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
-    Root->get_transform()->set_localScale(UnityEngine::Vector3(0.02f, 0.02f, 0.02f));
+    Root->get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
 
     getLogger().info("Created root object");
 
     auto rootNode = scene->mRootNode;
-    logNode(Root->get_transform(), rootNode, 0, false);
+    logNode(Root->get_transform(), rootNode, 0, false, scene);
+
+    //boneObjs[11]->Translate(UnityEngine::Vector3(1.0f, 0.0f, 0.0f));
+    co_return;
+}
+ 
+MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidActivate, void, GlobalNamespace::MainMenuViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
+    MainMenuUIHook(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+    self->StartCoroutine(coro(LoadAvatar()));
 }
 
 extern "C" void setup(ModInfo& info) {

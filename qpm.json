@@ -35,6 +35,11 @@
       "id": "custom-types",
       "versionRange": "=0.15.24",
       "additionalData": {}
+    },
+    {
+      "id": "questui",
+      "versionRange": "^0.17.12",
+      "additionalData": {}
     }
   ],
   "workspace": {
