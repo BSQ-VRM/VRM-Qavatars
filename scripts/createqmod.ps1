@@ -57,6 +57,7 @@ foreach ($lib in $modJson.libraryFiles) {
     }
     $filelist += $path
 }
+$filelist += "./shaders.sbund";
 
 $zip = $qmodName + ".zip"
 $qmod = $qmodName + ".qmod"

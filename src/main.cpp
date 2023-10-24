@@ -28,8 +28,7 @@
 #include "UnityEngine/SkinnedMeshRenderer.hpp"
 #include "UnityEngine/MeshRenderer.hpp"
 #include "UnityEngine/Rendering/IndexFormat.hpp"
-#include "UnityEngine/Matrix4x4.hpp"
-
+#include "UnityEngine/Matrix4x4.hpp" q
 #include "questui/shared/ArrayUtil.hpp"
 
 static ModInfo modInfo;
@@ -51,7 +50,7 @@ inline bool exists(const std::string& name) {
 
 std::vector<UnityEngine::Transform*> boneObjs;
 
-void constructUnityMesh(const char* name, UnityMeshData meshData, aiMesh* assimpMesh, UnityEngine::MeshRenderer* renderer)
+void constructUnityMesh(const char* name, UnityMeshData meshData, aiMesh* assimpMesh, UnityEngine::SkinnedMeshRenderer* renderer)
 {
     UnityEngine::Mesh* unityMesh = UnityEngine::Mesh::New_ctor();
     unityMesh->set_name(name);
@@ -68,25 +67,18 @@ void constructUnityMesh(const char* name, UnityMeshData meshData, aiMesh* assimp
     unityMesh->set_uv4(ArrayUtils::vector2ArrayW(meshData.uv4));
     unityMesh->set_colors(ArrayUtils::vector2ArrayW(meshData.colors));
 
-    /*std::vector<UnityEngine::BoneWeight> weights;
-    for (size_t i = 0; i < assimpMesh->mNumBones; i++)
-    {
-        assimpMesh->mBones[i]->mOffsetMatrix
-    }*/
-
     getLogger().info("loading bones");
     
     std::vector<UnityEngine::BoneWeight> convertedBW = std::vector<UnityEngine::BoneWeight>(meshData.boneWeights.size());
 
     for (size_t i = 0; i < meshData.boneWeights.size(); i++)
     {
-        //getLogger().info("%zu", i);
         convertedBW[i] = meshData.boneWeights[i].convert();
     }
 
     getLogger().info("loaded bones");
     
-    //unityMesh->set_boneWeights(ArrayUtils::vector2ArrayW(convertedBW));
+    unityMesh->set_boneWeights(ArrayUtils::vector2ArrayW(convertedBW));
 
     unityMesh->set_subMeshCount(meshData.indices.size());
     uint baseVertex = 0;
@@ -123,18 +115,32 @@ void constructUnityMesh(const char* name, UnityMeshData meshData, aiMesh* assimp
         bindPoses[i] = boneObjs[i]->get_worldToLocalMatrix() * renderer->get_transform()->get_localToWorldMatrix();
     }
 
-    renderer->get_gameObject()->AddComponent<UnityEngine::MeshFilter*>()->set_mesh(unityMesh);
-
-    //unityMesh->set_bindposes(ArrayUtils::vector2ArrayW(bindPoses));
+    getLogger().info("%lu", convertedBW.size());
+    getLogger().info("%lu", boneObjs.size());
+    getLogger().info("%lu", bindPoses.size());
+    getLogger().info("%s", static_cast<std::string>(boneObjs.front()->get_gameObject()->get_name()).c_str());
+    unityMesh->set_bindposes(ArrayUtils::vector2ArrayW(bindPoses));
     
-    //renderer->set_sharedMesh(unityMesh);
+    renderer->set_sharedMesh(unityMesh);
 
-    //renderer->set_rootBone(boneObjs.front());
-    //renderer->set_bones(ArrayUtils::vector2ArrayW(boneObjs));
+    renderer->set_rootBone(boneObjs.front());
+    renderer->set_bones(ArrayUtils::vector2ArrayW(boneObjs));
     
     getLogger().info("mesh components setup");
 }
 
+uint indexForName(std::string name, aiMesh* mesh)
+{
+    for (size_t i = 0; i < mesh->mNumBones; i++)
+    {
+        auto bone = mesh->mBones[i];
+        if(std::string(bone->mName.C_Str()) == name)
+        {
+            return i;
+        }
+    }
+    
+}
 UnityMeshData loadMesh(aiMesh* mesh)
 {
     UnityMeshData meshData;
@@ -213,8 +219,8 @@ UnityMeshData loadMesh(aiMesh* mesh)
     meshData.boneWeights = std::vector<BoneWeightProxy>(mesh->mNumVertices);
 
     for (uint i = 0 ; i < mesh->mNumBones ; i++) {
-        uint BoneIndex = 0;
         std::string BoneName(mesh->mBones[i]->mName.data);
+        uint BoneIndex = indexForName(BoneName, mesh);
 
         for (uint j = 0 ; j < mesh->mBones[i]->mNumWeights ; j++) {
                             //save for submeshing?
@@ -223,6 +229,11 @@ UnityMeshData loadMesh(aiMesh* mesh)
             meshData.boneWeights[VertexID].AddBoneData(BoneIndex, Weight);
         }
     }
+    for (size_t i = 0; i < meshData.boneWeights.size(); i++)
+    {
+        getLogger().info("%lu, %d", i, meshData.boneWeights[i].ids[0]);
+    }
+    
     return meshData;
 }
 
@@ -232,21 +243,21 @@ static SafePtrUnity<UnityEngine::Material> detail = nullptr;
 static SafePtrUnity<UnityEngine::Material> face = nullptr;
 
 void PrewarmAllShadersOnMaterial(UnityEngine::Material* mat)
-    {
-        if (!mat)
-            return;
+{
+    if (!mat)
+        return;
 
-        // all shader variant stuff is stripped so resolve icall
-        static auto createFunc = reinterpret_cast<function_ptr_t<void, Il2CppObject*>>(il2cpp_functions::resolve_icall("UnityEngine.ShaderVariantCollection::Internal_Create"));
-        static auto addFunc = reinterpret_cast<function_ptr_t<bool, Il2CppObject*, Il2CppObject*, int, ArrayW<StringW>>>(il2cpp_functions::resolve_icall("UnityEngine.ShaderVariantCollection::AddVariant"));
-        static auto warmupFunc = reinterpret_cast<function_ptr_t<void, Il2CppObject*>>(il2cpp_functions::resolve_icall("UnityEngine.ShaderVariantCollection::WarmUp"));
-        Il2CppObject* obj = UnityEngine::Object::New_ctor();
-        createFunc(obj);
+    // all shader variant stuff is stripped so resolve icall
+    static auto createFunc = reinterpret_cast<function_ptr_t<void, Il2CppObject*>>(il2cpp_functions::resolve_icall("UnityEngine.ShaderVariantCollection::Internal_Create"));
+    static auto addFunc = reinterpret_cast<function_ptr_t<bool, Il2CppObject*, Il2CppObject*, int, ArrayW<StringW>>>(il2cpp_functions::resolve_icall("UnityEngine.ShaderVariantCollection::AddVariant"));
+    static auto warmupFunc = reinterpret_cast<function_ptr_t<void, Il2CppObject*>>(il2cpp_functions::resolve_icall("UnityEngine.ShaderVariantCollection::WarmUp"));
+    Il2CppObject* obj = UnityEngine::Object::New_ctor();
+    createFunc(obj);
 
-        addFunc(obj, mat->get_shader(), 0, mat->get_shaderKeywords());
+    addFunc(obj, mat->get_shader(), 0, mat->get_shaderKeywords());
 
-        warmupFunc(obj);
-    }
+    warmupFunc(obj);
+}
 
 int test = -2;
 void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool isBones, const aiScene* scene)
@@ -270,42 +281,28 @@ void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool is
             obj->SetParent(parentObj, false);
             obj->set_localPosition(UnityEngine::Vector3(pos.a4, pos.b4, pos.c4));
 
-            auto renderer = obj->get_gameObject()->AddComponent<UnityEngine::MeshRenderer*>();
-            getLogger().info("%s", name);
+            auto renderer = obj->get_gameObject()->AddComponent<UnityEngine::SkinnedMeshRenderer*>();
             if(strstr(name, "Body"))
             {
-                getLogger().info("body");
                 renderer->set_material(body.ptr());
             }
 
             if(strstr(name, "Face (merged).baked-0") || strstr(name, "Face (merged).baked-2"))
             {
-                getLogger().info("face");
                 renderer->set_material(face.ptr());
             }
 
             if(strstr(name, "Face (merged).baked-1") || strstr(name, "Face (merged).baked-3"))
             {
-                getLogger().info("face2");
                 renderer->set_material(detail.ptr());
             }
 
             if(strstr(name, "Hair"))
             {
-                getLogger().info("hair");
                 renderer->set_material(hair.ptr());
             }
 
             auto mesh = loadMesh(aMesh);
-
-            auto material = scene->mMaterials[aMesh->mMaterialIndex];
-            //getLogger().info("%s", material->GetName().C_Str());
-            for (size_t i = 0; i < material->mNumProperties; i++)
-            {
-                auto prop = material->mProperties[i];
-                //getLogger().info("%s: (%d){%s}", prop->mKey.C_Str(), prop->mType, prop->mData);;
-            }
-            
 
             constructUnityMesh(node->mName.C_Str(), mesh, aMesh, renderer);
         }
@@ -329,7 +326,7 @@ void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool is
         boneObjs.push_back(obj);
     }
 
-    getLogger().info("%d     %s%s children: %d  locpos: %f,%f,%f,%f", test, std::string(depth, '-').c_str(), node->mName.C_Str(), node->mNumChildren, pos.a4, pos.b4, pos.c4, pos.d4);
+    //getLogger().info("%d     %s%s children: %d  locpos: %f,%f,%f,%f", test, std::string(depth, '-').c_str(), node->mName.C_Str(), node->mNumChildren, pos.a4, pos.b4, pos.c4, pos.d4);
     for (size_t i = 0; i < node->mNumChildren; i++)
     {
         logNode(obj, node->mChildren[i], depth + 1, nextBones, scene);
@@ -386,8 +383,7 @@ custom_types::Helpers::Coroutine LoadAvatar()
 
     auto rootNode = scene->mRootNode;
     logNode(Root->get_transform(), rootNode, 0, false, scene);
-
-    //boneObjs[11]->Translate(UnityEngine::Vector3(1.0f, 0.0f, 0.0f));
+    
     co_return;
 }
  
