@@ -5,7 +5,7 @@
 
 #include <fstream>
 
-#include "gltf/UnityMeshData.hpp"
+#include "UnityMeshData.hpp"
 
 #include "assimp/Importer.hpp"
 #include "assimp/Exporter.hpp"
@@ -28,8 +28,20 @@
 #include "UnityEngine/SkinnedMeshRenderer.hpp"
 #include "UnityEngine/MeshRenderer.hpp"
 #include "UnityEngine/Rendering/IndexFormat.hpp"
-#include "UnityEngine/Matrix4x4.hpp" q
+#include "UnityEngine/Matrix4x4.hpp"
+#include "UnityEngine/Animator.hpp"
+
 #include "questui/shared/ArrayUtil.hpp"
+
+#include "RootMotion/FinalIK/VRIK.hpp"
+#include "RootMotion/FinalIK/IKSolverVR.hpp"
+#include "RootMotion/FinalIK/IKSolverVR_Arm.hpp"
+#include "RootMotion/FinalIK/IKSolverVR_Spine.hpp"
+#include "RootMotion/FinalIK/VRIK_References.hpp"
+
+#include "vrm/mappings/avatarMappings.hpp"
+
+#include "json.hpp"
 
 static ModInfo modInfo;
 
@@ -139,7 +151,7 @@ uint indexForName(std::string name, aiMesh* mesh)
             return i;
         }
     }
-    
+    return -1;
 }
 UnityMeshData loadMesh(aiMesh* mesh)
 {
@@ -228,10 +240,6 @@ UnityMeshData loadMesh(aiMesh* mesh)
             float Weight = mesh->mBones[i]->mWeights[j].mWeight;
             meshData.boneWeights[VertexID].AddBoneData(BoneIndex, Weight);
         }
-    }
-    for (size_t i = 0; i < meshData.boneWeights.size(); i++)
-    {
-        getLogger().info("%lu, %d", i, meshData.boneWeights[i].ids[0]);
     }
     
     return meshData;
@@ -333,6 +341,11 @@ void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool is
     }
 }
 
+void logBone(VRMC_VRM_0_0::HumanoidBone bone)
+{
+    getLogger().info("bone: %hhu, node idx: %d, boneObjs: %s", bone.bone, bone.node, static_cast<std::string>(boneObjs[bone.node]->get_gameObject()->get_name()).c_str());
+}
+
 #define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
 
 custom_types::Helpers::Coroutine LoadAvatar()
@@ -383,6 +396,91 @@ custom_types::Helpers::Coroutine LoadAvatar()
 
     auto rootNode = scene->mRootNode;
     logNode(Root->get_transform(), rootNode, 0, false, scene);
+
+    std::ifstream binFile("sdcard/ModData/ava.vrm", std::ios::binary);
+
+    binFile.seekg(12); //Skip past the 12 byte header, to the json header
+    uint32_t jsonLength;
+    binFile.read((char*)&jsonLength, sizeof(uint32_t)); //Read the length of the json file from it's header
+
+    std::string jsonStr;
+    jsonStr.resize(jsonLength);
+    binFile.seekg(20); // Skip the rest of the JSON header to the start of the string
+    binFile.read(jsonStr.data(), jsonLength); // Read out the json string
+
+    auto doc = nlohmann::json::parse(jsonStr);
+    VRMC_VRM_0_0::Vrm vrm;
+    VRMC_VRM_0_0::from_json(doc["extensions"]["VRM"], vrm);
+
+    getLogger().info("parsed extensions, checking humanoid tree");
+
+    auto humanBones = vrm.humanoid.humanBones;
+    
+    getLogger().info("logged bones");
+
+    auto annotations = vrm.firstPerson.meshAnnotations;
+    for (size_t i = 0; i < annotations.size(); i++)
+    {
+        auto x = annotations[i];
+        getLogger().info("First Person: %zu   node: %d   flag: %s", i, x.mesh, x.firstPersonFlag.c_str());
+    }
+
+    getLogger().info("logged first person");
+
+    //auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, boneObjs, Root);
+
+    getLogger().info("made avatar");
+
+    //auto anim = Root->AddComponent<UnityEngine::Animator*>();
+
+    //anim->set_avatar(avatar);
+
+    getLogger().info("made animator");
+
+    auto vrik = Root->AddComponent<RootMotion::FinalIK::VRIK*>();
+
+    vrik->AutoDetectReferences();
+
+    for (size_t i = 0; i < humanBones.size(); i++)
+    {
+        auto bone = humanBones[i];
+        auto obj = boneObjs[bone.node];
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::Hips) vrik->references->root = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::Spine) vrik->references->spine = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::Chest) vrik->references->chest = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::Neck) vrik->references->neck = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::Head) vrik->references->head = obj;
+
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftShoulder) vrik->references->leftShoulder = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftUpperArm) vrik->references->leftUpperArm = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftLowerArm) vrik->references->leftForearm = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftHand) vrik->references->leftHand = obj;
+
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightShoulder) vrik->references->rightShoulder = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightUpperArm) vrik->references->rightUpperArm = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightLowerArm) vrik->references->rightForearm = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightHand) vrik->references->rightHand = obj;
+
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftUpperLeg) vrik->references->leftThigh = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftLowerLeg) vrik->references->leftCalf = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftFoot) vrik->references->leftFoot = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftToes) vrik->references->leftToes = obj;
+
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightUpperLeg) vrik->references->rightThigh = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightLowerLeg) vrik->references->rightCalf = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightFoot) vrik->references->rightFoot = obj;
+        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightToes) vrik->references->rightToes = obj;
+    }
+
+    vrik->references->root = boneObjs.front();
+
+    getLogger().info("made vrik");
+
+    vrik->solver->spine->headTarget = UnityEngine::GameObject::Find("MenuMainCamera")->get_transform();
+    vrik->solver->leftArm->target = UnityEngine::GameObject::Find("ControllerLeft")->get_transform();
+    vrik->solver->rightArm->target = UnityEngine::GameObject::Find("ControllerRight")->get_transform();
+
+    getLogger().info("set transforms");
     
     co_return;
 }
