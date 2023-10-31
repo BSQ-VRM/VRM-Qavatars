@@ -427,7 +427,7 @@ custom_types::Helpers::Coroutine LoadAvatar()
 
     getLogger().info("logged first person");
 
-    //auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, boneObjs, Root);
+    auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, boneObjs, Root);
 
     getLogger().info("made avatar");
 
@@ -490,6 +490,32 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
     self->StartCoroutine(coro(LoadAvatar()));
 }
 
+void* HumanBoneFromMonoHook_loc() {
+    return (void*)(baseAddr("libunity.so") + 0x176c9c);
+}
+
+MAKE_HOOK(HumanBoneFromMonoHook, HumanBoneFromMonoHook_loc, void, void* param1, void* param2) {
+    getLogger().info("hook");
+    //auto asObj = *reinterpret_cast<Il2CppObject**>(param1);
+    //getLogger().info("%s::%s", asObj->klass->namespaze, asObj->klass->name);
+    getLogger().info("- %p", param1);   
+    getLogger().info("- %p", param2);
+    auto firstString = *reinterpret_cast<StringW*>(param1);
+    auto secondString = *(reinterpret_cast<StringW*>(param1) + 1);
+    getLogger().info("-- %p", firstString.convert());
+    if(firstString != nullptr)
+    {
+        getLogger().info("--- %s", static_cast<std::string>(firstString).c_str());
+    }
+    getLogger().info("-- %p", secondString.convert());
+    if(secondString != nullptr)
+    {
+        getLogger().info("--- %p", static_cast<std::string>(secondString).c_str());
+    }
+    getLogger().info("calling orig");
+    HumanBoneFromMonoHook(param1, param2);
+}
+
 extern "C" void setup(ModInfo& info) {
     info.id = MOD_ID;
     info.version = VERSION;
@@ -502,4 +528,5 @@ extern "C" void load() {
     il2cpp_functions::Init();
 
     INSTALL_HOOK(getLogger(), MainMenuUIHook);
+    INSTALL_HOOK_DIRECT(getLogger(), HumanBoneFromMonoHook, HumanBoneFromMonoHook_loc());
 }
