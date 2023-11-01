@@ -61,10 +61,29 @@ inline bool exists(const std::string& name) {
     return f.good();
 }
 
-std::vector<UnityEngine::Transform*> boneObjs;
+static std::vector<UnityEngine::Transform*> boneObjs;
+
+float determinant(UnityEngine::Matrix4x4 m) {
+      return
+         m.m03 * m.m12 * m.m21 * m.m30 - m.m02 * m.m13 * m.m21 * m.m30 -
+         m.m03 * m.m11 * m.m22 * m.m30 + m.m01 * m.m13 * m.m22 * m.m30 +
+         m.m02 * m.m11 * m.m23 * m.m30 - m.m01 * m.m12 * m.m23 * m.m30 -
+         m.m03 * m.m12 * m.m20 * m.m31 + m.m02 * m.m13 * m.m20 * m.m31 +
+         m.m03 * m.m10 * m.m22 * m.m31 - m.m00 * m.m13 * m.m22 * m.m31 -
+         m.m02 * m.m10 * m.m23 * m.m31 + m.m00 * m.m12 * m.m23 * m.m31 +
+         m.m03 * m.m11 * m.m20 * m.m32 - m.m01 * m.m13 * m.m20 * m.m32 -
+         m.m03 * m.m10 * m.m21 * m.m32 + m.m00 * m.m13 * m.m21 * m.m32 +
+         m.m01 * m.m10 * m.m23 * m.m32 - m.m00 * m.m11 * m.m23 * m.m32 -
+         m.m02 * m.m11 * m.m20 * m.m33 + m.m01 * m.m12 * m.m20 * m.m33 +
+         m.m02 * m.m10 * m.m21 * m.m33 - m.m00 * m.m12 * m.m21 * m.m33 -
+         m.m01 * m.m10 * m.m22 * m.m33 + m.m00 * m.m11 * m.m22 * m.m33;
+   }
 
 void constructUnityMesh(const char* name, UnityMeshData meshData, UnityEngine::SkinnedMeshRenderer* renderer)
 {
+    getLogger().info("constructing renderer %s", name);
+    
+
     UnityEngine::Mesh* unityMesh = UnityEngine::Mesh::New_ctor();
     unityMesh->set_name(name);
     unityMesh->set_indexFormat(meshData.vertices.size() > 65535 ? UnityEngine::Rendering::IndexFormat::UInt32 : UnityEngine::Rendering::IndexFormat::UInt16);
@@ -87,6 +106,8 @@ void constructUnityMesh(const char* name, UnityMeshData meshData, UnityEngine::S
     for (size_t i = 0; i < meshData.boneWeights.size(); i++)
     {
         convertedBW[i] = meshData.boneWeights[i].convert();
+        float weightSum = convertedBW[i].m_Weight0 + convertedBW[i].m_Weight1 + convertedBW[i].m_Weight2 + convertedBW[i].m_Weight3;
+        getLogger().info("weight sum %zu: %f", i, weightSum);
     }
 
     getLogger().info("loaded bones");
@@ -132,8 +153,9 @@ void constructUnityMesh(const char* name, UnityMeshData meshData, UnityEngine::S
     getLogger().info("%lu", boneObjs.size());
     getLogger().info("%lu", bindPoses.size());
     getLogger().info("%s", static_cast<std::string>(boneObjs.front()->get_gameObject()->get_name()).c_str());
+
     unityMesh->set_bindposes(ArrayUtils::vector2ArrayW(bindPoses));
-    
+
     renderer->set_sharedMesh(unityMesh);
 
     renderer->set_rootBone(boneObjs.front());
@@ -219,17 +241,32 @@ UnityMeshData loadMesh(aiMesh* mesh)
 
     meshData.boneWeights = std::vector<BoneWeightProxy>(mesh->mNumVertices);
 
-    for (uint i = 0 ; i < mesh->mNumBones ; i++) {
-        std::string BoneName(mesh->mBones[i]->mName.data);
-        uint BoneIndex = i;
+    //i: bone
+    //j: current vertexWeight in bone
+    //k: weight idx to check in vertex
 
-        for (uint j = 0 ; j < mesh->mBones[i]->mNumWeights ; j++) {
+    //Iterate over every bone in this mesh
+    for (int i = 0; i < mesh->mNumBones; i++)
+    {
+        aiBone* aiBone = mesh->mBones[i];
+        getLogger().info("bone %s: index: %d", aiBone->mName.C_Str(), i);
+        
+        //Iterate over every vertex that this bone affects
+        for (int j = 0; j < aiBone->mNumWeights; j++)
+        {
+            aiVertexWeight weight = aiBone->mWeights[j];
+
                             //save for submeshing?
-            uint VertexID = /*m_Entries[MeshIndex].BaseVertex*/ + mesh->mBones[i]->mWeights[j].mVertexId;
-            float Weight = mesh->mBones[i]->mWeights[j].mWeight;
-            meshData.boneWeights[VertexID].AddBoneData(BoneIndex, Weight);
+            uint VertexID = /*m_Entries[MeshIndex].BaseVertex*/ + weight.mVertexId;
+
+            float Weight = weight.mWeight;
+
+            //TODO: Do we need to handle a case where all spots are taken and a vertexWeight with a higher weight is needed? Idk
+            meshData.boneWeights[VertexID].AddBoneData(i, Weight);
         }
     }
+
+    //TODO: Do we need to sort vertex weights? Or does assimp do this for us.
     
     return meshData;
 }
@@ -306,10 +343,11 @@ void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool is
     }
     else
     {
-        obj = UnityEngine::GameObject::New_ctor()->get_transform();
+        obj = UnityEngine::GameObject::CreatePrimitive(UnityEngine::PrimitiveType::Sphere)->get_transform();
         obj->get_gameObject()->set_name(node->mName.C_Str());
         obj->SetParent(parentObj, false);
         obj->set_localPosition(UnityEngine::Vector3(pos.a4, pos.b4, pos.c4));
+        
     }
 
     //TODO: proper solution AAAAAAAAA, requires that root bone obj is named Root plus that the meshes always come after bones
@@ -450,6 +488,11 @@ custom_types::Helpers::Coroutine LoadAvatar()
         {
             getLogger().info("Bone: %s", static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
         }
+    }
+
+    for (int i = 0; i < boneObjs.size(); i++)
+    {
+        boneObjs[i]->Translate(UnityEngine::Vector3(0.0f, 0.0f, 0.05f));
     }
     
     co_return;
