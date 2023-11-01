@@ -30,6 +30,7 @@
 #include "UnityEngine/Rendering/IndexFormat.hpp"
 #include "UnityEngine/Matrix4x4.hpp"
 #include "UnityEngine/Animator.hpp"
+#include "UnityEngine/HumanBodyBones.hpp"
 
 #include "questui/shared/ArrayUtil.hpp"
 
@@ -62,7 +63,7 @@ inline bool exists(const std::string& name) {
 
 std::vector<UnityEngine::Transform*> boneObjs;
 
-void constructUnityMesh(const char* name, UnityMeshData meshData, aiMesh* assimpMesh, UnityEngine::SkinnedMeshRenderer* renderer)
+void constructUnityMesh(const char* name, UnityMeshData meshData, UnityEngine::SkinnedMeshRenderer* renderer)
 {
     UnityEngine::Mesh* unityMesh = UnityEngine::Mesh::New_ctor();
     unityMesh->set_name(name);
@@ -141,18 +142,6 @@ void constructUnityMesh(const char* name, UnityMeshData meshData, aiMesh* assimp
     getLogger().info("mesh components setup");
 }
 
-uint indexForName(std::string name, aiMesh* mesh)
-{
-    for (size_t i = 0; i < mesh->mNumBones; i++)
-    {
-        auto bone = mesh->mBones[i];
-        if(std::string(bone->mName.C_Str()) == name)
-        {
-            return i;
-        }
-    }
-    return -1;
-}
 UnityMeshData loadMesh(aiMesh* mesh)
 {
     UnityMeshData meshData;
@@ -232,7 +221,7 @@ UnityMeshData loadMesh(aiMesh* mesh)
 
     for (uint i = 0 ; i < mesh->mNumBones ; i++) {
         std::string BoneName(mesh->mBones[i]->mName.data);
-        uint BoneIndex = indexForName(BoneName, mesh);
+        uint BoneIndex = i;
 
         for (uint j = 0 ; j < mesh->mBones[i]->mNumWeights ; j++) {
                             //save for submeshing?
@@ -268,13 +257,13 @@ void PrewarmAllShadersOnMaterial(UnityEngine::Material* mat)
 }
 
 int test = -2;
-void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool isBones, const aiScene* scene)
+void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool isBones, const aiScene* scene, aiMatrix4x4 parentTransform)
 {
     test++;
 
     bool nextBones = isBones;
 
-    auto pos = node->mTransformation;
+    auto pos = node->mTransformation * parentTransform;
 
     UnityEngine::Transform* obj;
     if(node->mNumMeshes > 0)
@@ -312,7 +301,7 @@ void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool is
 
             auto mesh = loadMesh(aMesh);
 
-            constructUnityMesh(node->mName.C_Str(), mesh, aMesh, renderer);
+            constructUnityMesh(node->mName.C_Str(), mesh, renderer);
         }
     }
     else
@@ -337,7 +326,7 @@ void logNode(UnityEngine::Transform* parentObj, aiNode* node, int depth, bool is
     //getLogger().info("%d     %s%s children: %d  locpos: %f,%f,%f,%f", test, std::string(depth, '-').c_str(), node->mName.C_Str(), node->mNumChildren, pos.a4, pos.b4, pos.c4, pos.d4);
     for (size_t i = 0; i < node->mNumChildren; i++)
     {
-        logNode(obj, node->mChildren[i], depth + 1, nextBones, scene);
+        logNode(obj, node->mChildren[i], depth + 1, nextBones, scene, pos);
     }
 }
 
@@ -395,7 +384,7 @@ custom_types::Helpers::Coroutine LoadAvatar()
     getLogger().info("Created root object");
 
     auto rootNode = scene->mRootNode;
-    logNode(Root->get_transform(), rootNode, 0, false, scene);
+    logNode(Root->get_transform(), rootNode, 0, false, scene, aiMatrix4x4());
 
     std::ifstream binFile("sdcard/ModData/ava.vrm", std::ios::binary);
 
@@ -437,7 +426,7 @@ custom_types::Helpers::Coroutine LoadAvatar()
 
     getLogger().info("made animator");
 
-    auto vrik = Root->AddComponent<RootMotion::FinalIK::VRIK*>();
+    /*auto vrik = Root->AddComponent<RootMotion::FinalIK::VRIK*>();
 
     vrik->AutoDetectReferences();
 
@@ -453,7 +442,15 @@ custom_types::Helpers::Coroutine LoadAvatar()
 
     vrik->Initiate();
 
-    getLogger().info("set transforms");
+    getLogger().info("set transforms");*/
+    for(int i = 0; i < 50; i++)
+    {
+        auto trans = anim->GetBoneTransform(UnityEngine::HumanBodyBones(i));
+        if(trans != nullptr)
+        {
+            getLogger().info("Bone: %s", static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
+        }
+    }
     
     co_return;
 }

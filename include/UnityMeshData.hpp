@@ -12,7 +12,7 @@
 struct BoneWeightProxy
 {
     std::vector<int> ids = std::vector<int>(4);
-    std::vector<float> weights = std::vector<float>(4);
+    std::vector<float> weights = {0.0f, 0.0f, 0.0f, 0.0f};
 
     void AddBoneData(uint BoneID, float Weight)
     {
