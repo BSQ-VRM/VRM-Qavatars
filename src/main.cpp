@@ -431,9 +431,9 @@ custom_types::Helpers::Coroutine LoadAvatar()
 
     getLogger().info("made avatar");
 
-    //auto anim = Root->AddComponent<UnityEngine::Animator*>();
+    auto anim = Root->AddComponent<UnityEngine::Animator*>();
 
-    //anim->set_avatar(avatar);
+    anim->set_avatar(avatar);
 
     getLogger().info("made animator");
 
@@ -441,44 +441,17 @@ custom_types::Helpers::Coroutine LoadAvatar()
 
     vrik->AutoDetectReferences();
 
-    for (size_t i = 0; i < humanBones.size(); i++)
-    {
-        auto bone = humanBones[i];
-        auto obj = boneObjs[bone.node];
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::Hips) vrik->references->root = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::Spine) vrik->references->spine = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::Chest) vrik->references->chest = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::Neck) vrik->references->neck = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::Head) vrik->references->head = obj;
-
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftShoulder) vrik->references->leftShoulder = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftUpperArm) vrik->references->leftUpperArm = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftLowerArm) vrik->references->leftForearm = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftHand) vrik->references->leftHand = obj;
-
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightShoulder) vrik->references->rightShoulder = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightUpperArm) vrik->references->rightUpperArm = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightLowerArm) vrik->references->rightForearm = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightHand) vrik->references->rightHand = obj;
-
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftUpperLeg) vrik->references->leftThigh = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftLowerLeg) vrik->references->leftCalf = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftFoot) vrik->references->leftFoot = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::LeftToes) vrik->references->leftToes = obj;
-
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightUpperLeg) vrik->references->rightThigh = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightLowerLeg) vrik->references->rightCalf = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightFoot) vrik->references->rightFoot = obj;
-        if(bone.bone == VRMC_VRM_0_0::HumanoidBone::Bone::RightToes) vrik->references->rightToes = obj;
-    }
-
-    vrik->references->root = boneObjs.front();
-
     getLogger().info("made vrik");
 
-    vrik->solver->spine->headTarget = UnityEngine::GameObject::Find("MenuMainCamera")->get_transform();
+    auto headTarget = UnityEngine::GameObject::New_ctor("HeadTarget");
+    headTarget->get_transform()->set_position(UnityEngine::Vector3(1.0f, 2.0f, 4.0f));
+    headTarget->get_transform()->set_rotation(UnityEngine::Quaternion::Euler(45.0f, 0.0f, 0.0f));
+
+    vrik->solver->spine->headTarget = headTarget->get_transform();
     vrik->solver->leftArm->target = UnityEngine::GameObject::Find("ControllerLeft")->get_transform();
     vrik->solver->rightArm->target = UnityEngine::GameObject::Find("ControllerRight")->get_transform();
+
+    vrik->Initiate();
 
     getLogger().info("set transforms");
     
