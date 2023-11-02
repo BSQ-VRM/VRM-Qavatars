@@ -1,17 +1,16 @@
 #pragma once
 
-#define USE_VRMC_VRM_0_0
-#include "../vrm.h"
-
 #include "main.hpp"
 #include "arrayUtils.hpp"
+
+#include "vrmIncludes.hpp"
 
 #include "UnityEngine/Avatar.hpp"
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/SkeletonBone.hpp"
-#include "NewHumanBone.hpp"
-#include "NewHumanDescription.hpp"
+#include "AssetLib/skinTypes/newHumanBone.hpp"
+#include "AssetLib/skinTypes/newHumanDescription.hpp"
 #include "UnityEngine/HumanLimit.hpp"
 #include "UnityEngine/HumanDescription.hpp"
 

@@ -1,5 +1,6 @@
-#include "shaderLoader.hpp"
+#include "AssetLib/shaders/shaderLoader.hpp"
 #include "main.hpp"
+#include <string_view>
 
 #include "UnityEngine/AssetBundleCreateRequest.hpp"
 #include "UnityEngine/AssetBundleRequest.hpp"
@@ -8,7 +9,7 @@ custom_types::Helpers::Coroutine VRM::ShaderLoader::LoadBundleFromFileAsync(std:
     {
         if (!fileexists(filePath))
         {
-            getLogger().error("File %s did not exist", filePath);
+            getLogger().error("File %s did not exist", filePath.data());
             out = nullptr;
             co_return;
         }
