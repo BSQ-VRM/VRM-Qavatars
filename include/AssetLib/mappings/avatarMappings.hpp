@@ -1,7 +1,7 @@
 #pragma once
 
 #include "main.hpp"
-#include "arrayUtils.hpp"
+#include "AssetLib/arrayUtils.hpp"
 
 #include "vrmIncludes.hpp"
 
@@ -9,8 +9,11 @@
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/SkeletonBone.hpp"
+
 #include "AssetLib/skinTypes/newHumanBone.hpp"
 #include "AssetLib/skinTypes/newHumanDescription.hpp"
+#include "AssetLib/structure/node.hpp"
+
 #include "UnityEngine/HumanLimit.hpp"
 #include "UnityEngine/HumanDescription.hpp"
 
@@ -24,7 +27,7 @@ namespace VRM::Mappings
         {
             return UnityEngine::Vector3(vec.x, vec.y, vec.z);
         }
-        static UnityEngine::Avatar* CreateAvatar(VRMC_VRM_0_0::Vrm vrm, std::vector<UnityEngine::Transform*> bones, UnityEngine::GameObject* root)
+        static UnityEngine::Avatar* CreateAvatar(VRMC_VRM_0_0::Vrm vrm, std::vector<AssetLib::Structure::Node*> bones, UnityEngine::GameObject* root)
         {
             auto humanoid = vrm.humanoid;
             auto hd = CustomHumanDescription();
@@ -90,14 +93,10 @@ namespace VRM::Mappings
 
             for (size_t i = 0; i < humanoid.humanBones.size(); i++)
             {
-                getLogger().info("%lu", i);
                 auto& bone = humanoid.humanBones[i];
-                StringW boneName = bones[bone.node]->get_gameObject()->get_name();
+                StringW boneName = bones[bone.node]->gameObject->get_name();
                 StringW humanName = names[i];
-                getLogger().info("bone: %s %s", std::string(boneName).c_str(), std::string(humanName).c_str());
                 humanBones[i] = CustomHumanBone(boneName, humanName, UnityEngine::HumanLimit(convertVector(bone.min), convertVector(bone.max), convertVector(bone.center), bone.axisLength, bone.useDefaultValues ? 0 : 1));
-                getLogger().info("%p", humanBones[i].boneName.convert());
-                getLogger().info("%p", humanBones[i].humanName.convert());
             }
 
             auto allObjs = root->GetComponentsInChildren<UnityEngine::Transform*>(true);
@@ -120,11 +119,9 @@ namespace VRM::Mappings
                 skeletonBones[i].rotation = obj->get_localRotation();
                 skeletonBones[i].scale = obj->get_localScale();
             }
-            getLogger().info("x1");
             
             hd.human = humanBones;
             hd.skeleton = skeletonBones;
-            getLogger().info("x2");
             hd.m_ArmStretch = humanoid.armStretch;
             hd.m_ArmTwist = humanoid.upperArmTwist;
             hd.m_FeetSpacing = humanoid.feetSpacing;
@@ -135,16 +132,10 @@ namespace VRM::Mappings
             hd.m_UpperLegTwist = humanoid.upperLegTwist;
             hd.m_RootMotionBoneName = "";
 
-            getLogger().info("begin ptr %p", hd.human.begin());
-            getLogger().info("convert ptr %p", hd.human.convert());
-            getLogger().info("size %lu", hd.human.size());
             try
             {
-                getLogger().info("x3");
                 static auto buildHumanoid = il2cpp_utils::resolve_icall<UnityEngine::Avatar*, UnityEngine::GameObject*, CustomHumanDescription*>("UnityEngine.AvatarBuilder::BuildHumanAvatarInternal_Injected");
-                getLogger().info("x4");
                 auto ava = buildHumanoid(root, &hd);
-                getLogger().info("x5");
                 return ava;
             }
             catch(const std::exception& e)

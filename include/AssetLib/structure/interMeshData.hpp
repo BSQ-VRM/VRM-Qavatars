@@ -31,6 +31,8 @@ namespace AssetLib::Structure
         std::vector<UnityEngine::Color> colors;
         std::vector<AssetLib::SkinTypes::BoneWeightProxy> boneWeights;
 
+        int materialIdx;
+
         //Blend Shapes
         /*std::vector<std::vector<UnityEngine::Vector3>> morphTargetVertices;
         std::vector<std::vector<UnityEngine::Vector3>> morphTargetNormals;

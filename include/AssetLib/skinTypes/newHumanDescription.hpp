@@ -2,7 +2,7 @@
 #include "beatsaber-hook/shared/utils/typedefs.h"
 #include "beatsaber-hook/shared/utils/byref.hpp"
 #include "System/ValueType.hpp"
-#include "NewHumanBone.hpp"
+#include "newHumanBone.hpp"
 #include "UnityEngine/SkeletonBone.hpp"
 #include "beatsaber-hook/shared/utils/typedefs-array.hpp"
 #include "beatsaber-hook/shared/utils/typedefs-string.hpp"

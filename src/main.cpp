@@ -2,6 +2,12 @@
 #include "custom-types/shared/coroutine.hpp"
 
 #include "GlobalNamespace/MainMenuViewController.hpp"
+#include "UnityEngine/WaitForSeconds.hpp"
+#include "UnityEngine/AssetBundle.hpp"
+#include "UnityEngine/AssetBundleCreateRequest.hpp"
+#include "UnityEngine/AssetBundleRequest.hpp"
+#include "AssetLib/shaders/shaderLoader.hpp"
+#include "AssetLib/shaders/ShaderSO.hpp"
 
 #include "AssetLib/modelImporter.hpp"
 
@@ -33,7 +39,28 @@ custom_types::Helpers::Coroutine LoadAvatar()
 {
     getLogger().info("Starting Load!");
 
-    auto ctx = AssetLib::ModelImporter::Load("sdcard/ModData/ava.vrm");
+    UnityEngine::AssetBundle* ass;
+    co_yield coro(VRM::ShaderLoader::LoadBundleFromFileAsync("sdcard/ModData/shaders.sbund", ass));
+    if (!ass)
+    {
+        getLogger().error("Couldn't load bundle from file, dieing...");
+        co_return;
+    }
+    VRMData::ShaderSO* data = nullptr;
+    co_yield coro(VRM::ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", reinterpret_cast<System::Type*>(csTypeOf(VRMData::ShaderSO*)), reinterpret_cast<UnityEngine::Object*&>(data)));
+    if(data == nullptr)
+    {
+        getLogger().error("Couldn't load asset...");
+        co_return;
+    }
+
+    auto ctx = AssetLib::ModelImporter::LoadVRM("sdcard/ModData/ava.vrm", data->mToonShader);
+    
+    logTransform(ctx->rootNode->gameObject->get_transform());
+
+    //co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(2.0f));
+
+    //ctx->armature.value().bones[18]->gameObject->get_transform()->Translate(UnityEngine::Vector3(0.0f, 1.0f, 0.0f));
     
     co_return;
 }
