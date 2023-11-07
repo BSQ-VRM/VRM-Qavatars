@@ -48,7 +48,7 @@ void CreateBoneStructure(AssetLib::Structure::Node* node, UnityEngine::Transform
 
     nodeTrans->SetParent(parentTrans, false);
     nodeTrans->set_localPosition(node->position);
-    AddSphere(nodeTrans);
+    //AddSphere(nodeTrans);
 
     node->gameObject = nodeTrans->get_gameObject();
     node->processed = true;
@@ -310,6 +310,11 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform*
     }
 }
 
+UnityEngine::Vector3 convertVector(VRMC_VRM_0_0::Vector3 vec)
+{
+    return UnityEngine::Vector3(vec.x, vec.y, vec.z);
+}
+        
 AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::string& filename, bool loadMaterials)
 {
     auto modelContext = new AssetLib::Structure::ModelContext();
@@ -322,6 +327,7 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     auto Root = UnityEngine::GameObject::New_ctor("Model");
     UnityEngine::GameObject::DontDestroyOnLoad(Root);
     Root->get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
+    Root->get_transform()->set_rotation(UnityEngine::Quaternion::Euler(0.0f, 180.0f, 0.0f));
     Root->get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
 
     aiNode* aiArmature;
@@ -395,6 +401,21 @@ UnityEngine::Texture2D* FileToSprite(std::string filePath)
     if (UnityEngine::ImageConversion::LoadImage(texture, bytes, false))
         return texture;
     return nullptr;
+}
+
+std::vector<UnityEngine::Transform*> Ancestors(UnityEngine::Transform* root)
+{
+    std::vector<UnityEngine::Transform*> ancestors;
+
+    UnityEngine::Transform* currentTrans = root;
+
+    while(currentTrans != nullptr)
+    {
+        ancestors.push_back(currentTrans);
+        currentTrans = currentTrans->get_parent();
+    }
+
+    return ancestors;
 }
 
 //TODO: Figure out 1.0.0 support
@@ -520,12 +541,78 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     auto vrik = modelContext->rootNode->gameObject->AddComponent<RootMotion::FinalIK::VRIK*>();
 
-    vrik->AutoDetectReferences();
+    auto targetManager = modelContext->rootNode->gameObject->AddComponent<VRMQavatars::TargetManager*>();
+    targetManager->vrik = vrik;
+    targetManager->Initialize();
 
-    vrik->solver->spine->headTarget = UnityEngine::GameObject::Find("MenuMainCamera")->get_transform();
-    vrik->solver->leftArm->target = UnityEngine::GameObject::Find("ControllerLeft")->get_transform();
-    vrik->solver->rightArm->target = UnityEngine::GameObject::Find("ControllerRight")->get_transform();
-    vrik->Initiate();
+    auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Head);
+
+    for (size_t i = 0; i < modelContext->nodes.size(); i++)
+    {
+        auto node = modelContext->nodes[i];
+        if(node->mesh.has_value() && node->processed)
+        {
+            getLogger().info("x12");
+            auto gameObject = modelContext->nodes[i]->gameObject;
+            auto skinnedRenderer = gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
+
+            std::vector<int> toErase;
+
+            auto armature = modelContext->armature.value();
+            for (size_t j = 0; j < armature.bones.size(); j++)
+            {
+                auto bone = armature.bones[j];
+                auto ancestors = Ancestors(bone->gameObject->get_transform());
+                if(std::find(ancestors.begin(), ancestors.end(), headBone) != ancestors.end())
+                {
+                    toErase.push_back(j);
+                }
+            }
+            
+            auto newMesh = VRMQavatars::BoneMeshUtility::CreateErasedMesh(skinnedRenderer->get_sharedMesh(), toErase);
+            skinnedRenderer->set_sharedMesh(newMesh);
+        }
+    }
+
+    auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
+    secondary->get_transform()->SetParent(modelContext->rootNode->gameObject->get_transform());
+
+    auto springs = vrm.secondaryAnimation.boneGroups;
+    for (size_t i = 0; i < springs.size(); i++)
+    {
+        getLogger().info("x13");
+        auto springRef = springs[i];
+
+        auto springBone = secondary->get_gameObject()->AddComponent<VRMQavatars::VRMSpringBone*>();
+
+        if (springRef.center != -1)
+		{
+			springBone->center = modelContext->nodes[springRef.center]->gameObject->get_transform();
+		}
+
+		springBone->comment = springRef.comment;
+		springBone->dragForce = springRef.dragForce;
+		springBone->gravityDir = convertVector(springRef.gravityDir);
+		springBone->gravityPower = springRef.gravityPower;
+		springBone->hitRadius = springRef.hitRadius;
+		springBone->stiffnessForce = springRef.stiffiness;
+		/*if (glTF_VRM_SecondaryAnimationGroup.colliderGroups != null && glTF_VRM_SecondaryAnimationGroup.colliderGroups.Any<int>())
+		{
+			vrmspringBone2.ColliderGroups = new VRMSpringBoneColliderGroup[glTF_VRM_SecondaryAnimationGroup.colliderGroups.Length];
+			for (int j = 0; j < glTF_VRM_SecondaryAnimationGroup.colliderGroups.Length; j++)
+			{
+				int num2 = glTF_VRM_SecondaryAnimationGroup.colliderGroups[j];
+				vrmspringBone2.ColliderGroups[j] = list[num2];
+			}
+		}*/
+		ArrayW<UnityEngine::Transform*> list2 = ArrayW<UnityEngine::Transform*>(springRef.bones.size());
+        for (size_t i = 0; i < springRef.bones.size(); i++)
+        {
+            auto bone = springRef.bones[i];
+            list2[i] = modelContext->nodes[bone]->gameObject->get_transform();
+        }
+		springBone->rootBones = list2;
+    }
     
     return modelContext;
 }

@@ -5,6 +5,7 @@
 #include "structure/modelContext.hpp"
 #include "structure/VRM/VRMmodelContext.hpp"
 #include "mappings/avatarMappings.hpp"
+#include "customTypes/TargetManager.hpp"
 
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/PrimitiveType.hpp"
@@ -22,6 +23,7 @@
 #include "UnityEngine/Material.hpp"
 #include "UnityEngine/Shader.hpp"
 #include "UnityEngine/Animator.hpp"
+#include "UnityEngine/HumanBodyBones.hpp"
 
 #include "RootMotion/FinalIK/VRIK.hpp"
 #include "RootMotion/FinalIK/IKSolverVR.hpp"
@@ -35,6 +37,9 @@
 
 #include "vrmIncludes.hpp"
 #include "arrayUtils.hpp"
+#include "boneMeshUtility.hpp"
+
+#include "customTypes/VRMSpringBone.hpp"
 
 namespace AssetLib
 {

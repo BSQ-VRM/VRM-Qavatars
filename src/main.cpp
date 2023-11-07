@@ -1,16 +1,20 @@
 #include "main.hpp"
 #include "custom-types/shared/coroutine.hpp"
+#include "custom-types/shared/register.hpp"
 
 #include "GlobalNamespace/MainMenuViewController.hpp"
 #include "UnityEngine/WaitForSeconds.hpp"
 #include "UnityEngine/AssetBundle.hpp"
 #include "UnityEngine/AssetBundleCreateRequest.hpp"
 #include "UnityEngine/AssetBundleRequest.hpp"
+#include "UnityEngine/Light.hpp"
+#include "UnityEngine/LightType.hpp"
 #include "AssetLib/shaders/shaderLoader.hpp"
 #include "AssetLib/shaders/ShaderSO.hpp"
 
 #include "AssetLib/modelImporter.hpp"
 
+#include "customTypes/TargetManager.hpp"
 
 static ModInfo modInfo;
 
@@ -58,9 +62,10 @@ custom_types::Helpers::Coroutine LoadAvatar()
     
     logTransform(ctx->rootNode->gameObject->get_transform());
 
-    //co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(2.0f));
-
-    //ctx->armature.value().bones[18]->gameObject->get_transform()->Translate(UnityEngine::Vector3(0.0f, 1.0f, 0.0f));
+    auto light = UnityEngine::GameObject::New_ctor()->AddComponent<UnityEngine::Light*>();
+    light->set_intensity(1000.0f);
+    static auto setType = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, UnityEngine::LightType>("UnityEngine.Light::set_type");
+    setType(light, UnityEngine::LightType::Directional);
     
     co_return;
 }
@@ -80,6 +85,8 @@ extern "C" void setup(ModInfo& info) {
 
 extern "C" void load() {
     il2cpp_functions::Init();
+
+    custom_types::Register::AutoRegister(); 
 
     INSTALL_HOOK(getLogger(), MainMenuUIHook);
 }
