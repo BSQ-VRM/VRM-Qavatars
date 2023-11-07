@@ -72,7 +72,10 @@ custom_types::Helpers::Coroutine LoadAvatar()
  
 MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidActivate, void, GlobalNamespace::MainMenuViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
     MainMenuUIHook(self, firstActivation, addedToHierarchy, screenSystemEnabling);
-    self->StartCoroutine(coro(LoadAvatar()));
+    if(firstActivation)
+    {
+        self->StartCoroutine(coro(LoadAvatar()));
+    }
 }
 
 extern "C" void setup(ModInfo& info) {

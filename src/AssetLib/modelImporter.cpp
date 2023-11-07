@@ -534,7 +534,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     }
     getLogger().info("x11");
 
-    auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->nodes, modelContext->rootNode->gameObject);
+    auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->armature->bones, modelContext->rootNode->gameObject);
 
     auto anim = modelContext->rootNode->gameObject->AddComponent<UnityEngine::Animator*>();
     anim->set_avatar(avatar);

@@ -96,6 +96,7 @@ namespace VRM::Mappings
                 auto& bone = humanoid.humanBones[i];
                 StringW boneName = bones[bone.node]->gameObject->get_name();
                 StringW humanName = names[i];
+                getLogger().info("%s %s", static_cast<std::string>(boneName).c_str(), static_cast<std::string>(humanName).c_str());
                 humanBones[i] = CustomHumanBone(boneName, humanName, UnityEngine::HumanLimit(convertVector(bone.min), convertVector(bone.max), convertVector(bone.center), bone.axisLength, bone.useDefaultValues ? 0 : 1));
             }
 
