@@ -40,6 +40,21 @@
       "id": "questui",
       "versionRange": "^0.17.12",
       "additionalData": {}
+    },
+    {
+      "id": "assimp",
+      "versionRange": "^5.3.1",
+      "additionalData": {}
+    },
+    {
+      "id": "bsml",
+      "versionRange": "^0.3.3",
+      "additionalData": {}
+    },
+    {
+      "id": "questui",
+      "versionRange": "^0.17.12",
+      "additionalData": {}
     }
   ],
   "workspace": {

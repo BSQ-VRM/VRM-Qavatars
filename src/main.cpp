@@ -3,18 +3,22 @@
 #include "custom-types/shared/register.hpp"
 
 #include "GlobalNamespace/MainMenuViewController.hpp"
+
 #include "UnityEngine/WaitForSeconds.hpp"
 #include "UnityEngine/AssetBundle.hpp"
 #include "UnityEngine/AssetBundleCreateRequest.hpp"
 #include "UnityEngine/AssetBundleRequest.hpp"
 #include "UnityEngine/Light.hpp"
 #include "UnityEngine/LightType.hpp"
+
 #include "AssetLib/shaders/shaderLoader.hpp"
 #include "AssetLib/shaders/ShaderSO.hpp"
-
 #include "AssetLib/modelImporter.hpp"
 
 #include "customTypes/TargetManager.hpp"
+
+#include "bsml/shared/BSML.hpp"
+#include "UI/AvatarsFlowCoordinator.hpp"
 
 static ModInfo modInfo;
 
@@ -90,6 +94,8 @@ extern "C" void load() {
     il2cpp_functions::Init();
 
     custom_types::Register::AutoRegister(); 
+
+    BSML::Register::RegisterMainMenu<VRMQavatars::UI::FlowCoordinators::AvatarsFlowCoordinator*>("Avatars", "VRM Custom Avatars");
 
     INSTALL_HOOK(getLogger(), MainMenuUIHook);
 }

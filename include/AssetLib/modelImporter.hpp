@@ -31,9 +31,9 @@
 #include "RootMotion/FinalIK/IKSolverVR_Spine.hpp"
 #include "RootMotion/FinalIK/VRIK_References.hpp"
 
-#include "assimp/postprocess.h"
-#include "assimp/Importer.hpp"
-#include "assimp/scene.h"
+#include "assimp/shared/assimp/postprocess.h"
+#include "assimp/shared/assimp/Importer.hpp"
+#include "assimp/shared/assimp/scene.h"
 
 #include "vrmIncludes.hpp"
 #include "arrayUtils.hpp"

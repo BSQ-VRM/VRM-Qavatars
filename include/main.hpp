@@ -9,12 +9,6 @@
 
 Configuration& getConfig();
 Logger& getLogger();
-
-#define MAKE_HOOK_OFFSETLESS(name, retval, ...) \
-retval (*name)(__VA_ARGS__) = NULL; \
-retval hook_ ## name(__VA_ARGS__)
-
-#define INSTALL_HOOK_OFFSETLESS(name, methodInfo) MACRO_WRAP( \
-Logger::get().info("Installing 64 bit offsetless hook: %s at %lX", #name, asOffset(methodInfo->methodPointer)); \
-A64HookFunction((void*)methodInfo->methodPointer,(void*) hook_ ## name, (void**)&name); \
-)
+#ifndef GET_FIND_METHOD
+#define GET_FIND_METHOD(mPtr) il2cpp_utils::il2cpp_type_check::MetadataGetter<mPtr>::get()
+#endif

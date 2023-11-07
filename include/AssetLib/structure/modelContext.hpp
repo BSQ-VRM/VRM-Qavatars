@@ -4,7 +4,7 @@
 
 #include "node.hpp"
 #include "armature.hpp"
-#include "assimp/scene.h"
+#include "assimp/shared/assimp/scene.h"
 
 namespace AssetLib::Structure
 {
