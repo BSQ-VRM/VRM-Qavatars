@@ -545,7 +545,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     targetManager->vrik = vrik;
     targetManager->Initialize();
 
-    auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Head);
+    /*auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Head);
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
@@ -572,7 +572,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             auto newMesh = VRMQavatars::BoneMeshUtility::CreateErasedMesh(skinnedRenderer->get_sharedMesh(), toErase);
             skinnedRenderer->set_sharedMesh(newMesh);
         }
-    }
+    }*/
 
     auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
     secondary->get_transform()->SetParent(modelContext->rootNode->gameObject->get_transform());

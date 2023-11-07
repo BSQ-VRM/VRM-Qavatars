@@ -19,7 +19,7 @@
 DECLARE_CLASS_CODEGEN(VRMQavatars, VRMSpringBone, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_METHOD(void, Awake);
     DECLARE_INSTANCE_METHOD(ArrayW<UnityEngine::Transform*>, GetChildren, UnityEngine::Transform* parent);
-    DECLARE_INSTANCE_METHOD(void, LateUpdate);
+    DECLARE_INSTANCE_METHOD(void, FixedUpdate);
     DECLARE_INSTANCE_METHOD(void, Reset);
     DECLARE_INSTANCE_METHOD(void, SetLocalRotationsIdentity);
     DECLARE_INSTANCE_METHOD(void, Setup, bool force = false);
