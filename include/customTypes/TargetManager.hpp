@@ -13,6 +13,7 @@
 #include "RootMotion/FinalIK/VRIK.hpp"
 #include "RootMotion/FinalIK/IKSolverVR_Arm.hpp"
 #include "RootMotion/FinalIK/IKSolverVR_Spine.hpp"
+#include "RootMotion/FinalIK/VRIK_References.hpp"
 
 #include "GlobalNamespace/OVRPlugin.hpp"
 #include "GlobalNamespace/OVRPlugin_Node.hpp"

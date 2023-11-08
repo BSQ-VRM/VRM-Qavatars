@@ -172,7 +172,7 @@ namespace VRM::Mappings
                 if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightLittleIntermediate) humanName = names[51];
                 if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightLittleDistal) humanName = names[52];
 
-                StringW boneName = bones[bone.node-1]->gameObject->get_name();
+                StringW boneName = bones[bone.node]->gameObject->get_name();
                 getLogger().info("x");
 
                 getLogger().info("bones %s ___ %s", static_cast<std::string>(boneName).c_str(), static_cast<std::string>(humanName).c_str());

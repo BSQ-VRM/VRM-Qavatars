@@ -34,20 +34,9 @@ Logger& getLogger() {
     return *logger;
 }
 
-int test = 0;
-void logTransform(UnityEngine::Transform* trans, int depth = 1)
-{
-    test++;
-    getLogger().info("%d %s%s", test, std::string(depth, '-').c_str(), static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
-    for (size_t i = 0; i < trans->get_childCount(); i++)
-    {
-        logTransform(trans->GetChild(i), depth + 1);
-    }
-}
-
 #define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
 
-custom_types::Helpers::Coroutine LoadAvatar()
+custom_types::Helpers::Coroutine Setup()
 {
     getLogger().info("Starting Load!");
 
@@ -66,14 +55,14 @@ custom_types::Helpers::Coroutine LoadAvatar()
         co_return;
     }
 
-    auto ctx = AssetLib::ModelImporter::LoadVRM("sdcard/ModData/ava.vrm", data->mToonShader);
-    
-    logTransform(ctx->rootNode->gameObject->get_transform());
+    AssetLib::ModelImporter::mtoon = data->mToonShader;
 
     auto light = UnityEngine::GameObject::New_ctor()->AddComponent<UnityEngine::Light*>();
     light->set_intensity(1000.0f);
     static auto setType = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, UnityEngine::LightType>("UnityEngine.Light::set_type");
     setType(light, UnityEngine::LightType::Directional);
+
+    UnityEngine::GameObject::DontDestroyOnLoad(light->get_gameObject());
     
     co_return;
 }
@@ -82,7 +71,7 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
     MainMenuUIHook(self, firstActivation, addedToHierarchy, screenSystemEnabling);
     if(firstActivation)
     {
-        self->StartCoroutine(coro(LoadAvatar()));
+        self->StartCoroutine(coro(Setup()));
     }
 }
 

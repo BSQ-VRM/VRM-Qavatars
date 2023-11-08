@@ -1,5 +1,7 @@
 #include "AssetLib/modelImporter.hpp"
 
+SafePtrUnity<UnityEngine::Shader> AssetLib::ModelImporter::mtoon;
+
 //Loads the armature into the model context
 void IterateArmatureNode(aiNode* node, AssetLib::Structure::Node* parentNodeStructure, AssetLib::Structure::ModelContext* context)
 {
@@ -144,7 +146,7 @@ void LoadMesh(aiMesh* mesh, AssetLib::Structure::ModelContext* context)
         for (size_t i = 0; i < mesh->mNumFaces; i++)
         {
             auto face = mesh->mFaces[i];
-            for (size_t x = 0; x < face.mNumIndices; x++)
+            for (size_t x = 2; x < face.mNumIndices; x--)
             {
                 meshData.indices[0].emplace_back(face.mIndices[x]);
             }
@@ -253,10 +255,12 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform*
             }
         }*/
 
-        if (mesh.normals.size() < 1 && mesh.topology[0] == UnityEngine::MeshTopology::Triangles)
+        /*if (mesh.normals.size() < 1 && mesh.topology[0] == UnityEngine::MeshTopology::Triangles)
         {
             unityMesh->RecalculateNormals();
-        }
+        }*/
+        //unityMesh->RecalculateNormals();
+        //unityMesh->RecalculateTangents();
 
         if(context->isSkinned)
         {
@@ -318,7 +322,7 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     
     Assimp::Importer importer;
 
-    const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_PopulateArmatureData);
+    const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_PopulateArmatureData | aiProcess_MakeLeftHanded);
     modelContext->originalScene = scene;
     
     auto Root = UnityEngine::GameObject::New_ctor("Model");
@@ -326,6 +330,8 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     Root->get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
     Root->get_transform()->set_rotation(UnityEngine::Quaternion::Euler(0.0f, 180.0f, 0.0f));
     Root->get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
+
+    modelContext->rootGameObject = Root;
 
     aiNode* aiArmature;
 
@@ -347,7 +353,7 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
         auto armature = aiArmature;
 
         modelContext->armature = AssetLib::Structure::Armature();
-        IterateArmatureNode(armature->mChildren[0], nullptr, modelContext);
+        IterateArmatureNode(armature, nullptr, modelContext);
 
         CreateBoneStructure(modelContext->armature.value().rootBone, Root->get_transform());
     }
@@ -524,10 +530,9 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     }
     getLogger().info("x11");
 
-    auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->nodes, modelContext->rootNode->gameObject);
-    
+    auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->armature.value().bones, modelContext->armature.value().rootBone->gameObject);
 
-    auto anim = modelContext->rootNode->gameObject->AddComponent<UnityEngine::Animator*>();
+    auto anim = modelContext->rootGameObject->AddComponent<UnityEngine::Animator*>();
     anim->set_avatar(avatar);
 
     for(int i = 0; i < 50; i++)
@@ -539,13 +544,13 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         }
     }
 
-    auto vrik = modelContext->rootNode->gameObject->AddComponent<RootMotion::FinalIK::VRIK*>();
+    auto vrik = modelContext->rootGameObject->AddComponent<RootMotion::FinalIK::VRIK*>();
 
-    auto targetManager = modelContext->rootNode->gameObject->AddComponent<VRMQavatars::TargetManager*>();
+    auto targetManager = modelContext->rootGameObject->AddComponent<VRMQavatars::TargetManager*>();
     targetManager->vrik = vrik;
     targetManager->Initialize();
 
-    /*auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Head);
+    auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Head);
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
@@ -572,10 +577,10 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             auto newMesh = VRMQavatars::BoneMeshUtility::CreateErasedMesh(skinnedRenderer->get_sharedMesh(), toErase);
             skinnedRenderer->set_sharedMesh(newMesh);
         }
-    }*/
+    }
 
     auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
-    secondary->get_transform()->SetParent(modelContext->rootNode->gameObject->get_transform());
+    secondary->get_transform()->SetParent(modelContext->rootGameObject->get_transform());
 
     auto springs = vrm.secondaryAnimation.boneGroups;
     for (size_t i = 0; i < springs.size(); i++)

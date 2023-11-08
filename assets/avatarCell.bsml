@@ -5,7 +5,7 @@
     xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/RedBrumbler/Quest-BSML-Docs/gh-pages/schema.xsd'
     pref-height='12'
     vertical-fit="PreferredSize"
-    pref-width='100'
+    pref-width='80'
     horizontal-fit="PreferredSize"
     bg-color0='#ffffffff'
     bg-color1='#ffffffff'

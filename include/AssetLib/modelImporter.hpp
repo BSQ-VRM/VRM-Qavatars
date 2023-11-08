@@ -30,6 +30,7 @@
 #include "RootMotion/FinalIK/IKSolverVR_Arm.hpp"
 #include "RootMotion/FinalIK/IKSolverVR_Spine.hpp"
 #include "RootMotion/FinalIK/VRIK_References.hpp"
+#include "RootMotion/FinalIK/IKSolverVR_Locomotion.hpp"
 
 #include "assimp/shared/assimp/postprocess.h"
 #include "assimp/shared/assimp/Importer.hpp"
@@ -51,5 +52,7 @@ namespace AssetLib
         static AssetLib::Structure::ModelContext* Load(const std::string& filename, bool loadMaterials);
         //Use ONLY for vrm files
         static AssetLib::Structure::VRM::VRMModelContext* LoadVRM(const std::string& filename, UnityEngine::Shader* mtoon);
+
+        static SafePtrUnity<UnityEngine::Shader> mtoon;
     };
 };

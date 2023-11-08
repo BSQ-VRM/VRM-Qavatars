@@ -17,8 +17,9 @@ DEFINE_TYPE(VRMQavatars::UI::Components, AvatarListTableCell);
 using namespace UnityEngine;
 using namespace UnityEngine::UI;
 
-UnityEngine::Color highlightedColor = UnityEngine::Color(0.0f, 0.0f, 0.5f, 0.8f);
-UnityEngine::Color idleColor = UnityEngine::Color(0.0f, 0.0f, 0.0f, 0.8f);
+UnityEngine::Color selectedColor = UnityEngine::Color(0.8f, 0.4f, 0.8f, 0.8f);
+UnityEngine::Color highlightedColor = UnityEngine::Color(0.3f, 0.3f, 0.3f, 0.7f);
+UnityEngine::Color idleColor = UnityEngine::Color(0.0f, 0.0f, 0.0f, 0.4f);
 
 namespace VRMQavatars::UI::Components
 {
@@ -39,7 +40,7 @@ namespace VRMQavatars::UI::Components
 
         backgroundImage->background->set_color(idleColor);
         backgroundImage->background->set_color0({1.0f, 1.0f, 1.0f, 1.0f});
-        backgroundImage->background->set_color1({1.0f, 1.0f, 1.0f, 1.0f});
+        backgroundImage->background->set_color1({1.0f, 1.0f, 1.0f, 0.7f});
     }
 
     void AvatarListTableCell::HighlightDidChange(HMUI::SelectableCell::TransitionType transitionType)

@@ -5,6 +5,7 @@
 #include "node.hpp"
 #include "armature.hpp"
 #include "assimp/shared/assimp/scene.h"
+#include "UnityEngine/GameObject.hpp"
 
 namespace AssetLib::Structure
 {
@@ -19,6 +20,8 @@ namespace AssetLib::Structure
 
         bool isSkinned;
         std::optional<Armature> armature;
+
+        UnityEngine::GameObject* rootGameObject;
 
         ModelContext() = default;
         virtual ~ModelContext() {}

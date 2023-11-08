@@ -15,6 +15,7 @@ namespace AssetLib::Structure::VRM
             rootNode = base->rootNode;
             isSkinned = base->isSkinned;
             armature = base->armature;
+            rootGameObject = base->rootGameObject;
         }
     };
 };

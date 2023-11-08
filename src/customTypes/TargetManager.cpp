@@ -13,7 +13,15 @@ void VRMQavatars::TargetManager::Initialize()
     headTarget = UnityEngine::GameObject::New_ctor();
     headTarget->get_transform()->SetParent(get_transform(), false);
 
+    auto headPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::Head, GlobalNamespace::OVRPlugin::Step::Render);
+	auto headPos = UnityEngine::Vector3(headPose.Position.x, headPose.Position.y, -headPose.Position.z);
+
     vrik->AutoDetectReferences();
+
+    float scale = headPos.y / vrik->references->head->get_position().y;
+
+    get_transform()->set_localScale(UnityEngine::Vector3(scale, scale, scale));
+
     vrik->solver->spine->headTarget = headTarget->get_transform();
     vrik->solver->leftArm->target = leftHandTarget->get_transform();
     vrik->solver->rightArm->target = rightHandTarget->get_transform();
@@ -38,9 +46,9 @@ void VRMQavatars::TargetManager::Update()
 	auto headPos = UnityEngine::Vector3(headPose.Position.x, headPose.Position.y, -headPose.Position.z);
 	auto headRot = UnityEngine::Quaternion(-headPose.Orientation.x, -headPose.Orientation.y, headPose.Orientation.z, headPose.Orientation.w);
 
-    headPos.z += 2.0f;
-    leftHandPos.z += 2.0f;
-    rightHandPos.z += 2.0f;
+    //headPos.z += 2.0f;
+    //leftHandPos.z += 2.0f;
+    //rightHandPos.z += 2.0f;
 
     leftHandTarget->get_transform()->set_position(leftHandPos);
     leftHandTarget->get_transform()->set_rotation(leftHandRot);

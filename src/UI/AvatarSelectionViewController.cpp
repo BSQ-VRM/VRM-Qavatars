@@ -8,6 +8,8 @@
 #include "assets.hpp"
 #include "utils/FileUtils.hpp"
 #include "vrm/VRMDescriptor.hpp"
+#include "AssetLib/modelImporter.hpp"
+#include "AvatarManager.hpp"
 
 #include <fstream>
 
@@ -141,5 +143,7 @@ void VRMQavatars::UI::ViewControllers::AvatarSelectionViewController::OnSelectAv
     getLogger().info("x23");
     if (cell)
     {
+        auto ctx = AssetLib::ModelImporter::LoadVRM(vrm_path + std::string("/") + cell->descriptor.filePath, AssetLib::ModelImporter::mtoon.ptr());
+        VRMQavatars::AvatarManager::SetContext(ctx);
     }
 }
