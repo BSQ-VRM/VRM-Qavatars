@@ -19,6 +19,8 @@
 
 #include "bsml/shared/BSML.hpp"
 #include "UI/AvatarsFlowCoordinator.hpp"
+#include "UI/components/AvatarListTableData.hpp"
+#include "UI/components/AvatarListTableCell.hpp"
 
 static ModInfo modInfo;
 
@@ -32,9 +34,11 @@ Logger& getLogger() {
     return *logger;
 }
 
+int test = 0;
 void logTransform(UnityEngine::Transform* trans, int depth = 1)
 {
-    getLogger().info("%s%s", std::string(depth, '-').c_str(), static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
+    test++;
+    getLogger().info("%d %s%s", test, std::string(depth, '-').c_str(), static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
     for (size_t i = 0; i < trans->get_childCount(); i++)
     {
         logTransform(trans->GetChild(i), depth + 1);
@@ -92,6 +96,8 @@ extern "C" void setup(ModInfo& info) {
 
 extern "C" void load() {
     il2cpp_functions::Init();
+
+    mkpath(vrm_path);
 
     custom_types::Register::AutoRegister(); 
 

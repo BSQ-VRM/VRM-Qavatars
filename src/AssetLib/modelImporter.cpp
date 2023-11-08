@@ -162,7 +162,6 @@ void LoadMesh(aiMesh* mesh, AssetLib::Structure::ModelContext* context)
         for (int i = 0; i < mesh->mNumBones; i++)
         {
             aiBone* aiBone = mesh->mBones[i];
-            getLogger().info("Bone %d: %s", i, aiBone->mName.C_Str());
             
             //Iterate over every vertex that this bone affects
             for (int j = 0; j < aiBone->mNumWeights; j++)
@@ -296,11 +295,9 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform*
         {
             auto filter = nodeTrans->get_gameObject()->AddComponent<UnityEngine::MeshFilter*>();
             auto renderer = nodeTrans->get_gameObject()->AddComponent<UnityEngine::MeshRenderer*>();
-
             filter->set_sharedMesh(unityMesh);
         }
 
-        
         getLogger().info("mesh components setup");
     }
     else
@@ -332,17 +329,15 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
 
     aiNode* aiArmature;
 
-    //We assume that the first skinned mesh loaded by assimp has the armature used by the rest of the model. 
-    //If you need more than one then make a PR that implements that or something
     for (int i = 0; i < scene->mNumMeshes; i++)
     {
         if(scene->mMeshes[i]->mNumBones > 0)
         {
-            aiArmature = scene->mMeshes[i]->mBones[0]->mArmature;
             modelContext->isSkinned = true;
-            getLogger().info("Armature %d: %d", i, scene->mMeshes[i]->mNumBones);
         }
     }
+    aiArmature = scene->mRootNode->mChildren[0];
+    getLogger().info("%s", aiArmature->mName.C_Str());
 
     getLogger().info("skinned, %d", modelContext->isSkinned);
     //If we are skinned we want to process the armature first
@@ -362,7 +357,6 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
         LoadMesh(scene->mMeshes[i], modelContext);
     }
     
-
     for (size_t i = 0; i < modelContext->rootNode->children.size(); i++)
     {
         auto node = modelContext->rootNode->children[i];
@@ -462,10 +456,6 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         auto tex = ReadImage(bufferViews[images[i]["bufferView"].get<uint32_t>()], jsonLength, binFile, i);
         UnityEngine::Texture2D* texture = FileToSprite(("sdcard/ModData/vrm_" + std::to_string(i) + ".png"));
 
-        auto bytes = UnityEngine::ImageConversion::EncodeToPNG(texture);
-
-        writefile(("sdcard/ModData/" + std::to_string(i) + ".png").c_str(), std::string((char*) bytes.begin(), bytes.Length()));
-
         textures.push_back(texture);
     }
     getLogger().info("x7");
@@ -534,10 +524,20 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     }
     getLogger().info("x11");
 
-    auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->armature->bones, modelContext->rootNode->gameObject);
+    auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->nodes, modelContext->rootNode->gameObject);
+    
 
     auto anim = modelContext->rootNode->gameObject->AddComponent<UnityEngine::Animator*>();
     anim->set_avatar(avatar);
+
+    for(int i = 0; i < 50; i++)
+    {
+        auto trans = anim->GetBoneTransform(UnityEngine::HumanBodyBones(i));
+        if(trans != nullptr)
+        {
+            getLogger().info("Bone: %s", static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
+        }
+    }
 
     auto vrik = modelContext->rootNode->gameObject->AddComponent<RootMotion::FinalIK::VRIK*>();
 

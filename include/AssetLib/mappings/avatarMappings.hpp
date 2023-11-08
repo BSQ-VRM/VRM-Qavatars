@@ -3,7 +3,7 @@
 #include "main.hpp"
 #include "AssetLib/arrayUtils.hpp"
 
-#include "vrmIncludes.hpp"
+#include "vrm/vrmIncludes.hpp"
 
 #include "UnityEngine/Avatar.hpp"
 #include "UnityEngine/Transform.hpp"
@@ -31,7 +31,8 @@ namespace VRM::Mappings
         {
             auto humanoid = vrm.humanoid;
             auto hd = CustomHumanDescription();
-
+            
+            //Mecanim names
             static const std::vector<std::string> names = {
                 "Hips",
                 "LeftUpperLeg",
@@ -94,9 +95,87 @@ namespace VRM::Mappings
             for (size_t i = 0; i < humanoid.humanBones.size(); i++)
             {
                 auto& bone = humanoid.humanBones[i];
-                StringW boneName = bones[bone.node]->gameObject->get_name();
-                StringW humanName = names[i];
-                getLogger().info("%s %s", static_cast<std::string>(boneName).c_str(), static_cast<std::string>(humanName).c_str());
+                auto boneType = bone.bone;
+                StringW humanName = "";
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::Hips) humanName = names[0];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftUpperLeg) humanName = names[1];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightUpperLeg) humanName = names[2];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftLowerLeg) humanName = names[3];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightLowerLeg) humanName = names[4];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftFoot) humanName = names[5];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightFoot) humanName = names[6];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::Spine) humanName = names[7];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::Chest) humanName = names[8];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::Neck) humanName = names[9];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::Head) humanName = names[10];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftShoulder) humanName = names[11];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightShoulder) humanName = names[12];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftUpperArm) humanName = names[13];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightUpperArm) humanName = names[14];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftLowerArm) humanName = names[15];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightLowerArm) humanName = names[16];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftHand) humanName = names[17];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightHand) humanName = names[18];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftToes) humanName = names[19];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightToes) humanName = names[20];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftEye) humanName = names[21];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightEye) humanName = names[22];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftThumbProximal) humanName = names[23];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftThumbIntermediate) humanName = names[24];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftThumbDistal) humanName = names[25];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftIndexProximal) humanName = names[26];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftIndexIntermediate) humanName = names[27];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftIndexDistal) humanName = names[28];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftMiddleProximal) humanName = names[29];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftMiddleIntermediate) humanName = names[30];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftMiddleDistal) humanName = names[31];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftRingProximal) humanName = names[32];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftRingIntermediate) humanName = names[33];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftRingDistal) humanName = names[34];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftLittleProximal) humanName = names[35];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftLittleIntermediate) humanName = names[36];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::LeftLittleDistal) humanName = names[37];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightThumbProximal) humanName = names[38];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightThumbIntermediate) humanName = names[39];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightThumbDistal) humanName = names[40];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightIndexProximal) humanName = names[41];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightIndexIntermediate) humanName = names[42];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightIndexDistal) humanName = names[43];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightMiddleProximal) humanName = names[44];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightMiddleIntermediate) humanName = names[45];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightMiddleDistal) humanName = names[46];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightRingProximal) humanName = names[47];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightRingIntermediate) humanName = names[48];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightRingDistal) humanName = names[49];
+
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightLittleProximal) humanName = names[50];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightLittleIntermediate) humanName = names[51];
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightLittleDistal) humanName = names[52];
+
+                StringW boneName = bones[bone.node-1]->gameObject->get_name();
+                getLogger().info("x");
+
+                getLogger().info("bones %s ___ %s", static_cast<std::string>(boneName).c_str(), static_cast<std::string>(humanName).c_str());
                 humanBones[i] = CustomHumanBone(boneName, humanName, UnityEngine::HumanLimit(convertVector(bone.min), convertVector(bone.max), convertVector(bone.center), bone.axisLength, bone.useDefaultValues ? 0 : 1));
             }
 

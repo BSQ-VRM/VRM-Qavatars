@@ -1,4 +1,4 @@
-#include "boneMeshUtility.hpp"
+#include "utils/boneMeshUtility.hpp"
 
 UnityEngine::Mesh* VRMQavatars::BoneMeshUtility::CreateErasedMesh(UnityEngine::Mesh* src, std::vector<int> eraseBoneIndices)
 {

@@ -1,0 +1,17 @@
+<horizontal
+    id='backgroundImage'
+    background="round-rect-panel"
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/RedBrumbler/Quest-BSML-Docs/gh-pages/schema.xsd'
+    pref-height='12'
+    vertical-fit="PreferredSize"
+    pref-width='100'
+    horizontal-fit="PreferredSize"
+    bg-color0='#ffffffff'
+    bg-color1='#ffffffff'
+>
+    <vertical pref-width="62.5" preferred-height="12.0" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" ignore-layout="true" anchor-pos-x="-5">
+        <text id='name' text='---' italics='true' />
+        <text id='sub' text='---' italics='true' />
+    </vertical>
+</horizontal>

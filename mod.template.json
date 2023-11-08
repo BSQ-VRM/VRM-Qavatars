@@ -11,5 +11,10 @@
   "dependencies": [],
   "modFiles": [],
   "libraryFiles": [],
-  "fileCopies": []
+  "fileCopies": [
+    {
+      "name": "shaders.sbund",
+      "destination": "/sdcard/ModData/shaders.sbund"
+    }
+  ]
 }

@@ -1,4 +1,4 @@
-#include "VRMSpringBoneLogic.hpp"
+#include "vrm/VRMSpringBoneLogic.hpp"
 
 UnityEngine::Quaternion VRMQavatars::VRMSpringBoneLogic::ApplyRotation(UnityEngine::Vector3 nextTail)
 {

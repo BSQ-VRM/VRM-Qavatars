@@ -1,5 +1,5 @@
 #pragma once
-#include "vrmIncludes.hpp"
+#include "vrm/vrmIncludes.hpp"
 #include "UnityEngine/Material.hpp"
 #include "AssetLib/shaders/ShaderSO.hpp"
 

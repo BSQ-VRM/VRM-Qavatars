@@ -35,9 +35,9 @@
 #include "assimp/shared/assimp/Importer.hpp"
 #include "assimp/shared/assimp/scene.h"
 
-#include "vrmIncludes.hpp"
+#include "vrm/vrmIncludes.hpp"
 #include "arrayUtils.hpp"
-#include "boneMeshUtility.hpp"
+#include "utils/boneMeshUtility.hpp"
 
 #include "customTypes/VRMSpringBone.hpp"
 

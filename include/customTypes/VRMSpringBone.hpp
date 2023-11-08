@@ -12,7 +12,7 @@
 #include "UnityEngine/Time.hpp"
 #include "UnityEngine/Matrix4x4.hpp"
 
-#include "VRMSpringBoneLogic.hpp"
+#include "vrm/VRMSpringBoneLogic.hpp"
 
 #include <map>
 
