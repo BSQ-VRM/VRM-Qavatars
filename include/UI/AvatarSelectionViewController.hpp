@@ -15,6 +15,7 @@ DECLARE_CLASS_CODEGEN(VRMQavatars::UI::ViewControllers, AvatarSelectionViewContr
     DECLARE_SIMPLE_DTOR();
     DECLARE_OVERRIDE_METHOD(void, DidActivate, GET_FIND_METHOD(&HMUI::ViewController::DidActivate), bool firstActivation, bool addedToHeirarchy, bool screenSystemDisabling);
     DECLARE_INSTANCE_METHOD(void, Refresh);
+    DECLARE_INSTANCE_METHOD(void, Calibrate);
     DECLARE_INSTANCE_METHOD(void, PostParse);
     DECLARE_INSTANCE_METHOD(void, OnSelectAvatar, VRMQavatars::UI::Components::AvatarListTableCell* cell);
     DECLARE_INSTANCE_METHOD(int, GetSelectedCellIdx);

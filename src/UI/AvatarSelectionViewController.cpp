@@ -2,6 +2,7 @@
 
 #include "HMUI/TableView_ScrollPositionType.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"
+#include "UnityEngine/WaitForSeconds.hpp"
 
 #include "bsml/shared/BSML.hpp"
 
@@ -70,19 +71,15 @@ VRMQavatars::VRMDescriptor LoadVRMDescriptor(const std::string& path) {
 }
 
 void VRMQavatars::UI::ViewControllers::AvatarSelectionViewController::DidActivate(bool firstActivation, bool addedToHeirarchy, bool screenSystemEnabling) {
-    getLogger().info("x7");
     if (firstActivation)
     {
-        getLogger().info("x8");
         BSML::parse_and_construct(IncludedAssets::avatarSelectionView_bsml, get_transform(), this);
-        getLogger().info("x9");
     }
     Refresh();
 }
 
 int VRMQavatars::UI::ViewControllers::AvatarSelectionViewController::GetSelectedCellIdx()
 {
-    getLogger().info("x10");
     if (!avatarList || !avatarList->m_CachedPtr.m_value)
         return -1;
     auto tableView = avatarList->tableView;
@@ -96,54 +93,55 @@ int VRMQavatars::UI::ViewControllers::AvatarSelectionViewController::GetSelected
 
 void VRMQavatars::UI::ViewControllers::AvatarSelectionViewController::Refresh()
 {
-    getLogger().info("x11");
     std::vector<std::string> vrms = {};
     if(GetFilesInFolderPath("vrm", vrm_path, vrms))
     {
-        getLogger().info("x12");
         auto& avatarSet = avatarList->avatarDescriptors;
         int row = GetSelectedCellIdx();
-        getLogger().info("x13");
         for(auto& vrm : vrms)
         {
             avatarSet.emplace(LoadVRMDescriptor(vrm));
         }
-        getLogger().info("x14");
-        getLogger().info("x15");
         auto tableView = avatarList->tableView;
-        getLogger().info("x16");
         tableView->ReloadData();
         tableView->RefreshCells(true, true);
         tableView->ScrollToCellWithIdx(std::clamp(row, 0, (int)avatarSet.size() - 1), HMUI::TableView::ScrollPositionType::Center, true);
         tableView->ClearSelection();
-        getLogger().info("x17");
     }
 }
 
 void VRMQavatars::UI::ViewControllers::AvatarSelectionViewController::PostParse()
 {
-    getLogger().info("x18");
     auto tableView = avatarListTableData->tableView;
     auto go = avatarListTableData->get_gameObject();
     Object::DestroyImmediate(avatarListTableData);
-    getLogger().info("x19");
     avatarListTableData = nullptr;
     avatarList = go->AddComponent<VRMQavatars::UI::Components::AvatarListTableData*>();
-    getLogger().info("x20");
     avatarList->tableView = tableView;
     tableView->SetDataSource(reinterpret_cast<HMUI::TableView::IDataSource*>(avatarList), false);
-    getLogger().info("x21");
 
     avatarList->onSelect = std::bind(reinterpret_cast<void (AvatarSelectionViewController::*)(HMUI::TableCell*)>(&AvatarSelectionViewController::OnSelectAvatar), this, std::placeholders::_1);
-    getLogger().info("x22");
 }
 
 void VRMQavatars::UI::ViewControllers::AvatarSelectionViewController::OnSelectAvatar(VRMQavatars::UI::Components::AvatarListTableCell* cell)
 {
-    getLogger().info("x23");
     if (cell)
     {
         auto ctx = AssetLib::ModelImporter::LoadVRM(vrm_path + std::string("/") + cell->descriptor.filePath, AssetLib::ModelImporter::mtoon.ptr());
         VRMQavatars::AvatarManager::SetContext(ctx);
     }
+}
+
+#define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
+
+custom_types::Helpers::Coroutine StartCalibration()
+{
+    co_yield coro(UnityEngine::WaitForSeconds::New_ctor(4.0f));
+    VRMQavatars::AvatarManager::Calibrate();
+    co_return;
+}
+
+void VRMQavatars::UI::ViewControllers::AvatarSelectionViewController::Calibrate()
+{
+    StartCoroutine(coro(StartCalibration()));
 }

@@ -13,14 +13,7 @@ void VRMQavatars::TargetManager::Initialize()
     headTarget = UnityEngine::GameObject::New_ctor();
     headTarget->get_transform()->SetParent(get_transform(), false);
 
-    auto headPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::Head, GlobalNamespace::OVRPlugin::Step::Render);
-	auto headPos = UnityEngine::Vector3(headPose.Position.x, headPose.Position.y, -headPose.Position.z);
-
     vrik->AutoDetectReferences();
-
-    float scale = headPos.y / vrik->references->head->get_position().y;
-
-    get_transform()->set_localScale(UnityEngine::Vector3(scale, scale, scale));
 
     vrik->solver->spine->headTarget = headTarget->get_transform();
     vrik->solver->leftArm->target = leftHandTarget->get_transform();
@@ -58,4 +51,22 @@ void VRMQavatars::TargetManager::Update()
 
     headTarget->get_transform()->set_position(headPos);
     headTarget->get_transform()->set_rotation(headRot);
+}
+
+void VRMQavatars::TargetManager::Calibrate()
+{
+    auto leftHandPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::HandLeft, GlobalNamespace::OVRPlugin::Step::Render);
+	auto leftHandPos = UnityEngine::Vector3(leftHandPose.Position.x, leftHandPose.Position.y, -leftHandPose.Position.z);
+
+    auto rightHandPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::HandRight, GlobalNamespace::OVRPlugin::Step::Render);
+	auto rightHandPos = UnityEngine::Vector3(rightHandPose.Position.x, rightHandPose.Position.y, -rightHandPose.Position.z);
+
+    auto avatarRightHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightHand)->get_position();
+    auto avatarLeftHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftHand)->get_position();
+
+    float readHandAverageY = (leftHandPos.y + rightHandPos.y) / 2.0f;
+	float avatarHandAverageY = (avatarLeftHandPos.y + avatarRightHandPos.y) / 2.0f;
+	float scale = readHandAverageY / avatarHandAverageY;
+
+    get_transform()->set_localScale(UnityEngine::Vector3(scale, scale, scale));
 }

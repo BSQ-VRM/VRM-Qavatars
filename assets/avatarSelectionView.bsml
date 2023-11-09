@@ -2,6 +2,7 @@
     <vertical>
         <horizontal spacing='5'>
             <button text='Refresh' on-click='Refresh' pref-width='40' />
+            <button text='Calibrate' on-click='Calibrate' pref-width='40' />
         </horizontal>
         <stack pref-width='100' horizontal-fit="PreferredSize">
             <list id='avatarListTableData' size-delta-x="100" size-delta-y="76" stick-scrolling="true" show-scrollbar="true" />

@@ -9,6 +9,8 @@
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/Vector3.hpp"
 #include "UnityEngine/Quaternion.hpp"
+#include "UnityEngine/Animator.hpp"
+#include "UnityEngine/HumanBodyBones.hpp"
 
 #include "RootMotion/FinalIK/VRIK.hpp"
 #include "RootMotion/FinalIK/IKSolverVR_Arm.hpp"
@@ -23,6 +25,7 @@
 DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_METHOD(void, Initialize);
     DECLARE_INSTANCE_METHOD(void, Update);
+    DECLARE_INSTANCE_METHOD(void, Calibrate);
 
     DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, leftHandTarget);
     DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, rightHandTarget);
