@@ -12,6 +12,8 @@
 #include "bsml/shared/Helpers/getters.hpp"
 #include "bsml/shared/Helpers/utilities.hpp"
 
+#include "AssetLib/mappings/gLTFImageReader.hpp"
+
 DEFINE_TYPE(VRMQavatars::UI::Components, AvatarListTableCell);
 
 using namespace UnityEngine;
@@ -59,11 +61,13 @@ namespace VRMQavatars::UI::Components
         this->descriptor = descriptor;
         set_name(descriptor.name);
         set_sub(descriptor.author);
+
+        image->set_sprite(BSML::Utilities::LoadSpriteFromTexture(descriptor.thumbnail));
     }
 
     void AvatarListTableCell::set_name(std::string_view nameText)
     {
-        this->name->set_text(nameText);
+        name->set_text(nameText);
     }
 
     void AvatarListTableCell::set_sub(std::string_view subText)

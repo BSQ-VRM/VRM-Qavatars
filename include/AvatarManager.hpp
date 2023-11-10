@@ -10,6 +10,5 @@ namespace VRMQavatars {
         public:
         static AssetLib::Structure::VRM::VRMModelContext* currentContext;
         static void SetContext(AssetLib::Structure::VRM::VRMModelContext* context);
-        static void Calibrate();
     };
 };

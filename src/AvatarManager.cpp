@@ -11,9 +11,3 @@ void VRMQavatars::AvatarManager::SetContext(AssetLib::Structure::VRM::VRMModelCo
     }
     currentContext = context;
 }
-
-void VRMQavatars::AvatarManager::Calibrate()
-{
-    if(currentContext == nullptr) return;
-    currentContext->rootGameObject->GetComponent<VRMQavatars::TargetManager*>()->Calibrate();
-}

@@ -20,6 +20,7 @@ void VRMQavatars::UI::FlowCoordinators::AvatarsFlowCoordinator::Awake() {
 
 void VRMQavatars::UI::FlowCoordinators::AvatarsFlowCoordinator::DidActivate(bool firstActivation, bool addedToHeirarchy, bool screenSystemEnabling) {
     if (!firstActivation) return;
+    showBackButton = true;
 
     SetTitle(il2cpp_utils::newcsstr("VRM Qavatars"), HMUI::ViewController::AnimationType::In);
     ProvideInitialViewControllers(AvatarSelectionViewController, AvatarSettingsViewController, CenterMirrorViewController, nullptr, nullptr);

@@ -23,6 +23,7 @@ DECLARE_CLASS_CODEGEN(VRMQavatars::UI::Components, AvatarListTableCell, HMUI::Ta
 
     DECLARE_INSTANCE_FIELD(TMPro::TextMeshProUGUI*, name);
     DECLARE_INSTANCE_FIELD(TMPro::TextMeshProUGUI*, sub);
+    DECLARE_INSTANCE_FIELD(HMUI::ImageView*, image);
     DECLARE_INSTANCE_FIELD(BSML::Backgroundable*, backgroundImage);
 
     DECLARE_INSTANCE_FIELD(AvatarListTableData*, tableData);

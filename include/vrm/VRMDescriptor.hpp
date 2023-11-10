@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vrm/vrmIncludes.hpp"
-
+#include "UnityEngine/Texture2D.hpp"
 namespace VRMQavatars
 { 
     struct VRMDescriptor
@@ -9,7 +9,9 @@ namespace VRMQavatars
         std::string filePath;
         std::string name;
         std::string author;
+        UnityEngine::Texture2D* thumbnail;
 
+        //TODO: Replace with union?
         std::optional<VRMC_VRM_0_0::Vrm> vrm0;
         std::optional<VRMC_VRM_1_0::Vrm> vrm1;
     };

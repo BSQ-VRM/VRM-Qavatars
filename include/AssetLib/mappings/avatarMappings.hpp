@@ -172,6 +172,8 @@ namespace VRM::Mappings
                 if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightLittleIntermediate) humanName = names[51];
                 if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightLittleDistal) humanName = names[52];
 
+                if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::UpperChest) humanName = names[53];
+
                 StringW boneName = bones[bone.node]->gameObject->get_name();
                 getLogger().info("x");
 

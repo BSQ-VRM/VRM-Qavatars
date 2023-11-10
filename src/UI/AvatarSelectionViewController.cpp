@@ -12,6 +12,8 @@
 #include "AssetLib/modelImporter.hpp"
 #include "AvatarManager.hpp"
 
+#include "AssetLib/mappings/gLTFImageReader.hpp"
+
 #include <fstream>
 
 DEFINE_TYPE(VRMQavatars::UI::ViewControllers, AvatarSelectionViewController);
@@ -50,6 +52,8 @@ VRMQavatars::VRMDescriptor LoadVRMDescriptor(const std::string& path) {
         VRMC_VRM_1_0::from_json(exts["VRMC_vrm"], vrm);
         descriptor.vrm1 = vrm;
     }
+
+    descriptor.thumbnail = VRMQavatars::gLTFImageReader::ReadImageIndex(jsonLength, binFile, descriptor.vrm0.has_value() ? descriptor.vrm0.value().meta.texture : descriptor.vrm1.value().meta.thumbnailImage);
 
     descriptor.filePath = path;
 
@@ -136,8 +140,28 @@ void VRMQavatars::UI::ViewControllers::AvatarSelectionViewController::OnSelectAv
 
 custom_types::Helpers::Coroutine StartCalibration()
 {
-    co_yield coro(UnityEngine::WaitForSeconds::New_ctor(4.0f));
-    VRMQavatars::AvatarManager::Calibrate();
+    float time = 0.0f;
+    auto rootGameObject = VRMQavatars::AvatarManager::currentContext->rootGameObject->get_transform();
+    auto targetManager = rootGameObject->GetComponent<VRMQavatars::TargetManager*>();
+    while(time < 4.0f)
+    {
+        time += UnityEngine::Time::get_deltaTime();
+
+        auto headPos = targetManager->GetPosition(GlobalNamespace::OVRPlugin::Node::Head);
+        auto leftHandPos = targetManager->GetPosition(GlobalNamespace::OVRPlugin::Node::HandLeft);
+        auto rightHandPos = targetManager->GetPosition(GlobalNamespace::OVRPlugin::Node::HandRight);
+
+        headPos.y = 0.0f;
+
+        float yRotation = UnityEngine::Vector2::Angle(UnityEngine::Vector2(leftHandPos.x, leftHandPos.y), UnityEngine::Vector2(rightHandPos.x, rightHandPos.y));
+
+        rootGameObject->set_position(headPos);
+        rootGameObject->set_rotation(UnityEngine::Quaternion::Euler(0.0f, yRotation, 0.0f));
+        rootGameObject->set_localScale(targetManager->GetCalibrateScale());
+
+        co_yield nullptr;
+    }
+    targetManager->Calibrate();
     co_return;
 }
 

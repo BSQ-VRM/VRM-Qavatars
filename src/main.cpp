@@ -58,7 +58,7 @@ custom_types::Helpers::Coroutine Setup()
     AssetLib::ModelImporter::mtoon = data->mToonShader;
 
     auto light = UnityEngine::GameObject::New_ctor()->AddComponent<UnityEngine::Light*>();
-    light->set_intensity(1000.0f);
+    light->set_intensity(1.0f);
     static auto setType = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, UnityEngine::LightType>("UnityEngine.Light::set_type");
     setType(light, UnityEngine::LightType::Directional);
 

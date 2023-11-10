@@ -342,7 +342,16 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
             modelContext->isSkinned = true;
         }
     }
-    aiArmature = scene->mRootNode->mChildren[0];
+    for (size_t i = 0; i < scene->mRootNode->mNumChildren; i++)
+    {
+        auto node = scene->mRootNode->mChildren[0];
+        if(node->mNumMeshes == 0)
+        {
+            aiArmature = node;
+            break;
+        }
+    }
+    
     getLogger().info("%s", aiArmature->mName.C_Str());
 
     getLogger().info("skinned, %d", modelContext->isSkinned);
@@ -384,23 +393,13 @@ ArrayW<uint8_t> ReadImage(nlohmann::json bufferView, uint32_t jsonLength, std::i
     binFile.seekg((28 + jsonLength) + start);
     binFile.read(thing.data(), size);
 
-    FILE* p;
-    p = fopen(("sdcard/ModData/vrm_" + std::to_string(x) + ".png").c_str(), "wb");
-    fwrite(thing.data(), size, 1, p);
-    ::fclose(p);
+    auto ret = ArrayW<uint8_t>(thing.size());
+    for (size_t i = 0; i < thing.size(); i++)
+    {
+        ret[i] = thing.data()[i];
+    }
 
-    return ArrayW<uint8_t>(reinterpret_cast<uint8_t*>(thing.data()));
-}
-
-UnityEngine::Texture2D* FileToSprite(std::string filePath)
-{
-    std::ifstream instream(filePath, std::ios::in | std::ios::binary);
-    std::vector<uint8_t> data((std::istreambuf_iterator<char>(instream)), std::istreambuf_iterator<char>());
-    Array<uint8_t>* bytes = il2cpp_utils::vectorToArray(data);
-    UnityEngine::Texture2D* texture = UnityEngine::Texture2D::New_ctor(0, 0, UnityEngine::TextureFormat::RGBA32, false, false);
-    if (UnityEngine::ImageConversion::LoadImage(texture, bytes, false))
-        return texture;
-    return nullptr;
+    return ret;
 }
 
 std::vector<UnityEngine::Transform*> Ancestors(UnityEngine::Transform* root)
@@ -460,7 +459,9 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     {
         getLogger().info("x6");
         auto tex = ReadImage(bufferViews[images[i]["bufferView"].get<uint32_t>()], jsonLength, binFile, i);
-        UnityEngine::Texture2D* texture = FileToSprite(("sdcard/ModData/vrm_" + std::to_string(i) + ".png"));
+        //UnityEngine::Texture2D* texture = FileToSprite(("sdcard/ModData/vrm_" + std::to_string(i) + ".png"));
+        UnityEngine::Texture2D* texture = UnityEngine::Texture2D::New_ctor(0, 0, UnityEngine::TextureFormat::RGBA32, false, false);
+        UnityEngine::ImageConversion::LoadImage(texture, tex, false);
 
         textures.push_back(texture);
     }
@@ -550,7 +551,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     targetManager->vrik = vrik;
     targetManager->Initialize();
 
-    auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Head);
+    auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Neck);
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
