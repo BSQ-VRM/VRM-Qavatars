@@ -1,5 +1,5 @@
 <bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/RedBrumbler/Quest-BSML-Docs/gh-pages/schema.xsd'>
-    <vertical>
+    <vertical vertical-fit="PreferredSize" spacing="2">
         <slider-setting value="leftHandRotX" bind-value="true" apply-on-change="true" text='leftHandRotX' min="-90" max="90" increment="1"/>
         <slider-setting value="leftHandRotY" bind-value="true" apply-on-change="true" text='leftHandRotY' min="-90" max="90" increment="1"/>
         <slider-setting value="leftHandRotZ" bind-value="true" apply-on-change="true" text='leftHandRotZ' min="-90" max="90" increment="1"/>

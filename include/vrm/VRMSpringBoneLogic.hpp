@@ -20,6 +20,8 @@
 #include "GlobalNamespace/OVRPlugin_Step.hpp"
 #include "GlobalNamespace/OVRPose.hpp"
 
+#include "vrm/vrmColliders.hpp"
+
 namespace VRMQavatars
 {
     class VRMSpringBoneLogic
@@ -37,7 +39,8 @@ namespace VRMQavatars
         }
         UnityEngine::Quaternion ApplyRotation(UnityEngine::Vector3 nextTail);
         void SetRadius(float radius);
-        void Update(UnityEngine::Transform* center, float stiffnessForce, float dragForce, UnityEngine::Vector3 external);
+        void Update(UnityEngine::Transform* center, float stiffnessForce, float dragForce, UnityEngine::Vector3 external, std::vector<SphereColliderLogic> colliders);
+        UnityEngine::Vector3 Collision(std::vector<SphereColliderLogic> colliders, UnityEngine::Vector3 nextTail);
 
         UnityEngine::Vector3 GetTail();
         UnityEngine::Quaternion GetParentRotation();

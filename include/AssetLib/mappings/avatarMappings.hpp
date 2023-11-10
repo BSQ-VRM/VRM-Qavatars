@@ -29,9 +29,11 @@ namespace VRM::Mappings
         }
         static UnityEngine::Avatar* CreateAvatar(VRMC_VRM_0_0::Vrm vrm, std::vector<AssetLib::Structure::Node*> bones, UnityEngine::GameObject* root)
         {
+            getLogger().info("%lu", bones.size());
+            getLogger().info("mappings x1");
             auto humanoid = vrm.humanoid;
             auto hd = CustomHumanDescription();
-            
+            getLogger().info("mappings x2");
             //Mecanim names
             static const std::vector<std::string> names = {
                 "Hips",
@@ -89,11 +91,12 @@ namespace VRM::Mappings
                 "Right Little Distal",
                 "UpperChest",
             };
-
+            getLogger().info("mappings x3");
             ArrayW<CustomHumanBone> humanBones(humanoid.humanBones.size());
 
             for (size_t i = 0; i < humanoid.humanBones.size(); i++)
             {
+                getLogger().info("mappings x4");
                 auto& bone = humanoid.humanBones[i];
                 auto boneType = bone.bone;
                 StringW humanName = "";
@@ -173,22 +176,28 @@ namespace VRM::Mappings
                 if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::RightLittleDistal) humanName = names[52];
 
                 if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::UpperChest) humanName = names[53];
-
+                getLogger().info("mappings x5");
+                if(bone.node >= bones.size() || bones[bone.node]->gameObject == nullptr) continue;
+                getLogger().info("mappings x5.5");
                 StringW boneName = bones[bone.node]->gameObject->get_name();
                 getLogger().info("x");
-
+                getLogger().info("mappings x6");
                 getLogger().info("bones %s ___ %s", static_cast<std::string>(boneName).c_str(), static_cast<std::string>(humanName).c_str());
                 humanBones[i] = CustomHumanBone(boneName, humanName, UnityEngine::HumanLimit(convertVector(bone.min), convertVector(bone.max), convertVector(bone.center), bone.axisLength, bone.useDefaultValues ? 0 : 1));
+                getLogger().info("mappings x7");
             }
-
+            getLogger().info("mappings x8");
             auto allObjs = root->GetComponentsInChildren<UnityEngine::Transform*>(true);
             ArrayW<UnityEngine::SkeletonBone> skeletonBones(allObjs.size());
+            getLogger().info("mappings x9");
 
             for (size_t i = 0; i < allObjs.size(); i++)
             {
+                getLogger().info("mappings x10");
                 auto& obj = allObjs[i];
                 skeletonBones[i] = UnityEngine::SkeletonBone();
                 skeletonBones[i].name = obj->get_gameObject()->get_name();
+                getLogger().info("mappings x11");
                 if(obj->get_parent() != nullptr)
                 {
                     skeletonBones[i].parentName = obj->get_parent()->get_gameObject()->get_name();
@@ -197,11 +206,13 @@ namespace VRM::Mappings
                 {
                     skeletonBones[i].parentName = "";
                 }
+                getLogger().info("mappings x12");
                 skeletonBones[i].position = obj->get_localPosition();
                 skeletonBones[i].rotation = obj->get_localRotation();
                 skeletonBones[i].scale = obj->get_localScale();
+                getLogger().info("mappings x3");
             }
-            
+            getLogger().info("mappings x14");
             hd.human = humanBones;
             hd.skeleton = skeletonBones;
             hd.m_ArmStretch = humanoid.armStretch;
@@ -213,9 +224,10 @@ namespace VRM::Mappings
             hd.m_LegTwist = humanoid.lowerLegTwist;
             hd.m_UpperLegTwist = humanoid.upperLegTwist;
             hd.m_RootMotionBoneName = "";
-
+            getLogger().info("mappings x15");
             try
             {
+                getLogger().info("mappings x16");
                 static auto buildHumanoid = il2cpp_utils::resolve_icall<UnityEngine::Avatar*, UnityEngine::GameObject*, CustomHumanDescription*>("UnityEngine.AvatarBuilder::BuildHumanAvatarInternal_Injected");
                 auto ava = buildHumanoid(root, &hd);
                 return ava;
@@ -224,6 +236,7 @@ namespace VRM::Mappings
             {
                 getLogger().error("%s", e.what());
             }
+            getLogger().info("mappings x14");
             return nullptr;
         }
     };

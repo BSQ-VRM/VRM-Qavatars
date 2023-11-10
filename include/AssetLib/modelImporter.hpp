@@ -39,6 +39,7 @@
 #include "vrm/vrmIncludes.hpp"
 #include "arrayUtils.hpp"
 #include "utils/boneMeshUtility.hpp"
+#include "AssetLib/mappings/gLTFImageReader.hpp"
 
 #include "customTypes/VRMSpringBone.hpp"
 

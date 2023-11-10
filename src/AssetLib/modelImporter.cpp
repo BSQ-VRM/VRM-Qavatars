@@ -75,9 +75,9 @@ int IndexForName(const char* name, AssetLib::Structure::ModelContext* context)
     return -1;
 }
 
-void LoadMesh(aiMesh* mesh, AssetLib::Structure::ModelContext* context)
+AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::ModelContext* context, std::optional<AssetLib::Structure::InterMeshData> existingMesh = std::nullopt)
 {
-    auto meshData = AssetLib::Structure::InterMeshData();
+    auto meshData = existingMesh.has_value() ? existingMesh.value() : AssetLib::Structure::InterMeshData();
     for (size_t i = 0; i < mesh->mNumVertices; i++)
     {
         auto vert = mesh->mVertices[i];
@@ -137,10 +137,12 @@ void LoadMesh(aiMesh* mesh, AssetLib::Structure::ModelContext* context)
         }
     }
 
-    meshData.materialIdx = mesh->mMaterialIndex;
+    meshData.vertexCounts.push_back(mesh->mNumVertices);
+    meshData.materialIdxs.push_back(mesh->mMaterialIndex);
 
     meshData.indices.push_back(std::vector<int>(0));
-    meshData.topology.push_back(UnityEngine::MeshTopology::Triangles);
+    meshData.topology.push_back(UnityEngine::MeshTopology::Triangles); //TODO
+
     if (mesh->mFaces != nullptr)
     {
         for (size_t i = 0; i < mesh->mNumFaces; i++)
@@ -148,13 +150,22 @@ void LoadMesh(aiMesh* mesh, AssetLib::Structure::ModelContext* context)
             auto face = mesh->mFaces[i];
             for (size_t x = 2; x < face.mNumIndices; x--)
             {
-                meshData.indices[0].emplace_back(face.mIndices[x]);
+                meshData.indices[meshData.indices.size()-1].emplace_back(face.mIndices[x]);
             }
         }
     }
     if(context->isSkinned)
     {
-        meshData.boneWeights = std::vector<AssetLib::SkinTypes::BoneWeightProxy>(mesh->mNumVertices);
+        int start = 0;
+        if(meshData.boneWeights.size() == 0)
+        {
+            meshData.boneWeights = std::vector<AssetLib::SkinTypes::BoneWeightProxy>(mesh->mNumVertices);
+        }
+        else
+        {
+            start = meshData.boneWeights.size();
+            meshData.boneWeights.resize(start + mesh->mNumVertices);
+        }
 
         //i: bone
         //j: current vertexWeight in bone
@@ -170,8 +181,7 @@ void LoadMesh(aiMesh* mesh, AssetLib::Structure::ModelContext* context)
             {
                 aiVertexWeight weight = aiBone->mWeights[j];
 
-                                 //save for submeshing?
-                uint VertexID = /*m_Entries[MeshIndex].BaseVertex*/ + weight.mVertexId;
+                uint VertexID = start + weight.mVertexId;
 
                 float Weight = weight.mWeight;
 
@@ -179,15 +189,24 @@ void LoadMesh(aiMesh* mesh, AssetLib::Structure::ModelContext* context)
             }
         }
     }
-
-    //TODO: Do we need to sort vertex weights? Or does assimp do this for us.
-
     //TODO: Load in animations/blendshapes. Do we do this now or as a postprocess step?
 
-    auto node = new AssetLib::Structure::Node(mesh->mName.C_Str(), {}, context->nodes.front(), false, false, UnityEngine::Vector3::get_zero(), meshData);
+    return meshData;
 
-    context->nodes.push_back(node);
-    context->rootNode->children.push_back(node);
+    /*if(existingMesh.has_value())
+    {
+        existingNode->mesh.value().push_back(meshData);
+        return existingNode;
+    }
+    else
+    {
+        auto node = new AssetLib::Structure::Node(mesh->mName.C_Str(), {}, context->nodes.front(), false, false, UnityEngine::Vector3::get_zero(), std::vector<AssetLib::Structure::InterMeshData> { meshData } );
+
+        context->nodes.push_back(node);
+        context->rootNode->children.push_back(node);
+
+        return node;
+    }*/
 }
 
 void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform* rootTransform, AssetLib::Structure::ModelContext* context)
@@ -237,7 +256,7 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform*
         for (int i = 0; i < mesh.indices.size(); i++)
         {
             unityMesh->SetIndices(ArrayW<int>(ArrayUtils::vector2ArrayW(mesh.indices[i])), mesh.topology[i], i, false, (int)baseVertex);
-            //baseVertex += getVertexCount(mesh.primitives[i], model);
+            baseVertex += mesh.vertexCounts[i];
         }
         unityMesh->RecalculateBounds();
 
@@ -273,7 +292,7 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform*
             for (size_t i = 0; i < armature.bones.size(); i++)
             {
                 bindPoses[i] = armature.bones[i]->gameObject->get_transform()->get_worldToLocalMatrix() * renderer->get_transform()->get_localToWorldMatrix();
-            }
+            } 
 
             getLogger().info("%lu", convertedBW.size());
             getLogger().info("%lu", armature.bones.size());
@@ -311,9 +330,24 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform*
     }
 }
 
+AssetLib::Structure::Node* CreateNodeFromMesh(AssetLib::Structure::InterMeshData meshData, std::string name, AssetLib::Structure::Node* parent, AssetLib::Structure::ModelContext* context)
+{
+    auto node = new AssetLib::Structure::Node(name, {}, context->nodes.front(), false, false, UnityEngine::Vector3::get_zero(), meshData );
+
+    context->nodes.push_back(node);
+    context->rootNode->children.push_back(node);
+
+    return node;
+}
+
 UnityEngine::Vector3 convertVector(VRMC_VRM_0_0::Vector3 vec)
 {
     return UnityEngine::Vector3(vec.x, vec.y, vec.z);
+}
+
+std::string removeBakedFromMeshName(std::string name)
+{
+    return name.substr(0, name.find('.'));
 }
         
 AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::string& filename, bool loadMaterials)
@@ -342,10 +376,13 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
             modelContext->isSkinned = true;
         }
     }
+
+    //TODO: Improve this logic
     for (size_t i = 0; i < scene->mRootNode->mNumChildren; i++)
     {
-        auto node = scene->mRootNode->mChildren[0];
-        if(node->mNumMeshes == 0)
+        auto node = scene->mRootNode->mChildren[i];
+        getLogger().info("%s %d", node->mName.C_Str(), node->mNumChildren);
+        if(node->mNumChildren > 0 && std::string(node->mName.C_Str()) != "Face")
         {
             aiArmature = node;
             break;
@@ -369,7 +406,36 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
 
     for (size_t i = 0; i < scene->mNumMeshes; i++)
     {
-        LoadMesh(scene->mMeshes[i], modelContext);
+        getLogger().info("%s", removeBakedFromMeshName(std::string(scene->mMeshes[i]->mName.C_Str())).c_str());
+    }
+    
+
+    AssetLib::Structure::Node* lastLoadedMesh;
+    for (size_t i = 0; i < scene->mNumMeshes; i++)
+    {
+        if(i != 0)
+        {
+            auto lastNode = scene->mMeshes[i-1];
+            getLogger().info("%s %s", removeBakedFromMeshName(std::string(lastNode->mName.C_Str())).c_str(), removeBakedFromMeshName(std::string(scene->mMeshes[i]->mName.C_Str())).c_str());
+            if(removeBakedFromMeshName(std::string(lastNode->mName.C_Str())) == removeBakedFromMeshName(std::string(scene->mMeshes[i]->mName.C_Str())))
+            {
+                if(lastLoadedMesh != nullptr)
+                {
+                    auto mesh = scene->mMeshes[i];
+                    lastLoadedMesh->mesh = LoadMesh(mesh, modelContext, lastLoadedMesh->mesh.value());
+                }
+            }
+            else
+            {
+                auto mesh = scene->mMeshes[i];
+                lastLoadedMesh = CreateNodeFromMesh(LoadMesh(mesh, modelContext), mesh->mName.C_Str(), modelContext->rootNode, modelContext);
+            }
+        }
+        else
+        {
+            auto mesh = scene->mMeshes[i];
+            lastLoadedMesh = CreateNodeFromMesh(LoadMesh(mesh, modelContext), mesh->mName.C_Str(), modelContext->rootNode, modelContext);
+        }
     }
     
     for (size_t i = 0; i < modelContext->rootNode->children.size(); i++)
@@ -382,24 +448,6 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     }
 
     return modelContext;
-}
-
-ArrayW<uint8_t> ReadImage(nlohmann::json bufferView, uint32_t jsonLength, std::ifstream& binFile, int x)
-{
-    uint32_t size = bufferView["byteLength"].get<uint32_t>();
-    uint32_t start = bufferView["byteOffset"].get<uint32_t>();
-    std::string thing;
-    thing.resize(size);
-    binFile.seekg((28 + jsonLength) + start);
-    binFile.read(thing.data(), size);
-
-    auto ret = ArrayW<uint8_t>(thing.size());
-    for (size_t i = 0; i < thing.size(); i++)
-    {
-        ret[i] = thing.data()[i];
-    }
-
-    return ret;
 }
 
 std::vector<UnityEngine::Transform*> Ancestors(UnityEngine::Transform* root)
@@ -449,23 +497,11 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     //Generate Textures
 
-    auto images = doc["images"];
-    auto bufferViews = doc["bufferViews"];
-
-    getLogger().info("x5");
-
     std::vector<UnityEngine::Texture2D*> textures;
-    for (size_t i = 0; i < images.size(); i++)
+    for (size_t i = 0; i < doc["images"].size(); i++)
     {
-        getLogger().info("x6");
-        auto tex = ReadImage(bufferViews[images[i]["bufferView"].get<uint32_t>()], jsonLength, binFile, i);
-        //UnityEngine::Texture2D* texture = FileToSprite(("sdcard/ModData/vrm_" + std::to_string(i) + ".png"));
-        UnityEngine::Texture2D* texture = UnityEngine::Texture2D::New_ctor(0, 0, UnityEngine::TextureFormat::RGBA32, false, false);
-        UnityEngine::ImageConversion::LoadImage(texture, tex, false);
-
-        textures.push_back(texture);
+        textures.push_back(VRMQavatars::gLTFImageReader::ReadImageIndex(jsonLength, binFile, i));
     }
-    getLogger().info("x7");
 
     //Generate VRM Materials
 
@@ -523,10 +559,15 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         auto node = modelContext->nodes[i];
         if(node->mesh.has_value() && node->processed)
         {
-            getLogger().info("x10");
-            auto mesh = modelContext->nodes[i]->mesh.value();
-            auto material = materials[mesh.materialIdx];
-            node->gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>()->set_sharedMaterial(material);
+            auto mesh = node->mesh.value();
+            ArrayW<UnityEngine::Material*> matArray = ArrayW<UnityEngine::Material*>(mesh.materialIdxs.size());
+            for (size_t i = 0; i < mesh.materialIdxs.size(); i++)
+            {
+                matArray[i] = materials[mesh.materialIdxs[i]];
+            }
+            
+            auto renderer = node->gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
+            renderer->set_sharedMaterials(matArray);
         }
     }
     getLogger().info("x11");
@@ -583,6 +624,26 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
     secondary->get_transform()->SetParent(modelContext->rootGameObject->get_transform());
 
+    auto colliders = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>();
+    for (auto colliderGroup : vrm.secondaryAnimation.colliderGroups)
+    {
+        auto node = modelContext->nodes[colliderGroup.node]->gameObject;
+        if (node)
+        {
+            auto vrmGroup = node->AddComponent<VRMQavatars::VRMSpringBoneColliderGroup*>();
+            for (auto colliderRef : colliderGroup.colliders)
+            {
+                vrmGroup->colliders.push_back(SphereCollider(convertVector(colliderRef.offset), colliderRef.radius));
+            }
+            colliders.push_back(vrmGroup);
+        }
+        else
+        {
+            getLogger().error("Broken collider group");
+            break;
+        }
+    }
+    
     auto springs = vrm.secondaryAnimation.boneGroups;
     for (size_t i = 0; i < springs.size(); i++)
     {
@@ -602,15 +663,17 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 		springBone->gravityPower = springRef.gravityPower;
 		springBone->hitRadius = springRef.hitRadius;
 		springBone->stiffnessForce = springRef.stiffiness;
-		/*if (glTF_VRM_SecondaryAnimationGroup.colliderGroups != null && glTF_VRM_SecondaryAnimationGroup.colliderGroups.Any<int>())
+		if ( vrm.secondaryAnimation.colliderGroups.size() > 0)
 		{
-			vrmspringBone2.ColliderGroups = new VRMSpringBoneColliderGroup[glTF_VRM_SecondaryAnimationGroup.colliderGroups.Length];
-			for (int j = 0; j < glTF_VRM_SecondaryAnimationGroup.colliderGroups.Length; j++)
+			springBone->colliderGroups = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>(springRef.colliderGroups.size());
+			for (int j = 0; j < springRef.colliderGroups.size(); j++)
 			{
-				int num2 = glTF_VRM_SecondaryAnimationGroup.colliderGroups[j];
-				vrmspringBone2.ColliderGroups[j] = list[num2];
+                auto group = springRef.colliderGroups[j];
+                
+                auto groupComp = secondary->get_gameObject()->AddComponent<VRMQavatars::VRMSpringBoneColliderGroup*>();
+				springBone->colliderGroups[j] = groupComp;   
 			}
-		}*/
+		}
 		ArrayW<UnityEngine::Transform*> list2 = ArrayW<UnityEngine::Transform*>(springRef.bones.size());
         for (size_t i = 0; i < springRef.bones.size(); i++)
         {

@@ -13,6 +13,7 @@
 #include "UnityEngine/Matrix4x4.hpp"
 
 #include "vrm/VRMSpringBoneLogic.hpp"
+#include "customTypes/VRMSpringBoneColliderGroup.hpp"
 
 #include <map>
 
@@ -37,6 +38,7 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, VRMSpringBone, UnityEngine::MonoBehaviour,
 
     public:
     std::vector<VRMQavatars::VRMSpringBoneLogic*> verlet;
+    std::vector<VRMQavatars::VRMSpringBoneColliderGroup*> colliderGroups;
     std::map<UnityEngine::Transform*, UnityEngine::Quaternion> initialLocalRotationMap;
 
 )

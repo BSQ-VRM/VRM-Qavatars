@@ -10,10 +10,10 @@
     bg-color0='#ffffffff'
     bg-color1='#ffffffff'
 >
-    <stack pref-width="9" preferred-height="9" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" ignore-layout="true" anchor-pos-x="0">
+    <stack pref-width="8" preferred-height="8" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" ignore-layout="true" anchor-pos-x="-20">
         <image id='image' preserve-aspect="true" skew='0' />
     </stack>
-    <vertical pref-width="50" preferred-height="10.0" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" ignore-layout="true" anchor-pos-x="10">
+    <vertical pref-width="50" preferred-height="10.0" horizontal-fit="PreferredSize" vertical-fit="PreferredSize" ignore-layout="true" anchor-pos-x="15">
         <text id='name' text='---' italics='true' />
         <text id='sub' text='---' italics='true' />
     </vertical>

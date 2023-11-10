@@ -14,6 +14,8 @@ void VRMQavatars::TargetManager::Initialize()
     headTarget->get_transform()->SetParent(get_transform(), false);
 
     vrik->AutoDetectReferences();
+
+    vrik->set_enabled(false);
 }
 
 void VRMQavatars::TargetManager::Update()
@@ -42,7 +44,7 @@ void VRMQavatars::TargetManager::Update()
     rightHandTarget->get_transform()->set_rotation(rightHandRot);
 
     rightHandTarget->get_transform()->Translate(UnityEngine::Vector3(0.02f, 0.04f, -0.13f));
-    //rightHandTarget->get_transform()->Rotate(UnityEngine::Vector3(55.0f, 0.0f, -90.0f));
+    rightHandTarget->get_transform()->Rotate(UnityEngine::Vector3(55.0f, 0.0f, -90.0f));
 
     headTarget->get_transform()->set_position(headPos);
     headTarget->get_transform()->set_rotation(headRot);
@@ -50,6 +52,9 @@ void VRMQavatars::TargetManager::Update()
 
 void VRMQavatars::TargetManager::Calibrate()
 {
+    get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
+    get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
+    get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
 	float scale = GetCalibrateScale();
 
     get_transform()->set_localScale(UnityEngine::Vector3(scale, scale, scale));
@@ -62,17 +67,19 @@ void VRMQavatars::TargetManager::Calibrate()
     vrik->Initiate();
 
     intialized = true;
+    vrik->set_enabled(true);
 }
 
 UnityEngine::Vector3 VRMQavatars::TargetManager::GetPosition(GlobalNamespace::OVRPlugin::Node node)
 {
-    auto pose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::HandLeft, GlobalNamespace::OVRPlugin::Step::Render);
+    auto pose = GlobalNamespace::OVRPlugin::GetNodePose(node, GlobalNamespace::OVRPlugin::Step::Render);
 	auto pos = UnityEngine::Vector3(pose.Position.x, pose.Position.y, -pose.Position.z);
     return pos;
 }
 
 float VRMQavatars::TargetManager::GetCalibrateScale()
 {
+    auto curScale = std::min(get_transform()->get_localScale().y, 0.1f);
     auto leftHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandLeft);
 	auto rightHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandRight);
 

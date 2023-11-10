@@ -2,7 +2,7 @@
 
 #include "HMUI/TableView_ScrollPositionType.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"
-#include "UnityEngine/WaitForSeconds.hpp"
+#include "UnityEngine/WaitForEndOfFrame.hpp"
 
 #include "bsml/shared/BSML.hpp"
 
@@ -153,13 +153,13 @@ custom_types::Helpers::Coroutine StartCalibration()
 
         headPos.y = 0.0f;
 
-        float yRotation = UnityEngine::Vector2::Angle(UnityEngine::Vector2(leftHandPos.x, leftHandPos.y), UnityEngine::Vector2(rightHandPos.x, rightHandPos.y));
+        float yRotation = UnityEngine::Vector2::Angle(UnityEngine::Vector2(leftHandPos.x, leftHandPos.z), UnityEngine::Vector2(rightHandPos.x, rightHandPos.z)) + 90.0f;
 
         rootGameObject->set_position(headPos);
         rootGameObject->set_rotation(UnityEngine::Quaternion::Euler(0.0f, yRotation, 0.0f));
-        rootGameObject->set_localScale(targetManager->GetCalibrateScale());
+        //rootGameObject->set_localScale(targetManager->GetCalibrateScale());
 
-        co_yield nullptr;
+        co_yield reinterpret_cast<System::Collections::IEnumerator*>(CRASH_UNLESS(UnityEngine::WaitForEndOfFrame::New_ctor()));
     }
     targetManager->Calibrate();
     co_return;

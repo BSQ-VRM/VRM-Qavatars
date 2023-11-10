@@ -118,25 +118,22 @@ void VRMQavatars::VRMSpringBone::UpdateProcess(float deltaTime)
 		}
 		Setup(false);
 	}
-	/*this.m_colliders.Clear();
-	if (this.ColliderGroups != null)
+    std::vector<SphereColliderLogic> colliders;
+	for (auto vrmspringBoneColliderGroup : colliderGroups)
 	{
-		foreach (VRMSpringBoneColliderGroup vrmspringBoneColliderGroup in this.ColliderGroups)
+		if (vrmspringBoneColliderGroup != nullptr)
 		{
-			if (vrmspringBoneColliderGroup != null)
+			for (auto sphereCollider : vrmspringBoneColliderGroup->colliders)
 			{
-				foreach (VRMSpringBoneColliderGroup.SphereCollider sphereCollider in vrmspringBoneColliderGroup.Colliders)
-				{
-					this.m_colliders.Add(new VRMSpringBone.SphereCollider(vrmspringBoneColliderGroup.transform, sphereCollider));
-				}
+				colliders.push_back(SphereColliderLogic(vrmspringBoneColliderGroup->get_transform(), sphereCollider));
 			}
 		}
-	}*/
+	}
 	float num = stiffnessForce * deltaTime;
 	UnityEngine::Vector3 vector = gravityDir * (gravityPower * deltaTime);
 	for (auto& logic : verlet)
 	{
 		logic->SetRadius(hitRadius);
-		logic->Update(center, num, dragForce, vector);
+		logic->Update(center, num, dragForce, vector, colliders);
 	}
 }
