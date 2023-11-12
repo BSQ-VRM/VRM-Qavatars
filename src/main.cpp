@@ -10,6 +10,11 @@
 #include "UnityEngine/AssetBundleRequest.hpp"
 #include "UnityEngine/Light.hpp"
 #include "UnityEngine/LightType.hpp"
+#include "UnityEngine/Camera.hpp"
+#include "UnityEngine/Resources.hpp"
+
+#include "GlobalNamespace/BloomPrePass.hpp"
+#include "GlobalNamespace/ImageEffectController.hpp"
 
 #include "AssetLib/shaders/shaderLoader.hpp"
 #include "AssetLib/shaders/ShaderSO.hpp"
@@ -18,10 +23,14 @@
 #include "customTypes/TargetManager.hpp"
 
 #include "bsml/shared/BSML.hpp"
+#include "bsml/shared/Helpers/utilities.hpp"
+#include "bsml/shared/BSML/FloatingScreen/FloatingScreen.hpp"
+
 #include "UI/AvatarsFlowCoordinator.hpp"
 #include "UI/components/AvatarListTableData.hpp"
 #include "UI/components/AvatarListTableCell.hpp"
 
+#include "questui/shared/ArrayUtil.hpp"
 static ModInfo modInfo;
 
 Configuration& getConfig() {
@@ -34,10 +43,25 @@ Logger& getLogger() {
     return *logger;
 }
 
+UnityEngine::Sprite* GetBGSprite(std::string str)
+{
+    return QuestUI::ArrayUtil::First(UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Sprite*>(),
+                                     [str](UnityEngine::Sprite* x) {
+                                         return x->get_name() == str;
+                                     });
+}
+
+UnityEngine::Material* GetBGMat(std::string str)
+{
+    return QuestUI::ArrayUtil::First(UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Material*>(),
+                                     [str](UnityEngine::Material* x) {
+                                         return x->get_name() == str;
+                                     });
+}
+
 #define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
 
-custom_types::Helpers::Coroutine Setup()
-{
+custom_types::Helpers::Coroutine Setup() {
     getLogger().info("Starting Load!");
 
     UnityEngine::AssetBundle* ass;
@@ -63,7 +87,29 @@ custom_types::Helpers::Coroutine Setup()
     setType(light, UnityEngine::LightType::Directional);
 
     UnityEngine::GameObject::DontDestroyOnLoad(light->get_gameObject());
-    
+
+    auto mirror = UnityEngine::GameObject::Instantiate(data->mirror);
+
+    auto screen = BSML::FloatingScreen::CreateFloatingScreen({25.0f, 44.44f}, true, {0.0f, 1.5f, 2.0f}, UnityEngine::Quaternion::Euler(15.0f, 180.0f, 0.0f), 0.0f, true);
+    mirror->get_transform()->SetParent(screen->get_transform(), false);
+    UnityEngine::GameObject::DontDestroyOnLoad(screen->get_gameObject());
+    mirror->get_transform()->set_localScale({25.0f, 25.0f, 25.0f});
+    mirror->get_transform()->set_localPosition({0.0f, 0.0f, 0.05f});
+
+    auto camera = screen->GetComponentInChildren<UnityEngine::Camera*>();
+
+    auto getBgSprite = GetBGSprite("RoundRect10BorderFade");
+
+    for(auto x : screen->GetComponentsInChildren<HMUI::ImageView*>()) {
+        if(!x)
+            continue;
+        x->skew = 0.0f;
+        x->set_overrideSprite(nullptr);
+        x->set_sprite(getBgSprite);
+        x->set_material(GetBGMat("UINoGlow"));
+        x->set_color({1.0f, 1.0f, 1.0f, 1.0f});
+    }
+
     co_return;
 }
  

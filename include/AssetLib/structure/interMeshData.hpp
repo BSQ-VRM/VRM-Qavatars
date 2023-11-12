@@ -35,9 +35,10 @@ namespace AssetLib::Structure
         std::vector<int> materialIdxs;
 
         //Blend Shapes
-        /*std::vector<std::vector<UnityEngine::Vector3>> morphTargetVertices;
+        std::vector<std::string> morphTargetNames;
+        std::vector<std::vector<UnityEngine::Vector3>> morphTargetVertices;
         std::vector<std::vector<UnityEngine::Vector3>> morphTargetNormals;
-        std::vector<std::vector<UnityEngine::Vector3>> morphTargetTangents;*/
+        std::vector<std::vector<UnityEngine::Vector3>> morphTargetTangents;
 
         std::vector<UnityEngine::MeshTopology> topology;
         std::vector<std::vector<int>> indices;

@@ -1,5 +1,7 @@
 #include "customTypes/TargetManager.hpp"
 
+#include <customTypes/WristTwistFix.hpp>
+
 DEFINE_TYPE(VRMQavatars, TargetManager);
 
 void VRMQavatars::TargetManager::Initialize()
@@ -17,7 +19,6 @@ void VRMQavatars::TargetManager::Initialize()
 
     vrik->set_enabled(false);
 }
-
 void VRMQavatars::TargetManager::Update()
 {
     if(!intialized)
@@ -43,11 +44,22 @@ void VRMQavatars::TargetManager::Update()
     rightHandTarget->get_transform()->set_position(rightHandPos);
     rightHandTarget->get_transform()->set_rotation(rightHandRot);
 
-    rightHandTarget->get_transform()->Translate(UnityEngine::Vector3(0.02f, 0.04f, -0.13f));
-    rightHandTarget->get_transform()->Rotate(UnityEngine::Vector3(55.0f, 0.0f, -90.0f));
+    rightHandTarget->get_transform()->Rotate(UnityEngine::Vector3(leftHandRotX, leftHandRotY, -leftHandRotZ));
+    rightHandTarget->get_transform()->Translate(UnityEngine::Vector3(-leftHandPosX, leftHandPosY, leftHandPosZ));
 
     headTarget->get_transform()->set_position(headPos);
     headTarget->get_transform()->set_rotation(headRot);
+}
+
+ArrayW<UnityEngine::Keyframe> GetStepFrames(float val) {
+    auto array = ArrayW<UnityEngine::Keyframe>(3);
+    array[0].m_Time = 0.0f;
+    array[0].m_Value = 0.0f;
+    array[1].m_Time = 0.5f;
+    array[1].m_Value = val;
+    array[2].m_Time = 1.0f;
+    array[2].m_Value = 0.0f;
+    return array;
 }
 
 void VRMQavatars::TargetManager::Calibrate()
@@ -68,6 +80,13 @@ void VRMQavatars::TargetManager::Calibrate()
 
     intialized = true;
     vrik->set_enabled(true);
+
+    get_gameObject()->AddComponent<WristTwistFix*>()->SetVRIK(vrik);
+
+    vrik->solver->locomotion->footDistance = 0.1f;
+    vrik->solver->locomotion->stepThreshold = 0.1f;
+    vrik->solver->locomotion->stepHeight->set_keys(GetStepFrames(0.02f));
+    vrik->solver->locomotion->heelHeight->set_keys(GetStepFrames(0.07f));
 }
 
 UnityEngine::Vector3 VRMQavatars::TargetManager::GetPosition(GlobalNamespace::OVRPlugin::Node node)
@@ -89,6 +108,8 @@ float VRMQavatars::TargetManager::GetCalibrateScale()
     float readHandAverageY = (leftHandPos.y + rightHandPos.y) / 2.0f;
 	float avatarHandAverageY = (avatarLeftHandPos.y + avatarRightHandPos.y) / 2.0f;
 	float scale = readHandAverageY / avatarHandAverageY;
+
+    getLogger().info("%f %f %f", readHandAverageY, avatarHandAverageY, scale);
 
     return scale;
 }

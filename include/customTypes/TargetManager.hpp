@@ -3,6 +3,7 @@
 #include "main.hpp"
 
 #include "custom-types/shared/macros.hpp"
+#include "custom-types/shared/delegate.hpp"
 
 #include "UnityEngine/MonoBehaviour.hpp"
 #include "UnityEngine/GameObject.hpp"
@@ -11,11 +12,15 @@
 #include "UnityEngine/Quaternion.hpp"
 #include "UnityEngine/Animator.hpp"
 #include "UnityEngine/HumanBodyBones.hpp"
+#include "UnityEngine/Keyframe.hpp"
+#include "UnityEngine/AnimationCurve.hpp"
 
 #include "RootMotion/FinalIK/VRIK.hpp"
 #include "RootMotion/FinalIK/IKSolverVR_Arm.hpp"
 #include "RootMotion/FinalIK/IKSolverVR_Spine.hpp"
 #include "RootMotion/FinalIK/VRIK_References.hpp"
+#include "RootMotion/FinalIK/IKSolver_UpdateDelegate.hpp"
+#include "RootMotion/FinalIK/IKSolverVR_Locomotion.hpp"
 
 #include "GlobalNamespace/OVRPlugin.hpp"
 #include "GlobalNamespace/OVRPlugin_Node.hpp"
@@ -45,4 +50,5 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_FIELD(float, leftHandPosX);
     DECLARE_INSTANCE_FIELD(float, leftHandPosY);
     DECLARE_INSTANCE_FIELD(float, leftHandPosZ);
+
 )

@@ -2,59 +2,12 @@
 
 SafePtrUnity<UnityEngine::Shader> AssetLib::ModelImporter::mtoon;
 
-//Loads the armature into the model context
-void IterateArmatureNode(aiNode* node, AssetLib::Structure::Node* parentNodeStructure, AssetLib::Structure::ModelContext* context, bool isRoot)
-{
-    auto nodeStructure = new AssetLib::Structure::Node();
-    nodeStructure->isBone = true; //we are iterating over the armature so obviously it's a bone... right?
-    nodeStructure->name = node->mName.C_Str();
-    nodeStructure->isRoot = isRoot;
-    nodeStructure->parent = parentNodeStructure;
-    nodeStructure->position = UnityEngine::Vector3(node->mTransformation.a4, node->mTransformation.b4, node->mTransformation.c4);
-
-    context->nodes.push_back(nodeStructure);
-
-    auto& armature = context->armature.value();
-    armature.rootBone = nodeStructure->isRoot ? nodeStructure : armature.rootBone;
-    armature.bones.push_back(nodeStructure);
-
-    if(parentNodeStructure != nullptr)
-    {
-        parentNodeStructure->children.push_back(nodeStructure);
-    }
-
-    for (int i = 0; i < node->mNumChildren; i++)
-    {
-        IterateArmatureNode(node->mChildren[i], nodeStructure, context, false);
-    }
-}
-
 //Used for debugging armatures
 void AddSphere(UnityEngine::Transform* obj)
 {
     auto gameObject = UnityEngine::GameObject::CreatePrimitive(UnityEngine::PrimitiveType::Sphere)->get_transform();
     gameObject->SetParent(obj, false);
     gameObject->set_localScale(UnityEngine::Vector3(0.05f, 0.05f, 0.05f));
-}
-
-//Creates the bone structure in the scene under the model context root
-void CreateBoneStructure(AssetLib::Structure::Node* node, UnityEngine::Transform* parentTrans)
-{
-    auto nodeTrans = UnityEngine::GameObject::New_ctor(node->name)->get_transform();
-    UnityEngine::GameObject::DontDestroyOnLoad(nodeTrans->get_gameObject());
-
-    nodeTrans->SetParent(parentTrans, false);
-    nodeTrans->set_localPosition(node->position);
-    //AddSphere(nodeTrans);
-
-    node->gameObject = nodeTrans->get_gameObject();
-    node->processed = true;
-
-    for (size_t i = 0; i < node->children.size(); i++)
-    {
-        CreateBoneStructure(node->children[i], nodeTrans);
-    }
-    
 }
 
 //TODO: find something better lmao
@@ -184,23 +137,50 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
             }
         }
     }
+
+    /*for (size_t k = 0; k < mesh->mNumAnimMeshes; k++)
+    {
+        meshData.morphTargetVertices.push_back({});
+        meshData.morphTargetNormals.push_back({});
+        meshData.morphTargetTangents.push_back({});
+        auto animMesh = mesh->mAnimMeshes[k];
+        std::string name = animMesh->mName.C_Str();
+        meshData.morphTargetNames.push_back(animMesh->mName.C_Str());
+        for (size_t i = 0; i < animMesh->mNumVertices; i++)
+        {
+            auto vert = animMesh->mVertices[i];
+            meshData.morphTargetVertices[k].push_back(UnityEngine::Vector3(vert.x, vert.y, vert.z));
+        }
+        if (animMesh->mNormals != nullptr)
+        {
+            for (size_t i = 0; i < animMesh->mNumVertices; i++)
+            {
+                auto norm = animMesh->mNormals[i];
+                meshData.morphTargetNormals[k].push_back(UnityEngine::Vector3(norm.x, norm.y, norm.z));
+            }
+        }
+        if (animMesh->mTangents != nullptr)
+        {
+            for (size_t i = 0; i < animMesh->mNumVertices; i++)
+            {
+                auto tang = animMesh->mTangents[i];
+                meshData.morphTargetTangents[k].push_back(UnityEngine::Vector3(tang.x, tang.y, tang.z));
+            }
+        }
+        getLogger().info("%s", animMesh->mName.C_Str());
+    }*/
+    
     //TODO: Load in animations/blendshapes. Do we do this now or as a postprocess step?
 
     return meshData;
 }
 
-void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform* rootTransform, AssetLib::Structure::ModelContext* context)
+void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::ModelContext* context)
 {
     if(node->mesh.has_value())
     {
         auto mesh = node->mesh.value();
         getLogger().info("constructing renderer %s", node->name.c_str());
-
-        auto nodeTrans = UnityEngine::GameObject::New_ctor(node->name)->get_transform();
-        nodeTrans->SetParent(rootTransform, false);
-        nodeTrans->set_localPosition(node->position);
-        node->gameObject = nodeTrans->get_gameObject();
-        node->processed = true;
     
         UnityEngine::Mesh* unityMesh = UnityEngine::Mesh::New_ctor();
         unityMesh->set_name(node->name);
@@ -245,7 +225,7 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform*
         {
             for (int i = 0; i < mesh.morphTargetVertices.size(); i++)
             {
-                auto targetName = "Morphtarget " + std::to_string(i);
+                auto targetName = mesh.morphTargetNames[i];
                 unityMesh->AddBlendShapeFrame(targetName, 100,
                     ArrayUtils::vector2ArrayW(mesh.morphTargetVertices[i]),
                     mesh.morphTargetNormals.size() > 0 ? ArrayUtils::vector2ArrayW(mesh.morphTargetNormals[i]) : nullptr,
@@ -263,7 +243,7 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform*
 
         if(context->isSkinned)
         {
-            auto renderer = nodeTrans->get_gameObject()->AddComponent<UnityEngine::SkinnedMeshRenderer*>();
+            auto renderer = node->gameObject->AddComponent<UnityEngine::SkinnedMeshRenderer*>();
 
             auto armature = context->armature.value();
 
@@ -296,8 +276,8 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform*
         }
         else
         {
-            auto filter = nodeTrans->get_gameObject()->AddComponent<UnityEngine::MeshFilter*>();
-            auto renderer = nodeTrans->get_gameObject()->AddComponent<UnityEngine::MeshRenderer*>();
+            auto filter = node->gameObject->AddComponent<UnityEngine::MeshFilter*>();
+            auto renderer = node->gameObject->AddComponent<UnityEngine::MeshRenderer*>();
             filter->set_sharedMesh(unityMesh);
         }
 
@@ -310,24 +290,66 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, UnityEngine::Transform*
     }
 }
 
-AssetLib::Structure::Node* CreateNodeFromMesh(AssetLib::Structure::InterMeshData meshData, std::string name, AssetLib::Structure::Node* parent, AssetLib::Structure::ModelContext* context)
-{
-    auto node = new AssetLib::Structure::Node(name, {}, context->nodes.front(), false, false, UnityEngine::Vector3::get_zero(), meshData );
-
-    context->nodes.push_back(node);
-    context->rootNode->children.push_back(node);
-
-    return node;
-}
-
 UnityEngine::Vector3 convertVector(VRMC_VRM_0_0::Vector3 vec)
 {
     return UnityEngine::Vector3(vec.x, vec.y, vec.z);
 }
 
-std::string removeBakedFromMeshName(std::string name)
+void IterateNode(aiNode* assnode, AssetLib::Structure::Node* parentNode, AssetLib::Structure::ModelContext* context)
 {
-    return name.substr(0, name.find('.'));
+    auto node = new AssetLib::Structure::Node(std::string(assnode->mName.C_Str()), {}, parentNode, false, false, UnityEngine::Vector3(assnode->mTransformation.a4, assnode->mTransformation.b4, assnode->mTransformation.c4), std::nullopt, assnode);
+
+    if(!(assnode->mNumMeshes > 1))
+    {
+        node->isBone = true;
+        context->armature.value().bones.push_back(node);
+    }
+
+    if(parentNode == nullptr)
+    {
+        context->rootNode = node;
+    }
+    else
+    {
+        parentNode->children.push_back(node);
+    }
+
+    context->nodes.push_back(node);
+    for (size_t i = 0; i < assnode->mNumChildren; i++)
+    {
+        IterateNode(assnode->mChildren[i], node, context);
+    }
+}
+
+void CreateNodeTreeObject(AssetLib::Structure::Node* node)
+{
+    if(node->gameObject == nullptr)
+    {
+        node->gameObject = UnityEngine::GameObject::New_ctor(node->name);
+        if(node->parent != nullptr && node->parent->gameObject != nullptr)
+        {
+            auto trans = node->gameObject->get_transform();
+            trans->SetParent(node->parent->gameObject->get_transform());
+        }
+        node->gameObject->get_transform()->set_localPosition(node->position);
+        node->processed = true;
+        //AddSphere(node->gameObject->get_transform());
+    }
+    for (size_t i = 0; i < node->children.size(); i++)
+    {
+        CreateNodeTreeObject(node->children[i]);
+    }
+}
+
+int test = 0;
+void logTransform(UnityEngine::Transform* trans, int depth = 1)
+{
+    test++;
+    getLogger().info("%d %s%s", test, std::string(depth, '-').c_str(), static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
+    for (size_t i = 0; i < trans->get_childCount(); i++)
+    {
+        logTransform(trans->GetChild(i), depth + 1);
+    }
 }
         
 AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::string& filename, bool loadMaterials)
@@ -339,151 +361,66 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_PopulateArmatureData | aiProcess_MakeLeftHanded);
     modelContext->originalScene = scene;
     
-    auto Root = UnityEngine::GameObject::New_ctor("Model");
+    auto Root = UnityEngine::GameObject::New_ctor("ROOT");
     UnityEngine::GameObject::DontDestroyOnLoad(Root);
     Root->get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
-    Root->get_transform()->set_rotation(UnityEngine::Quaternion::Euler(0.0f, 180.0f, 0.0f));
+    Root->get_transform()->set_rotation(UnityEngine::Quaternion::Euler(0.0f, 0.0f, 0.0f));
     Root->get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
 
-    modelContext->rootNode = new AssetLib::Structure::Node("Model", {}, nullptr, false, false, UnityEngine::Vector3::get_zero(), std::nullopt);
-    modelContext->nodes.push_back(modelContext->rootNode);
     modelContext->rootGameObject = Root;
+    modelContext->armature = AssetLib::Structure::Armature();
 
-    aiNode* aiArmature;
+    //STEP ONE: Create initial node tree
 
-    for (int i = 0; i < scene->mNumMeshes; i++)
+    IterateNode(scene->mRootNode, nullptr, modelContext);
+    modelContext->rootNode->gameObject = Root;
+    modelContext->rootNode->processed = true;
+
+    //STEP TWO: Create gameobjects for each node
+
+    CreateNodeTreeObject(modelContext->rootNode);
+    logTransform(Root->get_transform());
+
+    //STEP THREE: Load in armature
+
+    AssetLib::Structure::Node* armatureNode = nullptr;
+
+    //TODO: perform this how the assimp docs say to (i'm lazy)
+    for (size_t i = 1; i < modelContext->nodes.size(); i++)
     {
-        if(scene->mMeshes[i]->mNumBones > 0)
+        auto node = modelContext->nodes[i];
+        if(node->children.size() > 0)
         {
             modelContext->isSkinned = true;
-        }
-    }
-
-    //TODO: Improve this logic
-    for (size_t i = 0; i < scene->mRootNode->mNumChildren; i++)
-    {
-        auto node = scene->mRootNode->mChildren[i];
-        getLogger().info("%s %d", node->mName.C_Str(), node->mNumChildren);
-        if(node->mNumChildren > 0)
-        {
-            aiArmature = node;
+            armatureNode = node;
             break;
         }
     }
 
-    //TODO: Bad
-    auto armatureName = std::string(aiArmature->mName.C_Str());
-    if(armatureName != "Root" && armatureName != "Armature")
-    {
-        modelContext->armature = AssetLib::Structure::Armature();
-        auto rootBone = new AssetLib::Structure::Node("Root", {}, nullptr, false, false, UnityEngine::Vector3::get_zero(), std::nullopt);
-        modelContext->armature.value().rootBone = rootBone;
-        modelContext->nodes.push_back(modelContext->rootNode);
-    }
-    
-    getLogger().info("%s", aiArmature->mName.C_Str());
+    modelContext->armature.value().rootBone = armatureNode;
 
-    getLogger().info("skinned, %d", modelContext->isSkinned);
-    //If we are skinned we want to process the armature first
-    if(modelContext->isSkinned)
-    {
-        auto armature = aiArmature;
-
-        IterateArmatureNode(armature, modelContext->armature.has_value() ? modelContext->armature.value().rootBone : modelContext->rootNode, modelContext, !modelContext->armature.has_value());
-
-        CreateBoneStructure(modelContext->armature.value().rootBone, Root->get_transform());
-    }
-
-    for (size_t i = 0; i < scene->mNumMeshes; i++)
-    {
-        getLogger().info("%s", removeBakedFromMeshName(std::string(scene->mMeshes[i]->mName.C_Str())).c_str());
-    }
-    
-
-    AssetLib::Structure::Node* lastLoadedMesh;
-    for (size_t i = 0; i < scene->mNumMeshes; i++)
-    {
-        if(i != 0)
-        {
-            auto lastNode = scene->mMeshes[i-1];
-            getLogger().info("%s %s", removeBakedFromMeshName(std::string(lastNode->mName.C_Str())).c_str(), removeBakedFromMeshName(std::string(scene->mMeshes[i]->mName.C_Str())).c_str());
-            if(removeBakedFromMeshName(std::string(lastNode->mName.C_Str())) == removeBakedFromMeshName(std::string(scene->mMeshes[i]->mName.C_Str())))
-            {
-                if(lastLoadedMesh != nullptr)
-                {
-                    auto mesh = scene->mMeshes[i];
-                    lastLoadedMesh->mesh = LoadMesh(mesh, modelContext, lastLoadedMesh->mesh.value());
-                }
-            }
-            else
-            {
-                auto mesh = scene->mMeshes[i];
-                lastLoadedMesh = CreateNodeFromMesh(LoadMesh(mesh, modelContext), mesh->mName.C_Str(), modelContext->rootNode, modelContext);
-            }
-        }
-        else
-        {
-            auto mesh = scene->mMeshes[i];
-            lastLoadedMesh = CreateNodeFromMesh(LoadMesh(mesh, modelContext), mesh->mName.C_Str(), modelContext->rootNode, modelContext);
-        }
-    }
-    
-    for (size_t i = 0; i < modelContext->rootNode->children.size(); i++)
-    {
-        auto node = modelContext->rootNode->children[i];
-        if(node->mesh.has_value())
-        {
-            ConstructUnityMesh(node, Root->get_transform(), modelContext);
-        }
-    }
-
-    //Reorder elements to match the order of the original scene
-    //This is necessary because some VRM files have meshes before the armature(fuck you) and that affects how the humanoid is processed
-    //I.E if there are 2 meshes before the armature then each humanoid bone will have a node idx offset by 2 
-    //Maybe we could solve this by applying an offset inside AvatarMappings instead
-    //This also isn't perfect because the names of meshes and nodes do not line up and we can only correct so much.
-    /*auto num = scene->mRootNode->mNumChildren;
-    auto rootChildren = modelContext->rootNode->children;
-    for(int i = num; i--;)
-    {
-        auto sceneName = std::string(scene->mRootNode->mChildren[i]->mName.C_Str());
-        for(int k = 0; k < rootChildren.size(); k++)
-        {
-            std::string name = removeBakedFromMeshName(rootChildren[k]->name);
-            name.erase(std::remove_if(name.begin(), name.end(), ::isdigit), name.end());
-            if(sceneName == name)
-            {
-                rootChildren[k]->gameObject->get_transform()->SetAsFirstSibling();
-            }
-        }
-    }*/
-    auto num = scene->mRootNode->mNumChildren;
-    auto& contextNodes = modelContext->nodes;
-    for(int i = num; i--;)
-    {
-        auto sceneName = std::string(scene->mRootNode->mChildren[i]->mName.C_Str());
-        for (auto it = contextNodes.begin(); it != contextNodes.end(); ++it) {
-            auto node = *it;
-            std::string name = removeBakedFromMeshName(node->name);
-            name.erase(std::remove_if(name.begin(), name.end(), ::isdigit), name.end());
-            if (sceneName == name) {
-                auto x = *it; // or std::move(*it)
-                contextNodes.erase(it);
-                contextNodes.insert(contextNodes.begin(), x /* or std::move(x) */);
-                break;
-            }
-        }
-    }
-    //This will have no bad consequences surely
-    modelContext->nodes = contextNodes;
+    //STEP FOUR: Load in meshes
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
         auto node = modelContext->nodes[i];
-        getLogger().info("%s", node->name.c_str());
+        if(node->originalNode->mNumMeshes > 0)
+        {
+            node->isBone = false;
+            for (size_t i = 0; i < node->originalNode->mNumMeshes; i++)
+            {
+                if(i == 0)
+                {
+                    node->mesh = LoadMesh(scene->mMeshes[node->originalNode->mMeshes[i]], modelContext);
+                }
+                else
+                {
+                    node->mesh = LoadMesh(scene->mMeshes[node->originalNode->mMeshes[i]], modelContext, node->mesh);
+                }
+            }
+            ConstructUnityMesh(node, modelContext);
+        }
     }
-    
-
 
     return modelContext;
 }
@@ -503,17 +440,6 @@ std::vector<UnityEngine::Transform*> Ancestors(UnityEngine::Transform* root)
     return ancestors;
 }
 
-int test = 0;
-void logTransform(UnityEngine::Transform* trans, int depth = 1)
-{
-    test++;
-    getLogger().info("%d %s%s", test, std::string(depth, '-').c_str(), static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
-    for (size_t i = 0; i < trans->get_childCount(); i++)
-    {
-        logTransform(trans->GetChild(i), depth + 1);
-    }
-}
-
 //TODO: Figure out 1.0.0 support
 AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(const std::string& filename, UnityEngine::Shader* mtoon)
 {
@@ -522,7 +448,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     getLogger().info("x2");
     //Load inital data to post process
-    const auto modelContext = new AssetLib::Structure::VRM::VRMModelContext(originalContext);//Don't load materials because we are replacing them with VRM materials
+    const auto modelContext = new AssetLib::Structure::VRM::VRMModelContext(std::move(*originalContext));//Don't load materials because we are replacing them with VRM materials
 
     getLogger().info("x3");
     //Load in binary to parse out VRM data
@@ -627,15 +553,6 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     auto anim = modelContext->rootGameObject->AddComponent<UnityEngine::Animator*>();
     anim->set_avatar(avatar);
 
-    for(int i = 0; i < 50; i++)
-    {
-        auto trans = anim->GetBoneTransform(UnityEngine::HumanBodyBones(i));
-        if(trans != nullptr)
-        {
-            getLogger().info("Bone: %s", static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
-        }
-    }
-
     auto vrik = modelContext->rootGameObject->AddComponent<RootMotion::FinalIK::VRIK*>();
 
     auto targetManager = modelContext->rootGameObject->AddComponent<VRMQavatars::TargetManager*>();
@@ -677,7 +594,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     auto colliders = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>();
     for (auto colliderGroup : vrm.secondaryAnimation.colliderGroups)
     {
-        auto node = modelContext->nodes[colliderGroup.node]->gameObject;
+        auto node = modelContext->nodes[colliderGroup.node+1]->gameObject;
         if (node)
         {
             auto vrmGroup = node->AddComponent<VRMQavatars::VRMSpringBoneColliderGroup*>();
@@ -704,7 +621,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
         if (springRef.center != -1)
 		{
-			springBone->center = modelContext->nodes[springRef.center]->gameObject->get_transform();
+			springBone->center = modelContext->nodes[springRef.center+1]->gameObject->get_transform();
 		}
 
 		springBone->comment = springRef.comment;
@@ -713,27 +630,23 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 		springBone->gravityPower = springRef.gravityPower;
 		springBone->hitRadius = springRef.hitRadius;
 		springBone->stiffnessForce = springRef.stiffiness;
-		if ( vrm.secondaryAnimation.colliderGroups.size() > 0)
+		if ( springRef.colliderGroups.size() > 0)
 		{
 			springBone->colliderGroups = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>(springRef.colliderGroups.size());
 			for (int j = 0; j < springRef.colliderGroups.size(); j++)
 			{
                 auto group = springRef.colliderGroups[j];
-                
-                auto groupComp = secondary->get_gameObject()->AddComponent<VRMQavatars::VRMSpringBoneColliderGroup*>();
-				springBone->colliderGroups[j] = groupComp;   
+				springBone->colliderGroups[j] = colliders[group];   
 			}
-		}
+		}   
 		ArrayW<UnityEngine::Transform*> list2 = ArrayW<UnityEngine::Transform*>(springRef.bones.size());
         for (size_t i = 0; i < springRef.bones.size(); i++)
         {
             auto bone = springRef.bones[i];
-            list2[i] = modelContext->nodes[bone]->gameObject->get_transform();
+            list2[i] = modelContext->nodes[bone+1]->gameObject->get_transform();
         }
 		springBone->rootBones = list2;
     }
-
-    logTransform(modelContext->rootGameObject->get_transform(), 0);
     
     return modelContext;
 }

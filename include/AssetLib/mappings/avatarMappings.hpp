@@ -177,9 +177,9 @@ namespace VRM::Mappings
 
                 if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::UpperChest) humanName = names[53];
                 getLogger().info("mappings x5");
-                if(bone.node >= bones.size() || bones[bone.node]->gameObject == nullptr) continue;
+                if(bone.node+1 >= bones.size() || bones[bone.node+1]->gameObject == nullptr) continue;
                 getLogger().info("mappings x5.5");
-                StringW boneName = bones[bone.node]->gameObject->get_name();
+                StringW boneName = bones[bone.node+1]->gameObject->get_name();
                 getLogger().info("x");
                 getLogger().info("mappings x6");
                 getLogger().info("bones %s ___ %s", static_cast<std::string>(boneName).c_str(), static_cast<std::string>(humanName).c_str());

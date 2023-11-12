@@ -25,5 +25,6 @@ namespace AssetLib::Structure
 
         ModelContext() = default;
         virtual ~ModelContext() {}
+        ModelContext(ModelContext&&) = default;
     };
 };

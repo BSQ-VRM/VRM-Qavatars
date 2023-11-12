@@ -8,14 +8,8 @@ namespace AssetLib::Structure::VRM
     class VRMModelContext : virtual public ModelContext
     {
         public:
-        VRMModelContext(ModelContext* base)
-        {
-            originalScene = base->originalScene;
-            nodes = base->nodes;
-            rootNode = base->rootNode;
-            isSkinned = base->isSkinned;
-            armature = base->armature;
-            rootGameObject = base->rootGameObject;
+        VRMModelContext(ModelContext&& modelContext) : ModelContext(std::move(modelContext)) {
+
         }
     };
 };
