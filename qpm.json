@@ -55,6 +55,11 @@
       "id": "questui",
       "versionRange": "^0.17.12",
       "additionalData": {}
+    },
+    {
+      "id": "chatplex-sdk-bs",
+      "versionRange": "^1.0.3",
+      "additionalData": {}
     }
   ],
   "workspace": {

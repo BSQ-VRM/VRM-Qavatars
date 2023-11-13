@@ -1,5 +1,6 @@
 #include "HandController.hpp"
 #include <sstream>
+#include <utility>
 #include "UnityEngine/HumanBodyBones.hpp"
 #include "UnityEngine/Transform.hpp"
 
@@ -61,14 +62,14 @@ std::vector<float> ParseRotations(std::vector<std::string> pose)
 
 void VRMQavatars::HandController::ApplyHandPose(UnityEngine::Animator* animator, std::string pose)
 {
-    auto array = SplitPose(pose);
+    auto array = SplitPose(std::move(pose));
 	auto rotations = ParseRotations(array);
 
 	auto angles = std::vector<UnityEngine::Vector3>(fingerBones.size());
 	auto boneAngles = std::vector<UnityEngine::Vector3>(fingerBones.size());
 	for (int i = 0; i < fingerBones.size(); i++)
 	{
-		boneAngles[i] = animator->GetBoneTransform(fingerBones[i])->get_localEulerAngles();
+		boneAngles[i] = UnityEngine::Quaternion::get_identity().get_eulerAngles();
 	}
 
 	if (rotations.size() != 20)

@@ -1,4 +1,7 @@
 #include "main.hpp"
+
+#include <UnityEngine/Camera.hpp>
+
 #include "custom-types/shared/coroutine.hpp"
 #include "custom-types/shared/register.hpp"
 
@@ -12,9 +15,14 @@
 #include "UnityEngine/LightType.hpp"
 #include "UnityEngine/Camera.hpp"
 #include "UnityEngine/Resources.hpp"
+#include "UnityEngine/RenderTexture.hpp"
+#include "UnityEngine/MeshRenderer.hpp"
+#include "UnityEngine/Material.hpp"
+#include "UnityEngine/StereoTargetEyeMask.hpp"
 
-#include "GlobalNamespace/BloomPrePass.hpp"
-#include "GlobalNamespace/ImageEffectController.hpp"
+#include "System/Action_1.hpp"
+
+#include "GlobalNamespace/MainEffectController.hpp"
 
 #include "AssetLib/shaders/shaderLoader.hpp"
 #include "AssetLib/shaders/ShaderSO.hpp"
@@ -59,6 +67,24 @@ UnityEngine::Material* GetBGMat(std::string str)
                                      });
 }
 
+UnityEngine::Texture2D* GetRTPixels(UnityEngine::RenderTexture* rt)
+{
+    // Remember currently active render texture
+    UnityEngine::RenderTexture* currentActiveRT = UnityEngine::RenderTexture::get_active();
+
+    // Set the supplied RenderTexture as the active one
+    UnityEngine::RenderTexture::set_active(rt);
+
+    // Create a new Texture2D and read the RenderTexture image into it
+    UnityEngine::Texture2D* tex = UnityEngine::Texture2D::New_ctor(rt->get_width(), rt->get_height());
+    tex->ReadPixels(UnityEngine::Rect(0, 0, tex->get_width(), tex->get_height()), 0, 0);
+    tex->Apply();
+
+    // Restore previously active render texture
+    UnityEngine::RenderTexture::set_active(currentActiveRT);
+    return tex;
+}
+
 #define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
 
 custom_types::Helpers::Coroutine Setup() {
@@ -71,6 +97,7 @@ custom_types::Helpers::Coroutine Setup() {
         getLogger().error("Couldn't load bundle from file, dieing...");
         co_return;
     }
+
     VRMData::ShaderSO* data = nullptr;
     co_yield coro(VRM::ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", reinterpret_cast<System::Type*>(csTypeOf(VRMData::ShaderSO*)), reinterpret_cast<UnityEngine::Object*&>(data)));
     if(data == nullptr)
@@ -90,13 +117,29 @@ custom_types::Helpers::Coroutine Setup() {
 
     auto mirror = UnityEngine::GameObject::Instantiate(data->mirror);
 
-    auto screen = BSML::FloatingScreen::CreateFloatingScreen({25.0f, 44.44f}, true, {0.0f, 1.5f, 2.0f}, UnityEngine::Quaternion::Euler(15.0f, 180.0f, 0.0f), 0.0f, true);
+    auto screen = BSML::FloatingScreen::CreateFloatingScreen({32.5f, 54.0f}, true, {0.0f, 1.5f, 2.0f}, UnityEngine::Quaternion::Euler(15.0f, 180.0f, 0.0f), 0.0f, true);
     mirror->get_transform()->SetParent(screen->get_transform(), false);
     UnityEngine::GameObject::DontDestroyOnLoad(screen->get_gameObject());
-    mirror->get_transform()->set_localScale({25.0f, 25.0f, 25.0f});
+    mirror->get_transform()->set_localScale({32.0f, 32.0f, 32.0f});
     mirror->get_transform()->set_localPosition({0.0f, 0.0f, 0.05f});
 
-    auto camera = screen->GetComponentInChildren<UnityEngine::Camera*>();
+    /*auto camera = screen->GetComponentInChildren<UnityEngine::Camera*>();
+    auto parent = camera->get_transform()->get_parent();
+    UnityEngine::GameObject::Destroy(camera->get_gameObject());
+
+    auto mainCamera = UnityEngine::GameObject::FindGameObjectWithTag("MainCamera");
+    auto newCamera = UnityEngine::GameObject::Instantiate(mainCamera, parent, false);
+    auto camcomp = newCamera->GetComponent<UnityEngine::Camera*>();
+    camcomp->set_targetDisplay(0);
+    camcomp->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
+
+    using Action = System::Action_1<UnityEngine::RenderTexture*>*;
+
+    auto effect = newCamera->GetComponentInChildren<GlobalNamespace::MainEffectController*>();
+    auto material = screen->GetComponentInChildren<UnityEngine::Material*>();
+    effect->add_afterImageEffectEvent(custom_types::MakeDelegate<Action>(classof(Action), static_cast<std::function<void(UnityEngine::RenderTexture*)>>([material](UnityEngine::RenderTexture* texture){
+        material->set_mainTexture(GetRTPixels(texture));
+    })));*/
 
     auto getBgSprite = GetBGSprite("RoundRect10BorderFade");
 

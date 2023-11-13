@@ -98,7 +98,6 @@ UnityEngine::Vector3 VRMQavatars::TargetManager::GetPosition(GlobalNamespace::OV
 
 float VRMQavatars::TargetManager::GetCalibrateScale()
 {
-    auto curScale = std::min(get_transform()->get_localScale().y, 0.1f);
     auto leftHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandLeft);
 	auto rightHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandRight);
 
@@ -106,7 +105,7 @@ float VRMQavatars::TargetManager::GetCalibrateScale()
     auto avatarLeftHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftHand)->get_position();
 
     float readHandAverageY = (leftHandPos.y + rightHandPos.y) / 2.0f;
-	float avatarHandAverageY = (avatarLeftHandPos.y + avatarRightHandPos.y) / 2.0f;
+	float avatarHandAverageY = std::max((avatarLeftHandPos.y + avatarRightHandPos.y) / 2.0f, 0.1f);
 	float scale = readHandAverageY / avatarHandAverageY;
 
     getLogger().info("%f %f %f", readHandAverageY, avatarHandAverageY, scale);
