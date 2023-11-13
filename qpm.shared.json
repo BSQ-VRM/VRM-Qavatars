@@ -56,6 +56,11 @@
         "id": "questui",
         "versionRange": "^0.17.12",
         "additionalData": {}
+      },
+      {
+        "id": "chatplex-sdk-bs",
+        "versionRange": "^1.0.3",
+        "additionalData": {}
       }
     ],
     "workspace": {
@@ -124,17 +129,18 @@
     },
     {
       "dependency": {
-        "id": "paper",
-        "versionRange": "=1.2.17",
+        "id": "chatplex-sdk-bs",
+        "versionRange": "=1.0.3-v6.2.0",
         "additionalData": {
-          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.17/libpaperlog.so",
-          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.17/debug_libpaperlog.so",
-          "overrideSoName": "libpaperlog.so",
-          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.17/paperlog.qmod",
-          "branchName": "version/v1_2_17"
+          "soLink": "https://github.com/hardcpp/QuestChatPlexSDK-BS/releases/download/v1.0.3-v6.2.0/libchatplex-sdk-bs.so",
+          "debugSoLink": "https://github.com/hardcpp/QuestChatPlexSDK-BS/releases/download/v1.0.3-v6.2.0/debug_libchatplex-sdk-bs.so",
+          "overrideSoName": "libchatplex-sdk-bs.so",
+          "modLink": "https://github.com/hardcpp/QuestChatPlexSDK-BS/releases/download/v1.0.3-v6.2.0/ChatPlexSDK-BS.qmod",
+          "branchName": "version/v1_0_3-v6_2_0",
+          "cmake": true
         }
       },
-      "version": "1.2.17"
+      "version": "1.0.3-v6.2.0"
     },
     {
       "dependency": {
@@ -149,6 +155,20 @@
         }
       },
       "version": "0.15.24"
+    },
+    {
+      "dependency": {
+        "id": "paper",
+        "versionRange": "=1.2.17",
+        "additionalData": {
+          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.17/libpaperlog.so",
+          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.17/debug_libpaperlog.so",
+          "overrideSoName": "libpaperlog.so",
+          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.17/paperlog.qmod",
+          "branchName": "version/v1_2_17"
+        }
+      },
+      "version": "1.2.17"
     },
     {
       "dependency": {
