@@ -23,9 +23,12 @@ namespace VRMQavatars::UI::ViewControllers {
 
         UnityEngine::Vector3 lightRotation = {30.0f, 240.0f, 0.0f};
 
+        std::string pose = "-34,-66,-80,0,-34,-66,-65,0,-37,-73,-43,0,-46,-48,-30,0,-77,-47,-20,19";
+
         std::shared_ptr<CP_SDK::XUI::XUIVLayout> BuildCalibrationTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildHandOffsetsTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildIKSettingsTab();
+        std::shared_ptr<CP_SDK::XUI::XUITabControl> BuildFingerPoseSettingsTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildLocoSettingsTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildLightingTab();
     };

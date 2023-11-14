@@ -1,5 +1,7 @@
 #include "AvatarManager.hpp"
 
+#include <HandController.hpp>
+
 namespace VRMQavatars {
     AssetLib::Structure::VRM::VRMModelContext* AvatarManager::currentContext;
     RootMotion::FinalIK::VRIK* AvatarManager::_vrik;
@@ -77,4 +79,8 @@ namespace VRMQavatars {
         _vrik->solver->locomotion->offset = {0.0f, 0.0f, value};
     }
 
+    void AvatarManager::SetFingerPose(std::string value)
+    {
+        HandController::ApplyHandPose(_vrik->animator, value);
+    }
 }

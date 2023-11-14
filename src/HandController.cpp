@@ -37,7 +37,7 @@ std::vector<UnityEngine::HumanBodyBones> fingerBones = {
 		UnityEngine::HumanBodyBones::RightThumbProximal
 	};
 
-std::vector<std::string> SplitPose(std::string pose)
+std::vector<std::string> VRMQavatars::HandController::SplitPose(std::string pose)
 {
     std::vector<std::string> ret;
     std::string s;
@@ -49,7 +49,7 @@ std::vector<std::string> SplitPose(std::string pose)
     return ret;
 }
 
-std::vector<float> ParseRotations(std::vector<std::string> pose)
+std::vector<float> VRMQavatars::HandController::ParseRotations(std::vector<std::string> pose)
 {
     std::vector<float> ret = std::vector<float>(pose.size());
     for (size_t i = 0; i < pose.size(); i++)

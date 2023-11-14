@@ -11,6 +11,7 @@
 
 #include "RootMotion/FinalIK/VRIK.hpp"
 #include "RootMotion/FinalIK/IKSolverVR.hpp"
+#include "RootMotion/FinalIK/IKSolverVR_Leg.hpp"
 namespace VRMQavatars {
     class AvatarManager
     {
@@ -33,6 +34,8 @@ namespace VRMQavatars {
         static void SetStepThreshold(float value);
         static void SetStepHeight(float value);
         static void SetStepOffsetZ(float value);
+
+        static void SetFingerPose(std::string value);
 
         private:
         static RootMotion::FinalIK::VRIK* _vrik;
