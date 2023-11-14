@@ -27,7 +27,7 @@
 #include "GlobalNamespace/OVRPlugin_Step.hpp"
 #include "GlobalNamespace/OVRPose.hpp"
 
-#include "HandController.hpp"
+#include "utils/structs/OffsetPose.hpp"
 
 DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_METHOD(void, Initialize);
@@ -43,12 +43,7 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_FIELD(RootMotion::FinalIK::VRIK*, vrik);
     DECLARE_INSTANCE_FIELD(bool, intialized);
 
-    DECLARE_INSTANCE_FIELD(float, leftHandRotX);
-    DECLARE_INSTANCE_FIELD(float, leftHandRotY);
-    DECLARE_INSTANCE_FIELD(float, leftHandRotZ);
-    
-    DECLARE_INSTANCE_FIELD(float, leftHandPosX);
-    DECLARE_INSTANCE_FIELD(float, leftHandPosY);
-    DECLARE_INSTANCE_FIELD(float, leftHandPosZ);
+    public:
+    Structs::OffsetPose offset;
 
 )

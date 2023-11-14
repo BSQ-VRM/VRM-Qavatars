@@ -1,5 +1,6 @@
 #include "customTypes/TargetManager.hpp"
 
+#include "HandController.hpp"
 #include <customTypes/WristTwistFix.hpp>
 
 DEFINE_TYPE(VRMQavatars, TargetManager);
@@ -38,20 +39,20 @@ void VRMQavatars::TargetManager::Update()
     leftHandTarget->get_transform()->set_position(leftHandPos);
     leftHandTarget->get_transform()->set_rotation(leftHandRot);
     
-    leftHandTarget->get_transform()->Rotate(UnityEngine::Vector3(leftHandRotX, leftHandRotY, leftHandRotZ));
-    leftHandTarget->get_transform()->Translate(UnityEngine::Vector3(leftHandPosX, leftHandPosY, leftHandPosZ));
+    leftHandTarget->get_transform()->Rotate(UnityEngine::Vector3(offset.rotX, offset.rotY, offset.rotZ));
+    leftHandTarget->get_transform()->Translate(UnityEngine::Vector3(offset.posX, offset.posY, offset.posZ));
 
     rightHandTarget->get_transform()->set_position(rightHandPos);
     rightHandTarget->get_transform()->set_rotation(rightHandRot);
 
-    rightHandTarget->get_transform()->Rotate(UnityEngine::Vector3(leftHandRotX, leftHandRotY, -leftHandRotZ));
-    rightHandTarget->get_transform()->Translate(UnityEngine::Vector3(-leftHandPosX, leftHandPosY, leftHandPosZ));
+    rightHandTarget->get_transform()->Rotate(UnityEngine::Vector3(offset.rotX, offset.rotY, -offset.rotZ));
+    rightHandTarget->get_transform()->Translate(UnityEngine::Vector3(-offset.posX, offset.posY, offset.posZ));
 
     headTarget->get_transform()->set_position(headPos);
     headTarget->get_transform()->set_rotation(headRot);
 }
 
-ArrayW<UnityEngine::Keyframe> GetStepFrames(float val) {
+ArrayW<UnityEngine::Keyframe> GetStepFrames(const float val) {
     auto array = ArrayW<UnityEngine::Keyframe>(3);
     array[0].m_Time = 0.0f;
     array[0].m_Value = 0.0f;
@@ -71,7 +72,7 @@ void VRMQavatars::TargetManager::Calibrate()
 
     get_transform()->set_localScale(UnityEngine::Vector3(scale, scale, scale));
 
-    VRMQavatars::HandController::ApplyHandPose(vrik->animator, "-34,-66,-80,0,-34,-66,-65,0,-37,-73,-43,0,-46,-48,-30,0,-77,-47,-20,19");
+    HandController::ApplyHandPose(vrik->animator, "-34,-66,-80,0,-34,-66,-65,0,-37,-73,-43,0,-46,-48,-30,0,-77,-47,-20,19");
 
     vrik->solver->spine->headTarget = headTarget->get_transform();
     vrik->solver->leftArm->target = leftHandTarget->get_transform();
@@ -86,7 +87,7 @@ void VRMQavatars::TargetManager::Calibrate()
     vrik->solver->locomotion->footDistance = 0.1f;
     vrik->solver->locomotion->stepThreshold = 0.1f;
     vrik->solver->locomotion->stepHeight->set_keys(GetStepFrames(0.02f));
-    vrik->solver->locomotion->heelHeight->set_keys(GetStepFrames(0.07f));
+    vrik->solver->locomotion->heelHeight->set_keys(GetStepFrames(0.1f));
 }
 
 UnityEngine::Vector3 VRMQavatars::TargetManager::GetPosition(GlobalNamespace::OVRPlugin::Node node)
@@ -105,7 +106,7 @@ float VRMQavatars::TargetManager::GetCalibrateScale()
     auto avatarLeftHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftHand)->get_position();
 
     float readHandAverageY = (leftHandPos.y + rightHandPos.y) / 2.0f;
-	float avatarHandAverageY = std::max((avatarLeftHandPos.y + avatarRightHandPos.y) / 2.0f, 0.1f);
+	float avatarHandAverageY = (avatarLeftHandPos.y + avatarRightHandPos.y) / 2.0f;
 	float scale = readHandAverageY / avatarHandAverageY;
 
     getLogger().info("%f %f %f", readHandAverageY, avatarHandAverageY, scale);

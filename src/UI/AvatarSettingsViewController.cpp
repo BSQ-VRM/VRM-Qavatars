@@ -20,7 +20,8 @@ namespace VRMQavatars::UI::ViewControllers {
 
     }
 
-    void AvatarSettingsViewController::DidActivate() {
+    void AvatarSettingsViewController::DidActivate()
+    {
         CP_SDK::XUI::Templates::FullRectLayoutMainView(
             {
                 CP_SDK::XUI::Templates::TitleBar(u"Avatar Settings")->Make(),
@@ -37,14 +38,7 @@ namespace VRMQavatars::UI::ViewControllers {
 
     void AvatarSettingsViewController::UpdatePos()
     {
-        auto tmanager = VRMQavatars::AvatarManager::currentContext->rootGameObject->GetComponent<TargetManager*>();
-        tmanager->leftHandPosX = handOffsetX;
-        tmanager->leftHandPosY = handOffsetY;
-        tmanager->leftHandPosZ = handOffsetZ;
-
-        tmanager->leftHandRotX = handRotX;
-        tmanager->leftHandRotY = handRotY;
-        tmanager->leftHandRotZ = handRotZ;
+        AvatarManager::SetHandOffset(offsetPose);
     }
 
     std::shared_ptr<CP_SDK::XUI::XUIVLayout> AvatarSettingsViewController::BuildCalibrationTab()
@@ -66,7 +60,7 @@ namespace VRMQavatars::UI::ViewControllers {
                     ->SetMaxValue(2.0f)
                     ->SetValue(1.0f)
                     ->SetIncrements(0.1f)
-                ->AsShared()
+                    ->AsShared()
             }
         );
     }
@@ -78,7 +72,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUIVLayout::Make(
                 {
                     CP_SDK::XUI::Templates::TitleBar(u"Position")
-                        ->SetBackground(true, UnityEngine::Color(0.7f, 0.55f, 0.85f, 1.0f), true)
+                        ->SetBackground(true, UnityEngine::Color(0.2f, 0.4f, 0.61f, 1.0f), true)
                         ->AsShared(),
 
                     CP_SDK::XUI::XUIText::Make(u"X Offset"),
@@ -87,9 +81,9 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(20.0f)
                         ->SetMinValue(-0.5f)
                         ->SetMaxValue(0.5f)
-                        ->SetValue(handOffsetX)
+                        ->SetValue(offsetPose.posX)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            handOffsetX = val;
+                            offsetPose.posX = val;
                             UpdatePos();
                         }))
                         ->AsShared(),
@@ -100,9 +94,9 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(20.0f)
                         ->SetMinValue(-0.5f)
                         ->SetMaxValue(0.5f)
-                        ->SetValue(handOffsetY)
+                        ->SetValue(offsetPose.posY)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            handOffsetY = val;
+                            offsetPose.posY = val;
                             UpdatePos();
                         }))
                         ->AsShared(),
@@ -113,9 +107,9 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(20.0f)
                         ->SetMinValue(-0.5f)
                         ->SetMaxValue(0.5f)
-                        ->SetValue(handOffsetZ)
+                        ->SetValue(offsetPose.posZ)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            handOffsetZ = val;
+                            offsetPose.posZ = val;
                             UpdatePos();
                         }))
                         ->AsShared(),
@@ -133,9 +127,9 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(180.0f)
                         ->SetMinValue(-90.0f)
                         ->SetMaxValue(90.0f)
-                        ->SetValue(handRotX)
+                        ->SetValue(offsetPose.rotX)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            handRotX = val;
+                            offsetPose.rotX = val;
                             UpdatePos();
                         }))
                         ->AsShared(),
@@ -146,9 +140,9 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(180.0f)
                         ->SetMinValue(-90.0f)
                         ->SetMaxValue(90.0f)
-                        ->SetValue(handRotY)
+                        ->SetValue(offsetPose.rotY)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            handRotY = val;
+                            offsetPose.rotY = val;
                             UpdatePos();
                         }))
                         ->AsShared(),
@@ -159,9 +153,9 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(180.0f)
                         ->SetMinValue(-90.0f)
                         ->SetMaxValue(90.0f)
-                        ->SetValue(handRotZ)
+                        ->SetValue(offsetPose.rotZ)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            handRotZ = val;
+                            offsetPose.rotZ = val;
                             UpdatePos();
                         }))
                         ->AsShared()
@@ -171,31 +165,56 @@ namespace VRMQavatars::UI::ViewControllers {
             ->AsShared();
         }
 
-        std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildIKSettingsTab() {
+        std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildIKSettingsTab()
+        {
             return CP_SDK::XUI::XUIHLayout::Make(
                 {
                     CP_SDK::XUI::XUIVLayout::Make(
                     {
                         CP_SDK::XUI::XUIText::Make(u"Leg Swivel"),
-                        CP_SDK::XUI::XUISlider::Make(),
+                        CP_SDK::XUI::XUISlider::Make()
+                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                                AvatarManager::SetLegSwivel(val);
+                            }))
+                            ->AsShared(),
 
                         CP_SDK::XUI::XUIText::Make(u"Arm Swivel"),
-                        CP_SDK::XUI::XUISlider::Make(),
+                        CP_SDK::XUI::XUISlider::Make()
+                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                                AvatarManager::SetArmSwivel(val);
+                            }))
+                            ->AsShared(),
 
                         CP_SDK::XUI::XUIText::Make(u"Body Stiffness"),
                         CP_SDK::XUI::XUISlider::Make()
+                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                                AvatarManager::SetBodyStiffness(val);
+                            }))
+                            ->AsShared()
                     }),
 
                     CP_SDK::XUI::XUIVLayout::Make(
                     {
                         CP_SDK::XUI::XUIText::Make(u"Shoulder Height"),
-                        CP_SDK::XUI::XUISlider::Make(),
-
-                        CP_SDK::XUI::XUIText::Make(u"Wrist Twist Fix amount"),
-                        CP_SDK::XUI::XUISlider::Make(),
-
-                        CP_SDK::XUI::XUIText::Make(u"Shoulder Twist Fix amount"),
                         CP_SDK::XUI::XUISlider::Make()
+                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                                AvatarManager::SetShoulderRotation(val);
+                            }))
+                            ->AsShared(),
+
+                        CP_SDK::XUI::XUIText::Make(u"Wrist Twist Fix Amount"),
+                        CP_SDK::XUI::XUISlider::Make()
+                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                                AvatarManager::SetWristFixWeight(val);
+                            }))
+                            ->AsShared(),
+
+                        CP_SDK::XUI::XUIText::Make(u"Shoulder Twist Fix Amount"),
+                        CP_SDK::XUI::XUISlider::Make()
+                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                                AvatarManager::SetShoulderFixWeight(val);
+                            }))
+                            ->AsShared()
                     })
                 }
             );
@@ -204,37 +223,37 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildLightingTab()
         {
             return CP_SDK::XUI::XUIHLayout::Make(
+            {
+                CP_SDK::XUI::XUIVLayout::Make(
                 {
-                    CP_SDK::XUI::XUIVLayout::Make(
-                    {
-                        CP_SDK::XUI::XUIText::Make(u"Global Light Color"),
-                        CP_SDK::XUI::XUIColorInput::Make(),
+                    CP_SDK::XUI::XUIText::Make(u"Global Light Color"),
+                    CP_SDK::XUI::XUIColorInput::Make(),
 
-                        CP_SDK::XUI::XUIText::Make(u"Light Intensity"),
-                        CP_SDK::XUI::XUISlider::Make(),
+                    CP_SDK::XUI::XUIText::Make(u"Light Intensity"),
+                    CP_SDK::XUI::XUISlider::Make(),
 
-                        CP_SDK::XUI::XUIText::Make(u"Light Rotation X"),
-                        CP_SDK::XUI::XUISlider::Make()
-                    }),
+                    CP_SDK::XUI::XUIText::Make(u"Light Rotation X"),
+                    CP_SDK::XUI::XUISlider::Make()
+                }),
 
-                    CP_SDK::XUI::XUIVLayout::Make(
-                    {
-                        CP_SDK::XUI::XUIText::Make(u"Beatmap Lighting"),
-                        CP_SDK::XUI::XUIToggle::Make(),
+                CP_SDK::XUI::XUIVLayout::Make(
+                {
+                    CP_SDK::XUI::XUIText::Make(u"Beatmap Lighting"),
+                    CP_SDK::XUI::XUIToggle::Make(),
 
-                        CP_SDK::XUI::XUIText::Make(u"BM Lighting Brightness"),
-                        CP_SDK::XUI::XUISlider::Make(),
+                    CP_SDK::XUI::XUIText::Make(u"BM Lighting Brightness"),
+                    CP_SDK::XUI::XUISlider::Make(),
 
-                        CP_SDK::XUI::XUIText::Make(u"BM Lighting Min Brightness"),
-                        CP_SDK::XUI::XUISlider::Make()
-                    }),
+                    CP_SDK::XUI::XUIText::Make(u"BM Lighting Min Brightness"),
+                    CP_SDK::XUI::XUISlider::Make()
+                }),
 
-                    CP_SDK::XUI::XUIVLayout::Make(
-                    {
-                        CP_SDK::XUI::XUIText::Make(u"Saber Lighting"),
-                        CP_SDK::XUI::XUIToggle::Make()
-                    })
-                }
-            );
+                CP_SDK::XUI::XUIVLayout::Make(
+                {
+                    CP_SDK::XUI::XUIText::Make(u"Saber Lighting"),
+                    CP_SDK::XUI::XUIToggle::Make()
+                })
+            }
+        );
     }
 }

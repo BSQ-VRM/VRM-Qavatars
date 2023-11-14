@@ -2,8 +2,9 @@
 
 #include "main.hpp"
 #include "HMUI/ViewController.hpp"
-#include "bsml/shared/macros.hpp"
 #include "bsml/shared/BSML.hpp"
+
+#include "utils/structs/OffsetPose.hpp"
 
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/XUI.hpp"
 #include "chatplex-sdk-bs/shared/CP_SDK_BS/UI/ViewController.hpp"
@@ -18,18 +19,12 @@ namespace VRMQavatars::UI::ViewControllers {
         void DidActivate();
         void UpdatePos();
 
-        float handOffsetX;
-        float handOffsetY;
-        float handOffsetZ;
-
-        float handRotX;
-        float handRotY;
-        float handRotZ;
-
+        Structs::OffsetPose offsetPose;
 
         std::shared_ptr<CP_SDK::XUI::XUIVLayout> BuildCalibrationTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildHandOffsetsTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildIKSettingsTab();
+        std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildLocoSettingsTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildLightingTab();
     };
 }
