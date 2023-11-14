@@ -45,6 +45,5 @@ namespace IncludedAssets {
 
 	DECLARE_FILE(avatarCell_bsml)
 	DECLARE_FILE(avatarSelectionView_bsml)
-	DECLARE_FILE(avatarSettingsView_bsml)
 
 }

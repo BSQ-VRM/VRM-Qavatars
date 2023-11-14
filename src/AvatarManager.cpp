@@ -1,11 +1,10 @@
 #include "AvatarManager.hpp"
 
-#include <chatplex-sdk-bs/shared/CP_SDK/Unity/Extensions/ColorU.hpp>
-
 namespace VRMQavatars {
     AssetLib::Structure::VRM::VRMModelContext* AvatarManager::currentContext;
     RootMotion::FinalIK::VRIK* AvatarManager::_vrik;
     TargetManager* AvatarManager::_targetManager;
+    WristTwistFix* AvatarManager::_wristTwistFix;
 
     void AvatarManager::SetContext(AssetLib::Structure::VRM::VRMModelContext* context)
     {
@@ -58,4 +57,24 @@ namespace VRMQavatars {
     {
         _wristTwistFix->wristWeight = value;
     }
+
+    void AvatarManager::SetFootDist(float value)
+    {
+        _vrik->solver->locomotion->footDistance = value;
+    }
+
+    void AvatarManager::SetStepThreshold(float value)
+    {
+        _vrik->solver->locomotion->stepThreshold = value;
+    }
+
+    void AvatarManager::SetStepHeight(float value)
+    {
+    }
+
+    void AvatarManager::SetStepOffsetZ(float value)
+    {
+        _vrik->solver->locomotion->offset = {0.0f, 0.0f, value};
+    }
+
 }

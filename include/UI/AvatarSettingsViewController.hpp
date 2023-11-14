@@ -21,6 +21,8 @@ namespace VRMQavatars::UI::ViewControllers {
 
         Structs::OffsetPose offsetPose;
 
+        UnityEngine::Vector3 lightRotation = {30.0f, 240.0f, 0.0f};
+
         std::shared_ptr<CP_SDK::XUI::XUIVLayout> BuildCalibrationTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildHandOffsetsTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildIKSettingsTab();
