@@ -35,7 +35,9 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_METHOD(void, Calibrate);
 
     DECLARE_INSTANCE_METHOD(UnityEngine::Vector3, GetPosition, GlobalNamespace::OVRPlugin::Node node);
-    DECLARE_INSTANCE_METHOD(float, GetCalibrateScale);
+    DECLARE_INSTANCE_METHOD(float, GetAvatarHandHeight);
+    DECLARE_INSTANCE_METHOD(float, GetAvatarHandDist);
+    DECLARE_INSTANCE_METHOD(float, GetBase);
 
     DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, leftHandTarget);
     DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, rightHandTarget);
@@ -46,4 +48,8 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     public:
     Structs::OffsetPose offset;
 
+    float GetCalibrateScale(std::optional<float> baseScale = std::nullopt);
+
+    SafePtrUnity<UnityEngine::Transform> leftSaber;
+    SafePtrUnity<UnityEngine::Transform> rightSaber;
 )

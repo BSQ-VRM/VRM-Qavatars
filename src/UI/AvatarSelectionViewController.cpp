@@ -143,6 +143,8 @@ custom_types::Helpers::Coroutine StartCalibration()
     float time = 0.0f;
     auto rootGameObject = VRMQavatars::AvatarManager::currentContext->rootGameObject->get_transform();
     auto targetManager = rootGameObject->GetComponent<VRMQavatars::TargetManager*>();
+
+    auto base = targetManager->GetBase();
     while(time < 4.0f)
     {
         time += UnityEngine::Time::get_deltaTime();
@@ -157,7 +159,7 @@ custom_types::Helpers::Coroutine StartCalibration()
 
         rootGameObject->set_position(headPos);
         rootGameObject->set_rotation(UnityEngine::Quaternion::Euler(0.0f, yRotation, 0.0f));
-        rootGameObject->set_localScale(targetManager->GetCalibrateScale());
+        rootGameObject->set_localScale(targetManager->GetCalibrateScale(base));
 
         co_yield reinterpret_cast<System::Collections::IEnumerator*>(CRASH_UNLESS(UnityEngine::WaitForEndOfFrame::New_ctor()));
     }

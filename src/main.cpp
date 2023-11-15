@@ -18,10 +18,13 @@
 #include "UnityEngine/MeshRenderer.hpp"
 #include "UnityEngine/Material.hpp"
 #include "UnityEngine/StereoTargetEyeMask.hpp"
+#include "UnityEngine/AudioListener.hpp"
 
 #include "System/Action_1.hpp"
 
 #include "GlobalNamespace/MainEffectController.hpp"
+#include "GlobalNamespace/VisualEffectsController.hpp"
+#include "GlobalNamespace/MainCamera.hpp"
 
 #include "AssetLib/shaders/shaderLoader.hpp"
 #include "AssetLib/shaders/ShaderSO.hpp"
@@ -102,7 +105,7 @@ custom_types::Helpers::Coroutine Setup() {
     }
 
     VRMData::ShaderSO* data = nullptr;
-    co_yield coro(VRM::ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", reinterpret_cast<System::Type*>(csTypeOf(VRMData::ShaderSO*)), reinterpret_cast<UnityEngine::Object*&>(data)));
+    co_yield coro(VRM::ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", csTypeOf(VRMData::ShaderSO*), reinterpret_cast<UnityEngine::Object*&>(data)));
     if(data == nullptr)
     {
         getLogger().error("Couldn't load asset...");
@@ -113,7 +116,18 @@ custom_types::Helpers::Coroutine Setup() {
 
     VRMQavatars::LightManager::Init();
 
-    auto mirror = UnityEngine::GameObject::Instantiate(data->mirror);
+    const int tpmask =
+           2147483647 &
+           ~(1 << 6);
+
+    const int fpmask =
+           2147483647 &
+           ~(1 << 3);
+
+    auto mainCamera = UnityEngine::GameObject::FindGameObjectWithTag("MainCamera");
+    mainCamera->GetComponent<UnityEngine::Camera*>()->set_cullingMask(fpmask);
+
+    /*auto mirror = UnityEngine::GameObject::Instantiate(data->mirror);
 
     auto screen = BSML::FloatingScreen::CreateFloatingScreen({32.5f, 54.0f}, true, {0.0f, 1.5f, 2.0f}, UnityEngine::Quaternion::Euler(15.0f, 180.0f, 0.0f), 0.0f, true);
     mirror->get_transform()->SetParent(screen->get_transform(), false);
@@ -121,23 +135,30 @@ custom_types::Helpers::Coroutine Setup() {
     mirror->get_transform()->set_localScale({32.0f, 32.0f, 32.0f});
     mirror->get_transform()->set_localPosition({0.0f, 0.0f, 0.05f});
 
-    /*auto camera = screen->GetComponentInChildren<UnityEngine::Camera*>();
+    auto camera = screen->GetComponentInChildren<UnityEngine::Camera*>();
+
+    auto renderTex = camera->get_targetTexture();
+
     auto parent = camera->get_transform()->get_parent();
     UnityEngine::GameObject::Destroy(camera->get_gameObject());
 
     auto mainCamera = UnityEngine::GameObject::FindGameObjectWithTag("MainCamera");
+    mainCamera->GetComponent<UnityEngine::Camera*>()->set_cullingMask(fpmask);
+
     auto newCamera = UnityEngine::GameObject::Instantiate(mainCamera, parent, false);
     auto camcomp = newCamera->GetComponent<UnityEngine::Camera*>();
+
+    UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<UnityEngine::AudioListener*>());
+    UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<GlobalNamespace::MainCamera*>());
+    UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<GlobalNamespace::VisualEffectsController*>());
+
     camcomp->set_targetDisplay(0);
     camcomp->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
+    camcomp->set_tag("");
 
-    using Action = System::Action_1<UnityEngine::RenderTexture*>*;
+    camcomp->set_targetTexture(renderTex);
 
-    auto effect = newCamera->GetComponentInChildren<GlobalNamespace::MainEffectController*>();
-    auto material = screen->GetComponentInChildren<UnityEngine::Material*>();
-    effect->add_afterImageEffectEvent(custom_types::MakeDelegate<Action>(classof(Action), static_cast<std::function<void(UnityEngine::RenderTexture*)>>([material](UnityEngine::RenderTexture* texture){
-        material->set_mainTexture(GetRTPixels(texture));
-    })));*/
+    camcomp->set_cullingMask(tpmask);
 
     auto getBgSprite = GetBGSprite("RoundRect10BorderFade");
 
@@ -150,7 +171,7 @@ custom_types::Helpers::Coroutine Setup() {
         x->set_material(GetBGMat("UINoGlow"));
         x->set_color({1.0f, 1.0f, 1.0f, 1.0f});
     }
-
+*/
     co_return;
 }
  

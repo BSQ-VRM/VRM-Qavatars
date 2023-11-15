@@ -65,6 +65,11 @@
       "id": "rapidjson-macros",
       "versionRange": "^1.0.0",
       "additionalData": {}
+    },
+    {
+      "id": "conditional-dependencies",
+      "versionRange": "^0.1.0",
+      "additionalData": {}
     }
   ],
   "workspace": {

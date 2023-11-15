@@ -588,7 +588,12 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             }
             
             auto newMesh = VRMQavatars::BoneMeshUtility::CreateErasedMesh(skinnedRenderer->get_sharedMesh(), toErase);
-            skinnedRenderer->set_sharedMesh(newMesh);
+            auto newObj = UnityEngine::GameObject::Instantiate(gameObject, gameObject->get_transform(), false);
+            newObj->GetComponent<UnityEngine::SkinnedMeshRenderer*>()->set_sharedMesh(newMesh);
+
+            //SetLayers
+            newObj->set_layer(6); //First Person
+            gameObject->set_layer(3); //Third Person
         }
     }
 

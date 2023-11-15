@@ -54,7 +54,7 @@ DECLARE_CONFIG(GlobalConfig,
 
     //Global
 
-    CONFIG_VALUE(CalibrationType, int, "Calibration Type", 0);
+    CONFIG_VALUE(CalibrationType, std::string, "Calibration Type", "Match Armspans");
     CONFIG_VALUE(FixedScale, float, "Fixed Scale", 1.0f);
 )
 

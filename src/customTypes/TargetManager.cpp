@@ -1,7 +1,15 @@
 #include "customTypes/TargetManager.hpp"
-
+#include "customTypes/WristTwistFix.hpp"
 #include "HandController.hpp"
-#include <customTypes/WristTwistFix.hpp>
+
+#include "UnityEngine/Camera.hpp"
+#include "UnityEngine/Resources.hpp"
+#include "GlobalNamespace/Saber.hpp"
+#include "GlobalNamespace/SaberType.hpp"
+
+#include "config/ConfigManager.hpp"
+
+#include "conditional-dependencies/shared/main.hpp"
 
 DEFINE_TYPE(VRMQavatars, TargetManager);
 
@@ -24,17 +32,79 @@ void VRMQavatars::TargetManager::Update()
 {
     if(!intialized)
         return;
-    auto leftHandPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::HandLeft, GlobalNamespace::OVRPlugin::Step::Render);
-	auto leftHandPos = UnityEngine::Vector3(leftHandPose.Position.x, leftHandPose.Position.y, -leftHandPose.Position.z);
-	auto leftHandRot = UnityEngine::Quaternion(-leftHandPose.Orientation.x, -leftHandPose.Orientation.y, leftHandPose.Orientation.z, leftHandPose.Orientation.w);
 
-    auto rightHandPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::HandRight, GlobalNamespace::OVRPlugin::Step::Render);
-	auto rightHandPos = UnityEngine::Vector3(rightHandPose.Position.x, rightHandPose.Position.y, -rightHandPose.Position.z);
-	auto rightHandRot = UnityEngine::Quaternion(-rightHandPose.Orientation.x, -rightHandPose.Orientation.y, rightHandPose.Orientation.z, rightHandPose.Orientation.w);
+	auto leftHandPos = UnityEngine::Vector3();
+	auto leftHandRot = UnityEngine::Quaternion();
 
-    auto headPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::Head, GlobalNamespace::OVRPlugin::Step::Render);
-	auto headPos = UnityEngine::Vector3(headPose.Position.x, headPose.Position.y, -headPose.Position.z);
-	auto headRot = UnityEngine::Quaternion(-headPose.Orientation.x, -headPose.Orientation.y, headPose.Orientation.z, headPose.Orientation.w);
+	auto rightHandPos = UnityEngine::Vector3();
+	auto rightHandRot = UnityEngine::Quaternion();
+
+	auto headPos = UnityEngine::Vector3();
+	auto headRot = UnityEngine::Quaternion();
+
+    const static auto replay = CondDeps::Find<bool>("replay", "IsInReplay");
+    if(replay.has_value() && replay.value()())
+    {
+        getLogger().info("x1");
+        auto camTrans = UnityEngine::GameObject::Find("PlayerTransformsHeadReplacement");
+        if(camTrans == nullptr) return;
+        getLogger().info("x2");
+        headPos = camTrans->get_transform()->get_position();
+        headRot = camTrans->get_transform()->get_rotation();
+        getLogger().info("x3");
+
+        auto sabers = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::Saber*>();
+
+        getLogger().info("x4");
+
+        if(!leftSaber.isHandleValid() || !leftSaber.isAlive() || leftSaber.ptr() == nullptr)
+        {
+            getLogger().info("x5");
+            const auto sab = sabers.FirstOrDefault([](GlobalNamespace::Saber* s) { return s->get_saberType() == GlobalNamespace::SaberType::SaberA; });
+            if(sab == nullptr) return;
+            leftSaber = sab->get_transform()->get_parent();
+            getLogger().info("x6");
+            if(!leftSaber) return;
+        }
+        getLogger().info("x7");
+
+        if(!rightSaber.isHandleValid() || !rightSaber.isAlive() || rightSaber.ptr() == nullptr)
+        {
+            getLogger().info("x8");
+            const auto sab = sabers.FirstOrDefault([](GlobalNamespace::Saber* s) { return s->get_saberType() == GlobalNamespace::SaberType::SaberB; });
+            if(sab == nullptr) return;
+            rightSaber = sab->get_transform()->get_parent();
+            getLogger().info("x9");
+            if(!rightSaber) return;
+        }
+        getLogger().info("x10");
+
+        leftHandPos = leftSaber->get_position();
+        getLogger().info("x11");
+        leftHandRot = leftSaber->get_rotation();
+        getLogger().info("x12");
+
+        rightHandPos = rightSaber->get_position();
+        getLogger().info("x13");
+        rightHandRot = rightSaber->get_rotation();
+        getLogger().info("x14");
+    }
+    else
+    {
+        leftSaber = nullptr;
+        rightSaber = nullptr;
+        auto leftHandPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::HandLeft, GlobalNamespace::OVRPlugin::Step::Render);
+        leftHandPos = UnityEngine::Vector3(leftHandPose.Position.x, leftHandPose.Position.y, -leftHandPose.Position.z);
+        leftHandRot = UnityEngine::Quaternion(-leftHandPose.Orientation.x, -leftHandPose.Orientation.y, leftHandPose.Orientation.z, leftHandPose.Orientation.w);
+
+        auto rightHandPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::HandRight, GlobalNamespace::OVRPlugin::Step::Render);
+        rightHandPos = UnityEngine::Vector3(rightHandPose.Position.x, rightHandPose.Position.y, -rightHandPose.Position.z);
+        rightHandRot = UnityEngine::Quaternion(-rightHandPose.Orientation.x, -rightHandPose.Orientation.y, rightHandPose.Orientation.z, rightHandPose.Orientation.w);
+
+        auto headPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::Head, GlobalNamespace::OVRPlugin::Step::Render);
+        headPos = UnityEngine::Vector3(headPose.Position.x, headPose.Position.y, -headPose.Position.z);
+        headRot = UnityEngine::Quaternion(-headPose.Orientation.x, -headPose.Orientation.y, headPose.Orientation.z, headPose.Orientation.w);
+    }
 
     leftHandTarget->get_transform()->set_position(leftHandPos);
     leftHandTarget->get_transform()->set_rotation(leftHandRot);
@@ -97,19 +167,72 @@ UnityEngine::Vector3 VRMQavatars::TargetManager::GetPosition(GlobalNamespace::OV
     return pos;
 }
 
-float VRMQavatars::TargetManager::GetCalibrateScale()
+float VRMQavatars::TargetManager::GetAvatarHandHeight()
 {
-    auto leftHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandLeft);
-	auto rightHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandRight);
-
     auto avatarRightHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightHand)->get_position();
     auto avatarLeftHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftHand)->get_position();
 
-    float readHandAverageY = (leftHandPos.y + rightHandPos.y) / 2.0f;
-	float avatarHandAverageY = (avatarLeftHandPos.y + avatarRightHandPos.y) / 2.0f;
-	float scale = readHandAverageY / avatarHandAverageY;
+    float avatarHandAverageY = (avatarLeftHandPos.y + avatarRightHandPos.y) / 2.0f;
 
-    getLogger().info("%f %f %f", readHandAverageY, avatarHandAverageY, scale);
+    return avatarHandAverageY;
+}
 
-    return scale;
+float VRMQavatars::TargetManager::GetAvatarHandDist()
+{
+    auto avatarRightHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightHand)->get_position();
+    auto avatarLeftHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftHand)->get_position();
+
+    float avatarHandDist = UnityEngine::Vector3::Distance(avatarLeftHandPos, avatarRightHandPos);
+
+    return avatarHandDist;
+}
+
+float VRMQavatars::TargetManager::GetBase()
+{
+    auto type = Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue();
+    if(type == "Match Armspans")
+    {
+        return GetAvatarHandDist();
+    }
+    if(type == "Match Heights")
+    {
+        return GetAvatarHandHeight();
+    }
+    return 1.0f;
+}
+
+
+float VRMQavatars::TargetManager::GetCalibrateScale(std::optional<float> baseScale)
+{
+    auto type = Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue();
+    if(type == "Match Armspans")
+    {
+        auto leftHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandLeft);
+        auto rightHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandRight);
+
+        float avatarHandDist = baseScale.has_value() ? baseScale.value() : GetAvatarHandDist();
+
+        float readDist = UnityEngine::Vector3::Distance(leftHandPos, rightHandPos);
+        float scale = readDist / avatarHandDist;
+
+        getLogger().info("%f %f %f", readDist, avatarHandDist, scale);
+
+        return scale * 0.85f;
+    }
+    if(type == "Match Heights")
+    {
+        auto leftHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandLeft);
+        auto rightHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandRight);
+
+        float avatarHandAverageY = baseScale.has_value() ? baseScale.value() : GetAvatarHandHeight();
+
+        float readHandAverageY = (leftHandPos.y + rightHandPos.y) / 2.0f;
+        float scale = readHandAverageY / avatarHandAverageY;
+
+        getLogger().info("%f %f %f", readHandAverageY, avatarHandAverageY, scale);
+
+        return scale;
+    }
+
+    return Config::ConfigManager::GetGlobalConfig().FixedScale.GetValue();
 }

@@ -92,6 +92,19 @@ namespace VRMQavatars::UI::ViewControllers {
         return imploded.str();
     }
 
+    std::u16string_view convertToU16StringView(const std::string& utf8String) {
+        return std::u16string_view(
+            reinterpret_cast<const char16_t*>(utf8String.c_str()),
+            utf8String.size()
+        );
+    }
+
+    std::string convertToUTF8(const std::u16string_view& utf16View) {
+        // Use std::wstring_convert to convert UTF-16 to UTF-8
+        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
+        return converter.to_bytes(utf16View.data(), utf16View.data() + utf16View.size());
+    }
+
     std::shared_ptr<CP_SDK::XUI::XUIVLayout> AvatarSettingsViewController::BuildCalibrationTab()
     {
         return CP_SDK::XUI::XUIVLayout::Make(
@@ -100,7 +113,11 @@ namespace VRMQavatars::UI::ViewControllers {
 
                 CP_SDK::XUI::XUIText::Make(u"Calibration Type"),
                 CP_SDK::XUI::XUIDropdown::Make({ u"Match Armspans", u"Match Heights", u"Fixed" })
-                    ->SetValue(u"Match Armspans")
+                    ->SetValue(convertToU16StringView(Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue()))
+                    ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([](int idx, std::u16string_view val)
+                    {
+                        Config::ConfigManager::GetGlobalConfig().CalibrationType.SetValue(convertToUTF8(val));
+                    }))
                     ->AsShared(),
 
                 CP_SDK::XUI::XUIVSpacer::Make(0.1f),
@@ -109,7 +126,11 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUISlider::Make()
                     ->SetMinValue(0.2f)
                     ->SetMaxValue(2.0f)
-                    ->SetValue(1.0f)
+                    ->SetValue(Config::ConfigManager::GetGlobalConfig().FixedScale.GetValue())
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                    {
+                        Config::ConfigManager::GetGlobalConfig().FixedScale.SetValue(val);
+                    }))
                     ->SetIncrements(0.1f)
                     ->SetInteractable(false)
                     ->AsShared()
