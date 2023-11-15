@@ -13,7 +13,6 @@
 #include "UnityEngine/AssetBundleRequest.hpp"
 #include "UnityEngine/Light.hpp"
 #include "UnityEngine/LightType.hpp"
-#include "UnityEngine/Camera.hpp"
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/RenderTexture.hpp"
 #include "UnityEngine/MeshRenderer.hpp"
@@ -39,6 +38,8 @@
 #include "UI/components/AvatarListTableCell.hpp"
 
 #include "LightManager.hpp"
+
+#include "config/ConfigManager.hpp"
 
 #include "questui/shared/ArrayUtil.hpp"
 static ModInfo modInfo;
@@ -172,7 +173,10 @@ extern "C" void setup(ModInfo& info) {
 extern "C" void load() {
     il2cpp_functions::Init();
 
+    getGlobalConfig().Init(Configuration::getConfigFilePath(modInfo));
+
     mkpath(vrm_path);
+    mkpath(avaconfig_path);
 
     custom_types::Register::AutoRegister(); 
 

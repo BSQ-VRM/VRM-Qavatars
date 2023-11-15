@@ -3,7 +3,7 @@
 
 //From Qosmetics
 
-std::string_view GetExtension(std::string_view path)
+static std::string_view GetExtension(std::string_view path)
 {
     int pos = path.find_last_of(".");
     if (pos != std::string::npos)
@@ -11,7 +11,7 @@ std::string_view GetExtension(std::string_view path)
     return "";
 }
 
-std::string_view GetFileName(std::string_view path)
+static std::string_view GetFileName(std::string_view path)
 {
     int pos = path.find_last_of("/");
     if (pos != std::string::npos)
@@ -20,7 +20,7 @@ std::string_view GetFileName(std::string_view path)
         return path;
 }
 
-bool GetFilesInFolderPath(std::string_view extension, std::string_view filePath, std::vector<std::string>& out)
+static bool GetFilesInFolderPath(std::string_view extension, std::string_view filePath, std::vector<std::string>& out)
 {
     bool foundTheExtension = false;
     struct DIR* fileDir = opendir(filePath.data());

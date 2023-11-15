@@ -10,8 +10,11 @@
 #include "customTypes/TargetManager.hpp"
 
 #include <string_view>
+#include <questui/shared/BeatSaberUI.hpp>
+#include <questui/shared/CustomTypes/Components/List/QuestUIBoxTableCell.hpp>
 
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/Templates.hpp"
+#include "config/ConfigManager.hpp"
 
 namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSettingsViewController);
@@ -28,30 +31,44 @@ namespace VRMQavatars::UI::ViewControllers {
 
     void AvatarSettingsViewController::DidActivate()
     {
-        CP_SDK::XUI::Templates::FullRectLayoutMainView(
-            {
-                CP_SDK::XUI::Templates::TitleBar(u"Avatar Settings")->Make(),
-                CP_SDK::XUI::XUITabControl::Make(u"Settings Tab", {
-                    { u"Calibration", BuildCalibrationTab() },
-                    { u"Hands", BuildHandOffsetsTab() },
-                    { u"Fingers", BuildFingerPoseSettingsTab() },
-                    { u"IK", BuildIKSettingsTab() },
-                    { u"Locomotion", BuildLocoSettingsTab() },
-                    { u"Lighting", BuildLightingTab() },
-                })
-            }
-        )
+        configModal = CreateModal<Modals::IndividualConfigModal>();
+        CP_SDK::XUI::Templates::FullRectLayoutMainView({
+            CP_SDK::XUI::Templates::TitleBar(u"Avatar Settings")->AsShared(),
+            CP_SDK::XUI::XUIIconButton::Make(QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::settings_png))
+                ->OnClick(CP_SDK::Utils::Action<>([this]
+                {
+                    ShowModal(configModal.Ptr());
+                }))
+                ->SetHeight(50.0f)
+                ->AsShared(),
+            CP_SDK::XUI::XUITabControl::Make(u"Settings Tab", {
+                { u"Calibration", BuildCalibrationTab() },
+                { u"Hands", BuildHandOffsetsTab() },
+                { u"Fingers", BuildFingerPoseSettingsTab() },
+                { u"IK", BuildIKSettingsTab() },
+                { u"Locomotion", BuildLocoSettingsTab() },
+                { u"Lighting", BuildLightingTab() },
+            })
+        })
+        ->SetSpacing(-23.0f)
         ->BuildUI(get_transform());
+
+        AvatarManager::OnLoad += CP_SDK::Utils::Action<>([this]
+        {
+            UpdateHandOffsetsTab();
+            UpdateFingerPosingTab();
+        });
     }
 
     void AvatarSettingsViewController::UpdatePos()
     {
-        AvatarManager::SetHandOffset(offsetPose);
+        AvatarManager::SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
     }
 
     int GetValue(const std::string& pose, const int idx)
     {
         const auto values = HandController::ParseRotations(HandController::SplitPose(pose));
+        if(values.size()-1 < idx) return 0;
         return values[idx];
     }
 
@@ -116,11 +133,14 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(20.0f)
                         ->SetMinValue(-0.5f)
                         ->SetMaxValue(0.5f)
-                        ->SetValue(offsetPose.posX)
+                        ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posX)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            offsetPose.posX = val;
+                            auto settings = Config::ConfigManager::GetOffsetSettings();
+                            settings.handOffset.posX = val;
+                            Config::ConfigManager::SetOffsetSettings(settings);
                             UpdatePos();
                         }))
+                        ->Bind(&xPosSlider)
                         ->AsShared(),
 
                     CP_SDK::XUI::XUIText::Make(u"Y Offset"),
@@ -129,11 +149,14 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(20.0f)
                         ->SetMinValue(-0.5f)
                         ->SetMaxValue(0.5f)
-                        ->SetValue(offsetPose.posY)
+                        ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posY)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            offsetPose.posY = val;
+                            auto settings = Config::ConfigManager::GetOffsetSettings();
+                            settings.handOffset.posY = val;
+                            Config::ConfigManager::SetOffsetSettings(settings);
                             UpdatePos();
                         }))
+                        ->Bind(&yPosSlider)
                         ->AsShared(),
 
                     CP_SDK::XUI::XUIText::Make(u"Z Offset"),
@@ -142,11 +165,14 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(20.0f)
                         ->SetMinValue(-0.5f)
                         ->SetMaxValue(0.5f)
-                        ->SetValue(offsetPose.posZ)
+                        ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posZ)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            offsetPose.posZ = val;
+                            auto settings = Config::ConfigManager::GetOffsetSettings();
+                            settings.handOffset.posZ = val;
+                            Config::ConfigManager::SetOffsetSettings(settings);
                             UpdatePos();
                         }))
+                        ->Bind(&zPosSlider)
                         ->AsShared(),
                 }),
 
@@ -162,11 +188,14 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(180.0f)
                         ->SetMinValue(-90.0f)
                         ->SetMaxValue(90.0f)
-                        ->SetValue(offsetPose.rotX)
+                        ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotX)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            offsetPose.rotX = val;
+                            auto settings = Config::ConfigManager::GetOffsetSettings();
+                            settings.handOffset.rotX = val;
+                            Config::ConfigManager::SetOffsetSettings(settings);
                             UpdatePos();
                         }))
+                        ->Bind(&xRotSlider)
                         ->AsShared(),
 
                     CP_SDK::XUI::XUIText::Make(u"Y Rotation"),
@@ -175,11 +204,14 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(180.0f)
                         ->SetMinValue(-90.0f)
                         ->SetMaxValue(90.0f)
-                        ->SetValue(offsetPose.rotY)
+                        ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotY)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            offsetPose.rotY = val;
+                            auto settings = Config::ConfigManager::GetOffsetSettings();
+                            settings.handOffset.rotY = val;
+                            Config::ConfigManager::SetOffsetSettings(settings);
                             UpdatePos();
                         }))
+                        ->Bind(&yRotSlider)
                         ->AsShared(),
 
                     CP_SDK::XUI::XUIText::Make(u"Z Rotation"),
@@ -188,16 +220,30 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(180.0f)
                         ->SetMinValue(-90.0f)
                         ->SetMaxValue(90.0f)
-                        ->SetValue(offsetPose.rotZ)
+                        ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotZ)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
-                            offsetPose.rotZ = val;
+                            auto settings = Config::ConfigManager::GetOffsetSettings();
+                            settings.handOffset.rotZ = val;
+                            Config::ConfigManager::SetOffsetSettings(settings);
                             UpdatePos();
                         }))
+                        ->Bind(&zRotSlider)
                         ->AsShared()
                 })
             })
             ->SetSpacing(10.0f)
             ->AsShared();
+        }
+
+        void AvatarSettingsViewController::UpdateHandOffsetsTab()
+        {
+            xPosSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posX);
+            yPosSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posY);
+            zPosSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posZ);
+
+            xRotSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotX);
+            yRotSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotY);
+            zRotSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotZ);
         }
 
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildIKSettingsTab()
@@ -273,311 +319,136 @@ namespace VRMQavatars::UI::ViewControllers {
             );
         }
 
+        std::shared_ptr<CP_SDK::XUI::XUISlider> AvatarSettingsViewController::BuildFingerSlider(const int finger)
+        {
+            int idx = finger;
+            auto slider = CP_SDK::XUI::XUISlider::Make()
+                ->SetIncrements(180.0f)
+                ->SetMinValue(-90)
+                ->SetMaxValue(90)
+                ->SetInteger(true)
+                ->SetValue(GetValue(Config::ConfigManager::GetFingerPosingSettings().grabPose, idx))
+                ->OnValueChanged(CP_SDK::Utils::Action<float>([this, idx](const float val)
+                {
+                    auto settings = Config::ConfigManager::GetFingerPosingSettings();
+                    settings.grabPose = SetValue(settings.grabPose, idx, val);
+                    Config::ConfigManager::SetFingerPosingSettings(settings);
+                    AvatarManager::SetFingerPose(Config::ConfigManager::GetFingerPosingSettings().grabPose);
+                }))
+                ->AsShared();
+            fingerSliders[idx] = slider;
+            return slider;
+        }
+
         // very longggg
         std::shared_ptr<CP_SDK::XUI::XUITabControl> AvatarSettingsViewController::BuildFingerPoseSettingsTab()
         {
             return CP_SDK::XUI::XUITabControl::Make({
                         {
                             u"Little",
-                            CP_SDK::XUI::XUIVLayout::Make({
-                                CP_SDK::XUI::XUIText::Make(u"Little Distal"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 0))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 0, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                            CP_SDK::XUI::XUIHLayout::Make({
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Little Distal"),
+                                    BuildFingerSlider(0),
 
-                                CP_SDK::XUI::XUIText::Make(u"Little Intermediate"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 1))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 1, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                                    CP_SDK::XUI::XUIText::Make(u"Little Intermediate"),
+                                    BuildFingerSlider(1),
 
-                                CP_SDK::XUI::XUIText::Make(u"Little Proximal"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 2))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 2, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
-
-                                CP_SDK::XUI::XUIText::Make(u"Little Proximal Horizontal Angle"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 3))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 3, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                                    CP_SDK::XUI::XUIText::Make(u"Little Proximal"),
+                                    BuildFingerSlider(2)
+                                }),
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Little Proximal Horizontal Angle"),
+                                    BuildFingerSlider(3)
+                                })
                             })
                         },
                         {
                             u"Ring",
-                            CP_SDK::XUI::XUIVLayout::Make({
-                                CP_SDK::XUI::XUIText::Make(u"Ring Distal"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 4))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 4, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                            CP_SDK::XUI::XUIHLayout::Make({
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Ring Distal"),
+                                    BuildFingerSlider(4),
 
-                                CP_SDK::XUI::XUIText::Make(u"Ring Intermediate"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 5))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 5, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                                    CP_SDK::XUI::XUIText::Make(u"Ring Intermediate"),
+                                    BuildFingerSlider(5),
 
-                                CP_SDK::XUI::XUIText::Make(u"Ring Proximal"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 6))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 6, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
-
-                                CP_SDK::XUI::XUIText::Make(u"Ring Proximal Horizontal Angle"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 7))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 7, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                                    CP_SDK::XUI::XUIText::Make(u"Ring Proximal"),
+                                    BuildFingerSlider(6)
+                                }),
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Ring Proximal Horizontal Angle"),
+                                    BuildFingerSlider(7)
+                                })
                             })
                         },
                         {
                             u"Middle",
-                            CP_SDK::XUI::XUIVLayout::Make({
-                                CP_SDK::XUI::XUIText::Make(u"Middle Distal"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 8))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 8, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                            CP_SDK::XUI::XUIHLayout::Make({
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Middle Distal"),
+                                    BuildFingerSlider(8),
 
-                                CP_SDK::XUI::XUIText::Make(u"Middle Intermediate"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 9))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 9, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                                    CP_SDK::XUI::XUIText::Make(u"Middle Intermediate"),
+                                    BuildFingerSlider(9),
 
-                                CP_SDK::XUI::XUIText::Make(u"Middle Proximal"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 10))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 10, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
-
-                                CP_SDK::XUI::XUIText::Make(u"Middle Proximal Horizontal Angle"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 11))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 11, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                                    CP_SDK::XUI::XUIText::Make(u"Middle Proximal"),
+                                    BuildFingerSlider(10)
+                                }),
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Middle Proximal Horizontal Angle"),
+                                    BuildFingerSlider(11)
+                                })
                             })
                         },
                         {
                             u"Index",
-                            CP_SDK::XUI::XUIVLayout::Make({
-                                CP_SDK::XUI::XUIText::Make(u"Index Distal"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 12))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 12, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                            CP_SDK::XUI::XUIHLayout::Make({
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Index Distal"),
+                                    BuildFingerSlider(12),
 
-                                CP_SDK::XUI::XUIText::Make(u"Index Intermediate"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 13))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 13, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                                    CP_SDK::XUI::XUIText::Make(u"Index Intermediate"),
+                                    BuildFingerSlider(13),
 
-                                CP_SDK::XUI::XUIText::Make(u"Index Proximal"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 14))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 14, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
-
-                                CP_SDK::XUI::XUIText::Make(u"Index Proximal Horizontal Angle"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 15))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 15, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                                    CP_SDK::XUI::XUIText::Make(u"Index Proximal"),
+                                     BuildFingerSlider(14)
+                                }),
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Index Proximal Horizontal Angle"),
+                                    BuildFingerSlider(15)
+                                })
                             })
                         },
                         {
                             u"Thumb",
-                            CP_SDK::XUI::XUIVLayout::Make({
-                                CP_SDK::XUI::XUIText::Make(u"Thumb Distal"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 16))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 16, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                            CP_SDK::XUI::XUIHLayout::Make({
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Thumb Distal"),
+                                    BuildFingerSlider(16),
 
-                                CP_SDK::XUI::XUIText::Make(u"Thumb Intermediate"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 17))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 17, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                                    CP_SDK::XUI::XUIText::Make(u"Thumb Intermediate"),
+                                    BuildFingerSlider(17),
 
-                                CP_SDK::XUI::XUIText::Make(u"Thumb Proximal"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 18))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 18, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
-
-                                CP_SDK::XUI::XUIText::Make(u"Thumb Proximal Horizontal Angle"),
-                                CP_SDK::XUI::XUISlider::Make()
-                                    ->SetIncrements(180.0f)
-                                    ->SetMinValue(-90)
-                                    ->SetMaxValue(90)
-                                    ->SetInteger(true)
-                                    ->SetValue(GetValue(pose, 19))
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
-                                    {
-                                        pose = SetValue(pose, 19, val);
-                                        AvatarManager::SetFingerPose(pose);
-                                    }))
-                                    ->AsShared(),
+                                    CP_SDK::XUI::XUIText::Make(u"Thumb Proximal"),
+                                    BuildFingerSlider(18)
+                                }),
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Thumb Proximal Horizontal Angle"),
+                                    BuildFingerSlider(19)
+                                })
                             })
                         }
                     });
+        }
+
+        void AvatarSettingsViewController::UpdateFingerPosingTab()
+        {
+            for (int i = 0; i < fingerSliders.size(); ++i)
+            {
+                const auto slider = fingerSliders[i];
+                slider->SetValue(GetValue(Config::ConfigManager::GetFingerPosingSettings().grabPose, i));
+            }
         }
 
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildLocoSettingsTab()

@@ -13,6 +13,7 @@ namespace AssetLib::Structure
     class ModelContext
     {
         public:
+        std::string fileName;
         const aiScene* originalScene;
 
         std::vector<Node*> nodes;

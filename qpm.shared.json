@@ -61,6 +61,11 @@
         "id": "chatplex-sdk-bs",
         "versionRange": "^1.0.3",
         "additionalData": {}
+      },
+      {
+        "id": "rapidjson-macros",
+        "versionRange": "^1.0.0",
+        "additionalData": {}
       }
     ],
     "workspace": {
@@ -107,15 +112,14 @@
     },
     {
       "dependency": {
-        "id": "modloader",
-        "versionRange": "=1.2.3",
+        "id": "rapidjson-macros",
+        "versionRange": "=1.0.0",
         "additionalData": {
-          "soLink": "https://github.com/sc2ad/QuestLoader/releases/download/v1.2.3/libmodloader64.so",
-          "overrideSoName": "libmodloader.so",
-          "branchName": "version-v1.2.3"
+          "headersOnly": true,
+          "branchName": "version-v1.0.0"
         }
       },
-      "version": "1.2.3"
+      "version": "1.0.0"
     },
     {
       "dependency": {
@@ -144,17 +148,50 @@
     },
     {
       "dependency": {
-        "id": "custom-types",
-        "versionRange": "=0.15.24",
+        "id": "gif-lib",
+        "versionRange": "=5.2.2",
         "additionalData": {
-          "soLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.24/libcustom-types.so",
-          "debugSoLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.24/debug_libcustom-types.so",
-          "overrideSoName": "libcustom-types.so",
-          "modLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.24/CustomTypes.qmod",
-          "branchName": "version-v0.15.24"
+          "staticLinking": true,
+          "soLink": "https://github.com/RedBrumbler/gif-lib-QPM/releases/download/v5.2.2/libgif-lib.a",
+          "debugSoLink": "https://github.com/RedBrumbler/gif-lib-QPM/releases/download/v5.2.2/debug_libgif-lib.a",
+          "overrideSoName": "libgif-lib.a",
+          "branchName": "version-v5.2.2"
         }
       },
-      "version": "0.15.24"
+      "version": "5.2.2"
+    },
+    {
+      "dependency": {
+        "id": "questui",
+        "versionRange": "=0.17.12",
+        "additionalData": {
+          "soLink": "https://github.com/darknight1050/QuestUI/releases/download/v0.17.12/libquestui.so",
+          "debugSoLink": "https://github.com/darknight1050/QuestUI/releases/download/v0.17.12/debug_libquestui.so",
+          "overrideSoName": "libquestui.so",
+          "modLink": "https://github.com/darknight1050/QuestUI/releases/download/v0.17.12/QuestUI.qmod",
+          "branchName": "version-v0.17.12",
+          "compileOptions": {
+            "systemIncludes": [
+              "shared/cppcodec"
+            ]
+          }
+        }
+      },
+      "version": "0.17.12"
+    },
+    {
+      "dependency": {
+        "id": "tinyxml2",
+        "versionRange": "=9.0.5",
+        "additionalData": {
+          "soLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/libtinyxml2.so",
+          "debugSoLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/debug_libtinyxml2.so",
+          "overrideSoName": "libtinyxml2.so",
+          "modLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/tinyxml2.qmod",
+          "branchName": "version-v9.0.5"
+        }
+      },
+      "version": "9.0.5"
     },
     {
       "dependency": {
@@ -172,17 +209,29 @@
     },
     {
       "dependency": {
-        "id": "gif-lib",
-        "versionRange": "=5.2.2",
+        "id": "modloader",
+        "versionRange": "=1.2.3",
         "additionalData": {
-          "staticLinking": true,
-          "soLink": "https://github.com/RedBrumbler/gif-lib-QPM/releases/download/v5.2.2/libgif-lib.a",
-          "debugSoLink": "https://github.com/RedBrumbler/gif-lib-QPM/releases/download/v5.2.2/debug_libgif-lib.a",
-          "overrideSoName": "libgif-lib.a",
-          "branchName": "version-v5.2.2"
+          "soLink": "https://github.com/sc2ad/QuestLoader/releases/download/v1.2.3/libmodloader64.so",
+          "overrideSoName": "libmodloader.so",
+          "branchName": "version-v1.2.3"
         }
       },
-      "version": "5.2.2"
+      "version": "1.2.3"
+    },
+    {
+      "dependency": {
+        "id": "custom-types",
+        "versionRange": "=0.15.24",
+        "additionalData": {
+          "soLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.24/libcustom-types.so",
+          "debugSoLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.24/debug_libcustom-types.so",
+          "overrideSoName": "libcustom-types.so",
+          "modLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.24/CustomTypes.qmod",
+          "branchName": "version-v0.15.24"
+        }
+      },
+      "version": "0.15.24"
     },
     {
       "dependency": {
@@ -244,39 +293,6 @@
         }
       },
       "version": "10.0.0"
-    },
-    {
-      "dependency": {
-        "id": "tinyxml2",
-        "versionRange": "=9.0.5",
-        "additionalData": {
-          "soLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/libtinyxml2.so",
-          "debugSoLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/debug_libtinyxml2.so",
-          "overrideSoName": "libtinyxml2.so",
-          "modLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/tinyxml2.qmod",
-          "branchName": "version-v9.0.5"
-        }
-      },
-      "version": "9.0.5"
-    },
-    {
-      "dependency": {
-        "id": "questui",
-        "versionRange": "=0.17.12",
-        "additionalData": {
-          "soLink": "https://github.com/darknight1050/QuestUI/releases/download/v0.17.12/libquestui.so",
-          "debugSoLink": "https://github.com/darknight1050/QuestUI/releases/download/v0.17.12/debug_libquestui.so",
-          "overrideSoName": "libquestui.so",
-          "modLink": "https://github.com/darknight1050/QuestUI/releases/download/v0.17.12/QuestUI.qmod",
-          "branchName": "version-v0.17.12",
-          "compileOptions": {
-            "systemIncludes": [
-              "shared/cppcodec"
-            ]
-          }
-        }
-      },
-      "version": "0.17.12"
     }
   ]
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../modelContext.hpp"
+#include "vrm/VRMDescriptor.hpp"
 
 namespace AssetLib::Structure::VRM
 {
@@ -11,5 +12,7 @@ namespace AssetLib::Structure::VRM
         VRMModelContext(ModelContext&& modelContext) : ModelContext(std::move(modelContext)) {
 
         }
+        std::optional<VRMC_VRM_0_0::Vrm> vrm0;
+        std::optional<VRMC_VRM_1_0::Vrm> vrm1;
     };
 };

@@ -8,6 +8,7 @@
 
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/XUI.hpp"
 #include "chatplex-sdk-bs/shared/CP_SDK_BS/UI/ViewController.hpp"
+#include "modals/IndividualConfigModal.hpp"
 
 namespace VRMQavatars::UI::ViewControllers {
     class AvatarSettingsViewController : public CP_SDK_BS::UI::ViewController {
@@ -19,11 +20,11 @@ namespace VRMQavatars::UI::ViewControllers {
         void DidActivate();
         void UpdatePos();
 
-        Structs::OffsetPose offsetPose;
+        CP_SDK::Utils::MonoPtr<Modals::IndividualConfigModal> configModal;
 
         UnityEngine::Vector3 lightRotation = {30.0f, 240.0f, 0.0f};
 
-        std::string pose = "-34,-66,-80,0,-34,-66,-65,0,-37,-73,-43,0,-46,-48,-30,0,-77,-47,-20,19";
+        std::shared_ptr<CP_SDK::XUI::XUISlider> BuildFingerSlider(int finger);
 
         std::shared_ptr<CP_SDK::XUI::XUIVLayout> BuildCalibrationTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildHandOffsetsTab();
@@ -31,6 +32,28 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUITabControl> BuildFingerPoseSettingsTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildLocoSettingsTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildLightingTab();
+
+        //Hand Offsets
+
+        void UpdateHandOffsetsTab();
+
+        std::shared_ptr<CP_SDK::XUI::XUISlider> xPosSlider;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> yPosSlider;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> zPosSlider;
+
+        std::shared_ptr<CP_SDK::XUI::XUISlider> xRotSlider;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> yRotSlider;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> zRotSlider;
+
+        std::shared_ptr<CP_SDK::XUI::XUIToggle> handOffsetsGlobalToggle;
+
+        //Finger Posing
+
+        void UpdateFingerPosingTab();
+
+        std::vector<std::shared_ptr<CP_SDK::XUI::XUISlider>> fingerSliders = std::vector<std::shared_ptr<CP_SDK::XUI::XUISlider>>(20);
+
+        //Calibration
     };
 }
 

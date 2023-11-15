@@ -1,5 +1,8 @@
 #pragma once
 
+#include <chatplex-sdk-bs/shared/CP_SDK/Utils/Delegate.hpp>
+#include <chatplex-sdk-bs/shared/CP_SDK/Utils/Event.hpp>
+
 #include "customTypes/WristTwistFix.hpp"
 
 #include "main.hpp"
@@ -36,6 +39,8 @@ namespace VRMQavatars {
         static void SetStepOffsetZ(float value);
 
         static void SetFingerPose(std::string value);
+
+        static CP_SDK::Utils::Event<> OnLoad;
 
         private:
         static RootMotion::FinalIK::VRIK* _vrik;

@@ -354,7 +354,9 @@ void logTransform(UnityEngine::Transform* trans, int depth = 1)
         
 AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::string& filename, bool loadMaterials)
 {
-    auto modelContext = new AssetLib::Structure::ModelContext();
+    auto modelContext = new Structure::ModelContext();
+
+    modelContext->fileName = filename;
     
     Assimp::Importer importer;
 
@@ -448,7 +450,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     getLogger().info("x2");
     //Load inital data to post process
-    const auto modelContext = new AssetLib::Structure::VRM::VRMModelContext(std::move(*originalContext));//Don't load materials because we are replacing them with VRM materials
+    const auto modelContext = new Structure::VRM::VRMModelContext(std::move(*originalContext));//Don't load materials because we are replacing them with VRM materials
 
     getLogger().info("x3");
     //Load in binary to parse out VRM data
@@ -466,7 +468,9 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     auto doc = nlohmann::json::parse(jsonStr);
     VRMC_VRM_0_0::Vrm vrm; //final ext Data;
-    VRMC_VRM_0_0::from_json(doc["extensions"]["VRM"], vrm);
+    from_json(doc["extensions"]["VRM"], vrm);
+
+    modelContext->vrm0 = vrm;
 
     getLogger().info("x4");
 
@@ -640,10 +644,10 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 			}
 		}   
 		ArrayW<UnityEngine::Transform*> list2 = ArrayW<UnityEngine::Transform*>(springRef.bones.size());
-        for (size_t i = 0; i < springRef.bones.size(); i++)
+        for (size_t k = 0; k < springRef.bones.size(); k++)
         {
-            auto bone = springRef.bones[i];
-            list2[i] = modelContext->nodes[bone+1]->gameObject->get_transform();
+            auto bone = springRef.bones[k];
+            list2[k] = modelContext->nodes[bone+1]->gameObject->get_transform();
         }
 		springBone->rootBones = list2;
     }

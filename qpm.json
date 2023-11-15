@@ -60,6 +60,11 @@
       "id": "chatplex-sdk-bs",
       "versionRange": "^1.0.3",
       "additionalData": {}
+    },
+    {
+      "id": "rapidjson-macros",
+      "versionRange": "^1.0.0",
+      "additionalData": {}
     }
   ],
   "workspace": {

@@ -14,3 +14,4 @@ Logger& getLogger();
 #endif
 
 constexpr const char* vrm_path = "sdcard/ModData/com.beatgames.beatsaber/Mods/VRMQavatars/Avatars";
+constexpr const char* avaconfig_path = "sdcard/ModData/com.beatgames.beatsaber/Mods/VRMQavatars/AvatarConfigs/";
