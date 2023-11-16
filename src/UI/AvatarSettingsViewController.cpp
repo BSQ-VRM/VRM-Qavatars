@@ -39,18 +39,20 @@ namespace VRMQavatars::UI::ViewControllers {
                 {
                     ShowModal(configModal.Ptr());
                 }))
-                ->SetHeight(50.0f)
+                ->SetWidth(6.0f)
+                ->SetHeight(6.0f)
                 ->AsShared(),
             CP_SDK::XUI::XUITabControl::Make(u"Settings Tab", {
                 { u"Calibration", BuildCalibrationTab() },
                 { u"Hands", BuildHandOffsetsTab() },
+                { u"Face", BuildFaceTab() },
                 { u"Fingers", BuildFingerPoseSettingsTab() },
                 { u"IK", BuildIKSettingsTab() },
                 { u"Locomotion", BuildLocoSettingsTab() },
                 { u"Lighting", BuildLightingTab() },
             })
         })
-        ->SetSpacing(-23.0f)
+        ->SetSpacing(1.0f)
         ->BuildUI(get_transform());
 
         AvatarManager::OnLoad += CP_SDK::Utils::Action<>([this]
@@ -254,344 +256,418 @@ namespace VRMQavatars::UI::ViewControllers {
             })
             ->SetSpacing(10.0f)
             ->AsShared();
-        }
+    }
 
-        void AvatarSettingsViewController::UpdateHandOffsetsTab()
-        {
-            xPosSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posX);
-            yPosSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posY);
-            zPosSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posZ);
+    void AvatarSettingsViewController::UpdateHandOffsetsTab()
+    {
+        xPosSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posX);
+        yPosSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posY);
+        zPosSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posZ);
+        xRotSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotX);
+        yRotSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotY);
+        zRotSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotZ);
+    }
 
-            xRotSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotX);
-            yRotSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotY);
-            zRotSlider->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotZ);
-        }
-
-        std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildIKSettingsTab()
-        {
-            return CP_SDK::XUI::XUIHLayout::Make(
+    std::shared_ptr<CP_SDK::XUI::XUITabControl> AvatarSettingsViewController::BuildFaceTab()
+    {
+        return CP_SDK::XUI::XUITabControl::Make({
                 {
-                    CP_SDK::XUI::XUIVLayout::Make(
-                    {
-                        CP_SDK::XUI::XUIText::Make(u"Leg Swivel"),
-                        CP_SDK::XUI::XUISlider::Make()
-                            ->SetIncrements(100.0f)
-                            ->SetMinValue(-50.0f)
-                            ->SetMaxValue(50.0f)
-                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
-                                AvatarManager::SetLegSwivel(val);
-                            }))
+                    u"BlendShapes",
+                    CP_SDK::XUI::XUIVLayout::Make({
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Auto Blink"),
+                                CP_SDK::XUI::XUIToggle::Make(),
+                                CP_SDK::XUI::XUIText::Make(u"Facial Expression Events"),
+                                CP_SDK::XUI::XUIToggle::Make()
+                            })
+                            ->SetSpacing(-1.0f)
                             ->AsShared(),
-
-                        CP_SDK::XUI::XUIText::Make(u"Arm Swivel"),
-                        CP_SDK::XUI::XUISlider::Make()
-                            ->SetIncrements(100.0f)
-                            ->SetMinValue(-50.0f)
-                            ->SetMaxValue(50.0f)
-                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
-                                AvatarManager::SetArmSwivel(val);
-                            }))
-                            ->AsShared(),
-
-                        CP_SDK::XUI::XUIText::Make(u"Body Stiffness"),
-                        CP_SDK::XUI::XUISlider::Make()
-                            ->SetIncrements(100.0f)
-                            ->SetMinValue(0.0f)
-                            ->SetMaxValue(5.0f)
-                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
-                                AvatarManager::SetBodyStiffness(val);
-                            }))
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Mock Eye Movement"),
+                                CP_SDK::XUI::XUIToggle::Make(),
+                                CP_SDK::XUI::XUIText::Make(u"Default Facial Expression"),
+                                CP_SDK::XUI::XUIToggle::Make()
+                            })
+                            ->SetSpacing(-1.0f)
                             ->AsShared()
-                    }),
-
-                    CP_SDK::XUI::XUIVLayout::Make(
-                    {
-                        CP_SDK::XUI::XUIText::Make(u"Shoulder Height"),
-                        CP_SDK::XUI::XUISlider::Make()
-                            ->SetIncrements(10.0f)
-                            ->SetMinValue(0.0f)
-                            ->SetMaxValue(1.0f)
-                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
-                                AvatarManager::SetShoulderRotation(val);
-                            }))
-                            ->AsShared(),
-
-                        CP_SDK::XUI::XUIText::Make(u"Wrist Twist Fix Amount"),
-                        CP_SDK::XUI::XUISlider::Make()
-                            ->SetIncrements(80.0f)
-                            ->SetMinValue(0.0f)
-                            ->SetMaxValue(0.8f)
-                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
-                                AvatarManager::SetWristFixWeight(val);
-                            }))
-                            ->AsShared(),
-
-                        CP_SDK::XUI::XUIText::Make(u"Shoulder Twist Fix Amount"),
-                        CP_SDK::XUI::XUISlider::Make()
-                            ->SetIncrements(80.0f)
-                            ->SetMinValue(0.0f)
-                            ->SetMaxValue(0.8f)
-                            ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
-                                AvatarManager::SetShoulderFixWeight(val);
-                            }))
-                            ->AsShared()
+                        }),
+                        CP_SDK::XUI::XUISecondaryButton::Make(u"Blendshape Triggers")
                     })
-                }
-            );
-        }
-
-        std::shared_ptr<CP_SDK::XUI::XUISlider> AvatarSettingsViewController::BuildFingerSlider(const int finger)
-        {
-            int idx = finger;
-            auto slider = CP_SDK::XUI::XUISlider::Make()
-                ->SetIncrements(180.0f)
-                ->SetMinValue(-90)
-                ->SetMaxValue(90)
-                ->SetInteger(true)
-                ->SetValue(GetValue(Config::ConfigManager::GetFingerPosingSettings().grabPose, idx))
-                ->OnValueChanged(CP_SDK::Utils::Action<float>([this, idx](const float val)
+                },
                 {
-                    auto settings = Config::ConfigManager::GetFingerPosingSettings();
-                    settings.grabPose = SetValue(settings.grabPose, idx, val);
-                    Config::ConfigManager::SetFingerPosingSettings(settings);
-                    AvatarManager::SetFingerPose(Config::ConfigManager::GetFingerPosingSettings().grabPose);
-                }))
-                ->AsShared();
-            fingerSliders[idx] = slider;
-            return slider;
-        }
-
-        // very longggg
-        std::shared_ptr<CP_SDK::XUI::XUITabControl> AvatarSettingsViewController::BuildFingerPoseSettingsTab()
-        {
-            return CP_SDK::XUI::XUITabControl::Make({
-                        {
-                            u"Little",
+                    u"Lip Sync",
+                    CP_SDK::XUI::XUIVLayout::Make({
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIText::Make(u"Enabled"),
+                            CP_SDK::XUI::XUIToggle::Make(),
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make({
                             CP_SDK::XUI::XUIHLayout::Make({
                                 CP_SDK::XUI::XUIVLayout::Make({
-                                    CP_SDK::XUI::XUIText::Make(u"Little Distal"),
-                                    BuildFingerSlider(0),
-
-                                    CP_SDK::XUI::XUIText::Make(u"Little Intermediate"),
-                                    BuildFingerSlider(1),
-
-                                    CP_SDK::XUI::XUIText::Make(u"Little Proximal"),
-                                    BuildFingerSlider(2)
-                                }),
-                                CP_SDK::XUI::XUIVLayout::Make({
-                                    CP_SDK::XUI::XUIText::Make(u"Little Proximal Horizontal Angle"),
-                                    BuildFingerSlider(3)
+                                    CP_SDK::XUI::XUIText::Make(u"Gain"),
+                                    CP_SDK::XUI::XUISlider::Make(),
+                                    CP_SDK::XUI::XUIText::Make(u"Threshold"),
+                                    CP_SDK::XUI::XUISlider::Make(),
                                 })
-                            })
-                        },
-                        {
-                            u"Ring",
+                                ->SetSpacing(-1.0f)
+                                ->AsShared(),
+                                CP_SDK::XUI::XUIVLayout::Make({
+                                    CP_SDK::XUI::XUIText::Make(u"Weight"),
+                                    CP_SDK::XUI::XUISlider::Make(),
+                                    CP_SDK::XUI::XUIText::Make(u"Framerate"),
+                                    CP_SDK::XUI::XUISlider::Make()
+                                })
+                                ->SetSpacing(-1.0f)
+                                ->AsShared()
+                            }),
                             CP_SDK::XUI::XUIHLayout::Make({
                                 CP_SDK::XUI::XUIVLayout::Make({
-                                    CP_SDK::XUI::XUIText::Make(u"Ring Distal"),
-                                    BuildFingerSlider(4),
-
-                                    CP_SDK::XUI::XUIText::Make(u"Ring Intermediate"),
-                                    BuildFingerSlider(5),
-
-                                    CP_SDK::XUI::XUIText::Make(u"Ring Proximal"),
-                                    BuildFingerSlider(6)
-                                }),
-                                CP_SDK::XUI::XUIVLayout::Make({
-                                    CP_SDK::XUI::XUIText::Make(u"Ring Proximal Horizontal Angle"),
-                                    BuildFingerSlider(7)
+                                    CP_SDK::XUI::XUIText::Make(u"Weight aa"),
+                                    CP_SDK::XUI::XUISlider::Make(),
+                                    CP_SDK::XUI::XUIText::Make(u"Weight E"),
+                                    CP_SDK::XUI::XUISlider::Make(),
                                 })
-                            })
-                        },
-                        {
-                            u"Middle",
-                            CP_SDK::XUI::XUIHLayout::Make({
+                                ->SetSpacing(-1.0f)
+                                ->AsShared(),
                                 CP_SDK::XUI::XUIVLayout::Make({
-                                    CP_SDK::XUI::XUIText::Make(u"Middle Distal"),
-                                    BuildFingerSlider(8),
-
-                                    CP_SDK::XUI::XUIText::Make(u"Middle Intermediate"),
-                                    BuildFingerSlider(9),
-
-                                    CP_SDK::XUI::XUIText::Make(u"Middle Proximal"),
-                                    BuildFingerSlider(10)
-                                }),
-                                CP_SDK::XUI::XUIVLayout::Make({
-                                    CP_SDK::XUI::XUIText::Make(u"Middle Proximal Horizontal Angle"),
-                                    BuildFingerSlider(11)
+                                    CP_SDK::XUI::XUIText::Make(u"Weight ih"),
+                                    CP_SDK::XUI::XUISlider::Make(),
+                                    CP_SDK::XUI::XUIText::Make(u"Weight oh"),
+                                    CP_SDK::XUI::XUISlider::Make(),
+                                    CP_SDK::XUI::XUIText::Make(u"Weight ou"),
+                                    CP_SDK::XUI::XUISlider::Make()
                                 })
+                                ->SetSpacing(-1.0f)
+                                ->AsShared()
                             })
-                        },
-                        {
-                            u"Index",
-                            CP_SDK::XUI::XUIHLayout::Make({
-                                CP_SDK::XUI::XUIVLayout::Make({
-                                    CP_SDK::XUI::XUIText::Make(u"Index Distal"),
-                                    BuildFingerSlider(12),
+                        })
+                    })
+                    ->SetSpacing(-5.0f)
+                    ->AsShared()
+                }
+            });
+    }
 
-                                    CP_SDK::XUI::XUIText::Make(u"Index Intermediate"),
-                                    BuildFingerSlider(13),
-
-                                    CP_SDK::XUI::XUIText::Make(u"Index Proximal"),
-                                     BuildFingerSlider(14)
-                                }),
-                                CP_SDK::XUI::XUIVLayout::Make({
-                                    CP_SDK::XUI::XUIText::Make(u"Index Proximal Horizontal Angle"),
-                                    BuildFingerSlider(15)
-                                })
-                            })
-                        },
-                        {
-                            u"Thumb",
-                            CP_SDK::XUI::XUIHLayout::Make({
-                                CP_SDK::XUI::XUIVLayout::Make({
-                                    CP_SDK::XUI::XUIText::Make(u"Thumb Distal"),
-                                    BuildFingerSlider(16),
-
-                                    CP_SDK::XUI::XUIText::Make(u"Thumb Intermediate"),
-                                    BuildFingerSlider(17),
-
-                                    CP_SDK::XUI::XUIText::Make(u"Thumb Proximal"),
-                                    BuildFingerSlider(18)
-                                }),
-                                CP_SDK::XUI::XUIVLayout::Make({
-                                    CP_SDK::XUI::XUIText::Make(u"Thumb Proximal Horizontal Angle"),
-                                    BuildFingerSlider(19)
-                                })
-                            })
-                        }
-                    });
-        }
-
-        void AvatarSettingsViewController::UpdateFingerPosingTab()
-        {
-            for (int i = 0; i < fingerSliders.size(); ++i)
+    std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildIKSettingsTab()
+    {
+        return CP_SDK::XUI::XUIHLayout::Make(
             {
-                const auto slider = fingerSliders[i];
-                slider->SetValue(GetValue(Config::ConfigManager::GetFingerPosingSettings().grabPose, i));
-            }
-        }
-
-        std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildLocoSettingsTab()
-        {
-            return CP_SDK::XUI::XUIHLayout::Make({
-                CP_SDK::XUI::XUIVLayout::Make({
-                    CP_SDK::XUI::XUIText::Make(u"Foot Distance"),
+                CP_SDK::XUI::XUIVLayout::Make(
+                {
+                    CP_SDK::XUI::XUIText::Make(u"Leg Swivel"),
                     CP_SDK::XUI::XUISlider::Make()
-                        ->SetIncrements(50.0f)
-                        ->SetMinValue(0.0f)
-                        ->SetMaxValue(1.0f)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
-                        {
-                            AvatarManager::SetFootDist(val);
+                        ->SetIncrements(100.0f)
+                        ->SetMinValue(-50.0f)
+                        ->SetMaxValue(50.0f)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            AvatarManager::SetLegSwivel(val);
                         }))
                         ->AsShared(),
-
-                    CP_SDK::XUI::XUIText::Make(u"Step Threshold"),
+                    CP_SDK::XUI::XUIText::Make(u"Arm Swivel"),
                     CP_SDK::XUI::XUISlider::Make()
-                        ->SetIncrements(50.0f)
-                        ->SetMinValue(0.0f)
-                        ->SetMaxValue(1.0f)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
-                        {
-                            AvatarManager::SetStepThreshold(val);
+                        ->SetIncrements(100.0f)
+                        ->SetMinValue(-50.0f)
+                        ->SetMaxValue(50.0f)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            AvatarManager::SetArmSwivel(val);
                         }))
                         ->AsShared(),
-
-                    CP_SDK::XUI::XUIText::Make(u"Step Height"),
+                    CP_SDK::XUI::XUIText::Make(u"Body Stiffness"),
                     CP_SDK::XUI::XUISlider::Make()
                         ->SetIncrements(100.0f)
                         ->SetMinValue(0.0f)
-                        ->SetMaxValue(1.0f)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
-                        {
-                            AvatarManager::SetStepHeight(val);
-                        }))
-                        ->AsShared(),
-
-                    CP_SDK::XUI::XUIText::Make(u"Step Offset Z"),
-                    CP_SDK::XUI::XUISlider::Make()
-                        ->SetIncrements(20.0f)
-                        ->SetMinValue(-1.0f)
-                        ->SetMaxValue(1.0f)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
-                        {
-                            AvatarManager::SetStepOffsetZ(val);
-                        }))
-                        ->AsShared(),
-                })
-            });
-        }
-
-        std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildLightingTab()
-        {
-            return CP_SDK::XUI::XUIHLayout::Make(
-            {
-                CP_SDK::XUI::XUIVLayout::Make(
-                {
-                    CP_SDK::XUI::XUIText::Make(u"Global Light Color"),
-                    CP_SDK::XUI::XUIColorInput::Make()
-                        ->OnValueChanged(CP_SDK::Utils::Action<UnityEngine::Color>([](UnityEngine::Color val)
-                        {
-                            LightManager::SetGlobalLightColor(val);
-                        }))
-                        ->AsShared(),
-
-                    CP_SDK::XUI::XUIText::Make(u"Light Intensity"),
-                    CP_SDK::XUI::XUISlider::Make()
-                        ->SetMinValue(0.0f)
-                        ->SetMaxValue(2.5f)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
-                        {
-                            LightManager::SetGlobalLightIntensity(val);
-                        }))
-                        ->AsShared(),
-
-                    CP_SDK::XUI::XUIText::Make(u"Light Rotation X"),
-                    CP_SDK::XUI::XUISlider::Make()
-                        ->SetIncrements(360.0f)
-                        ->SetMinValue(0.0f)
-                        ->SetMaxValue(360.0f)
-                        ->SetValue(lightRotation.x)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([this](float val)
-                        {
-                            lightRotation.x = val;
-                            LightManager::SetGlobalLightRotation(lightRotation);
-                        }))
-                        ->AsShared(),
-
-                    CP_SDK::XUI::XUIText::Make(u"Light Rotation Y"),
-                    CP_SDK::XUI::XUISlider::Make()
-                        ->SetIncrements(360.0f)
-                        ->SetMinValue(0.0f)
-                        ->SetMaxValue(360.0f)
-                        ->SetValue(lightRotation.y)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([this](float val)
-                        {
-                            lightRotation.y = val;
-                            LightManager::SetGlobalLightRotation(lightRotation);
+                        ->SetMaxValue(5.0f)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            AvatarManager::SetBodyStiffness(val);
                         }))
                         ->AsShared()
                 }),
-
                 CP_SDK::XUI::XUIVLayout::Make(
                 {
-                    CP_SDK::XUI::XUIText::Make(u"Beatmap Lighting"),
-                    CP_SDK::XUI::XUIToggle::Make(),
-
-                    CP_SDK::XUI::XUIText::Make(u"BM Lighting Brightness"),
-                    CP_SDK::XUI::XUISlider::Make(),
-
-                    CP_SDK::XUI::XUIText::Make(u"BM Lighting Min Brightness"),
+                    CP_SDK::XUI::XUIText::Make(u"Shoulder Height"),
                     CP_SDK::XUI::XUISlider::Make()
-                }),
-
-                CP_SDK::XUI::XUIVLayout::Make(
-                {
-                    CP_SDK::XUI::XUIText::Make(u"Saber Lighting"),
-                    CP_SDK::XUI::XUIToggle::Make()
+                        ->SetIncrements(10.0f)
+                        ->SetMinValue(0.0f)
+                        ->SetMaxValue(1.0f)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            AvatarManager::SetShoulderRotation(val);
+                        }))
+                        ->AsShared(),
+                    CP_SDK::XUI::XUIText::Make(u"Wrist Twist Fix Amount"),
+                    CP_SDK::XUI::XUISlider::Make()
+                        ->SetIncrements(80.0f)
+                        ->SetMinValue(0.0f)
+                        ->SetMaxValue(0.8f)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            AvatarManager::SetWristFixWeight(val);
+                        }))
+                        ->AsShared(),
+                    CP_SDK::XUI::XUIText::Make(u"Shoulder Twist Fix Amount"),
+                    CP_SDK::XUI::XUISlider::Make()
+                        ->SetIncrements(80.0f)
+                        ->SetMinValue(0.0f)
+                        ->SetMaxValue(0.8f)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            AvatarManager::SetShoulderFixWeight(val);
+                        }))
+                        ->AsShared()
                 })
             }
         );
+    }
+
+    std::shared_ptr<CP_SDK::XUI::XUISlider> AvatarSettingsViewController::BuildFingerSlider(const int finger)
+    {
+        int idx = finger;
+        auto slider = CP_SDK::XUI::XUISlider::Make()
+            ->SetIncrements(180.0f)
+            ->SetMinValue(-90)
+            ->SetMaxValue(90)
+            ->SetInteger(true)
+            ->SetValue(GetValue(Config::ConfigManager::GetFingerPosingSettings().grabPose, idx))
+            ->OnValueChanged(CP_SDK::Utils::Action<float>([this, idx](const float val)
+            {
+                auto settings = Config::ConfigManager::GetFingerPosingSettings();
+                settings.grabPose = SetValue(settings.grabPose, idx, val);
+                Config::ConfigManager::SetFingerPosingSettings(settings);
+                AvatarManager::SetFingerPose(Config::ConfigManager::GetFingerPosingSettings().grabPose);
+            }))
+            ->AsShared();
+        fingerSliders[idx] = slider;
+        return slider;
+    }
+
+    // very longggg
+    std::shared_ptr<CP_SDK::XUI::XUITabControl> AvatarSettingsViewController::BuildFingerPoseSettingsTab()
+    {
+        return CP_SDK::XUI::XUITabControl::Make({
+                    {
+                        u"Little",
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Little Distal"),
+                                BuildFingerSlider(0),
+
+                                CP_SDK::XUI::XUIText::Make(u"Little Intermediate"),
+                                BuildFingerSlider(1),
+
+                                CP_SDK::XUI::XUIText::Make(u"Little Proximal"),
+                                BuildFingerSlider(2)
+                            }),
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Little Proximal Horizontal Angle"),
+                                BuildFingerSlider(3)
+                            })
+                        })
+                    },
+                    {
+                        u"Ring",
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Ring Distal"),
+                                BuildFingerSlider(4),
+
+                                CP_SDK::XUI::XUIText::Make(u"Ring Intermediate"),
+                                BuildFingerSlider(5),
+
+                                CP_SDK::XUI::XUIText::Make(u"Ring Proximal"),
+                                BuildFingerSlider(6)
+                            }),
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Ring Proximal Horizontal Angle"),
+                                BuildFingerSlider(7)
+                            })
+                        })
+                    },
+                    {
+                        u"Middle",
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Middle Distal"),
+                                BuildFingerSlider(8),
+
+                                CP_SDK::XUI::XUIText::Make(u"Middle Intermediate"),
+                                BuildFingerSlider(9),
+
+                                CP_SDK::XUI::XUIText::Make(u"Middle Proximal"),
+                                BuildFingerSlider(10)
+                            }),
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Middle Proximal Horizontal Angle"),
+                                BuildFingerSlider(11)
+                            })
+                        })
+                    },
+                    {
+                        u"Index",
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Index Distal"),
+                                BuildFingerSlider(12),
+
+                                CP_SDK::XUI::XUIText::Make(u"Index Intermediate"),
+                                BuildFingerSlider(13),
+
+                                CP_SDK::XUI::XUIText::Make(u"Index Proximal"),
+                                 BuildFingerSlider(14)
+                            }),
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Index Proximal Horizontal Angle"),
+                                BuildFingerSlider(15)
+                            })
+                        })
+                    },
+                    {
+                        u"Thumb",
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Thumb Distal"),
+                                BuildFingerSlider(16),
+
+                                CP_SDK::XUI::XUIText::Make(u"Thumb Intermediate"),
+                                BuildFingerSlider(17),
+
+                                CP_SDK::XUI::XUIText::Make(u"Thumb Proximal"),
+                                BuildFingerSlider(18)
+                            }),
+                            CP_SDK::XUI::XUIVLayout::Make({
+                                CP_SDK::XUI::XUIText::Make(u"Thumb Proximal Horizontal Angle"),
+                                BuildFingerSlider(19)
+                            })
+                        })
+                    }
+                });
+    }
+
+    void AvatarSettingsViewController::UpdateFingerPosingTab()
+    {
+        for (int i = 0; i < fingerSliders.size(); ++i)
+        {
+            const auto slider = fingerSliders[i];
+            slider->SetValue(GetValue(Config::ConfigManager::GetFingerPosingSettings().grabPose, i));
+        }
+    }
+
+    std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildLocoSettingsTab()
+    {
+        return CP_SDK::XUI::XUIHLayout::Make({
+            CP_SDK::XUI::XUIVLayout::Make({
+                CP_SDK::XUI::XUIText::Make(u"Foot Distance"),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetIncrements(50.0f)
+                    ->SetMinValue(0.0f)
+                    ->SetMaxValue(1.0f)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                    {
+                        AvatarManager::SetFootDist(val);
+                    }))
+                    ->AsShared(),
+
+                CP_SDK::XUI::XUIText::Make(u"Step Threshold"),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetIncrements(50.0f)
+                    ->SetMinValue(0.0f)
+                    ->SetMaxValue(1.0f)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                    {
+                        AvatarManager::SetStepThreshold(val);
+                    }))
+                    ->AsShared(),
+
+                CP_SDK::XUI::XUIText::Make(u"Step Height"),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetIncrements(100.0f)
+                    ->SetMinValue(0.0f)
+                    ->SetMaxValue(1.0f)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                    {
+                        AvatarManager::SetStepHeight(val);
+                    }))
+                    ->AsShared(),
+
+                CP_SDK::XUI::XUIText::Make(u"Step Offset Z"),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetIncrements(20.0f)
+                    ->SetMinValue(-1.0f)
+                    ->SetMaxValue(1.0f)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                    {
+                        AvatarManager::SetStepOffsetZ(val);
+                    }))
+                    ->AsShared(),
+            })
+        });
+    }
+
+    std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildLightingTab()
+    {
+        return CP_SDK::XUI::XUIHLayout::Make(
+        {
+            CP_SDK::XUI::XUIVLayout::Make(
+            {
+                CP_SDK::XUI::XUIText::Make(u"Global Light Color"),
+                CP_SDK::XUI::XUIColorInput::Make()
+                    ->OnValueChanged(CP_SDK::Utils::Action<UnityEngine::Color>([](UnityEngine::Color val)
+                    {
+                        LightManager::SetGlobalLightColor(val);
+                    }))
+                    ->AsShared(),
+
+                CP_SDK::XUI::XUIText::Make(u"Light Intensity"),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetMinValue(0.0f)
+                    ->SetMaxValue(2.5f)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                    {
+                        LightManager::SetGlobalLightIntensity(val);
+                    }))
+                    ->AsShared(),
+
+                CP_SDK::XUI::XUIText::Make(u"Light Rotation X"),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetIncrements(360.0f)
+                    ->SetMinValue(0.0f)
+                    ->SetMaxValue(360.0f)
+                    ->SetValue(lightRotation.x)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](float val)
+                    {
+                        lightRotation.x = val;
+                        LightManager::SetGlobalLightRotation(lightRotation);
+                    }))
+                    ->AsShared(),
+
+                CP_SDK::XUI::XUIText::Make(u"Light Rotation Y"),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetIncrements(360.0f)
+                    ->SetMinValue(0.0f)
+                    ->SetMaxValue(360.0f)
+                    ->SetValue(lightRotation.y)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](float val)
+                    {
+                        lightRotation.y = val;
+                        LightManager::SetGlobalLightRotation(lightRotation);
+                    }))
+                    ->AsShared()
+            }),
+
+            CP_SDK::XUI::XUIVLayout::Make(
+            {
+                CP_SDK::XUI::XUIText::Make(u"Beatmap Lighting"),
+                CP_SDK::XUI::XUIToggle::Make(),
+
+                CP_SDK::XUI::XUIText::Make(u"BM Lighting Brightness"),
+                CP_SDK::XUI::XUISlider::Make(),
+
+                CP_SDK::XUI::XUIText::Make(u"BM Lighting Min Brightness"),
+                CP_SDK::XUI::XUISlider::Make()
+            }),
+
+            CP_SDK::XUI::XUIVLayout::Make(
+            {
+                CP_SDK::XUI::XUIText::Make(u"Saber Lighting"),
+                CP_SDK::XUI::XUIToggle::Make()
+            })
+        });
     }
 }

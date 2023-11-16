@@ -28,6 +28,7 @@ namespace VRMQavatars::UI::ViewControllers {
 
         std::shared_ptr<CP_SDK::XUI::XUIVLayout> BuildCalibrationTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildHandOffsetsTab();
+        std::shared_ptr<CP_SDK::XUI::XUITabControl> BuildFaceTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildIKSettingsTab();
         std::shared_ptr<CP_SDK::XUI::XUITabControl> BuildFingerPoseSettingsTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildLocoSettingsTab();
