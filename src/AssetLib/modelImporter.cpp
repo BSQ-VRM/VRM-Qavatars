@@ -138,25 +138,29 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
         }
     }
 
-    /*for (size_t k = 0; k < mesh->mNumAnimMeshes; k++)
+    for (size_t k = 0; k < mesh->mNumAnimMeshes; k++)
     {
-        meshData.morphTargetVertices.push_back({});
-        meshData.morphTargetNormals.push_back({});
-        meshData.morphTargetTangents.push_back({});
         auto animMesh = mesh->mAnimMeshes[k];
         std::string name = animMesh->mName.C_Str();
-        meshData.morphTargetNames.push_back(animMesh->mName.C_Str());
+        if(!meshData.morphTargetVertices.contains(name))
+        {
+            meshData.morphTargetVertices[name] = {};
+            meshData.morphTargetNormals[name] = {};
+            meshData.morphTargetTangents[name] = {};
+        }
         for (size_t i = 0; i < animMesh->mNumVertices; i++)
         {
             auto vert = animMesh->mVertices[i];
-            meshData.morphTargetVertices[k].push_back(UnityEngine::Vector3(vert.x, vert.y, vert.z));
+            auto ogVert = mesh->mVertices[i];
+            meshData.morphTargetVertices[name].push_back(UnityEngine::Vector3(vert.x - ogVert.x, vert.y - ogVert.y, vert.z - ogVert.z));
         }
         if (animMesh->mNormals != nullptr)
         {
             for (size_t i = 0; i < animMesh->mNumVertices; i++)
             {
                 auto norm = animMesh->mNormals[i];
-                meshData.morphTargetNormals[k].push_back(UnityEngine::Vector3(norm.x, norm.y, norm.z));
+                auto ogNorm = mesh->mNormals[i];
+                meshData.morphTargetNormals[name].push_back(UnityEngine::Vector3(norm.x - ogNorm.x, norm.y - ogNorm.y, norm.z - ogNorm.z));
             }
         }
         if (animMesh->mTangents != nullptr)
@@ -164,11 +168,11 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
             for (size_t i = 0; i < animMesh->mNumVertices; i++)
             {
                 auto tang = animMesh->mTangents[i];
-                meshData.morphTargetTangents[k].push_back(UnityEngine::Vector3(tang.x, tang.y, tang.z));
+                meshData.morphTargetTangents[name].push_back(UnityEngine::Vector3(tang.x, tang.y, tang.z));
             }
         }
         getLogger().info("%s", animMesh->mName.C_Str());
-    }*/
+    }
     
     //TODO: Load in animations/blendshapes. Do we do this now or as a postprocess step?
 
@@ -210,29 +214,37 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
         getLogger().info("loaded bones");
         
         unityMesh->set_boneWeights(ArrayUtils::vector2ArrayW(convertedBW));
-
+        getLogger().info("x1");
         unityMesh->set_subMeshCount(mesh.indices.size());
+        getLogger().info("x2");
         uint baseVertex = 0;
         for (int i = 0; i < mesh.indices.size(); i++)
         {
+            getLogger().info("x3");
             unityMesh->SetIndices(ArrayW<int>(ArrayUtils::vector2ArrayW(mesh.indices[i])), mesh.topology[i], i, false, (int)baseVertex);
             baseVertex += mesh.vertexCounts[i];
         }
+        getLogger().info("x4");
         unityMesh->RecalculateBounds();
-
+        getLogger().info("x5");
         //Support blendshapes one day
-        /*if (mesh.morphTargetVertices.size() > 0)
+        if (mesh.morphTargetVertices.size() > 0)
         {
-            for (int i = 0; i < mesh.morphTargetVertices.size(); i++)
+            getLogger().info("x6");
+            for (auto const& [name, _] : mesh.morphTargetVertices)
             {
-                auto targetName = mesh.morphTargetNames[i];
-                unityMesh->AddBlendShapeFrame(targetName, 100,
-                    ArrayUtils::vector2ArrayW(mesh.morphTargetVertices[i]),
-                    mesh.morphTargetNormals.size() > 0 ? ArrayUtils::vector2ArrayW(mesh.morphTargetNormals[i]) : nullptr,
-                    mesh.morphTargetTangents.size() > 0 ? ArrayUtils::vector2ArrayW(mesh.morphTargetTangents[i]) : nullptr
+                getLogger().info("name %s", name.c_str());
+                auto verts = mesh.morphTargetVertices[name];
+                auto norms = mesh.morphTargetNormals[name];
+                auto tangs = mesh.morphTargetTangents[name];
+                getLogger().info("%lu, %lu, %lu", verts.size(), norms.size(), tangs.size());
+                unityMesh->AddBlendShapeFrame(name, 100,
+                    ArrayUtils::vector2ArrayW(verts),
+                    ArrayUtils::vector2ArrayW(norms),
+                    nullptr
                 );
             }
-        }*/
+        }
 
         /*if (mesh.normals.size() < 1 && mesh.topology[0] == UnityEngine::MeshTopology::Triangles)
         {
@@ -563,7 +575,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     targetManager->vrik = vrik;
     targetManager->Initialize();
 
-    auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Neck);
+    /*auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Neck);
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
@@ -595,6 +607,11 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             newObj->set_layer(6); //First Person
             gameObject->set_layer(3); //Third Person
         }
+    }*/
+
+    for (auto renderer : modelContext->rootGameObject->GetComponentsInChildren<UnityEngine::SkinnedMeshRenderer*>())
+    {
+        renderer->SetBlendShapeWeight(14, 100.0f);
     }
 
     auto secondary = UnityEngine::GameObject::New_ctor("Secondary");

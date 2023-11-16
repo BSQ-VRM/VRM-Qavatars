@@ -1,5 +1,6 @@
 #pragma once
 #include "main.hpp"
+#include <map>
 
 #include "UnityEngine/Vector4.hpp"
 #include "UnityEngine/Vector3.hpp"
@@ -35,10 +36,9 @@ namespace AssetLib::Structure
         std::vector<int> materialIdxs;
 
         //Blend Shapes
-        std::vector<std::string> morphTargetNames;
-        std::vector<std::vector<UnityEngine::Vector3>> morphTargetVertices;
-        std::vector<std::vector<UnityEngine::Vector3>> morphTargetNormals;
-        std::vector<std::vector<UnityEngine::Vector3>> morphTargetTangents;
+        std::map<std::string, std::vector<UnityEngine::Vector3>> morphTargetVertices;
+        std::map<std::string, std::vector<UnityEngine::Vector3>> morphTargetNormals;
+        std::map<std::string, std::vector<UnityEngine::Vector3>> morphTargetTangents;
 
         std::vector<UnityEngine::MeshTopology> topology;
         std::vector<std::vector<int>> indices;
