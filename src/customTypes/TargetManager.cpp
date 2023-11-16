@@ -64,7 +64,7 @@ void VRMQavatars::TargetManager::Update()
             if(sab == nullptr) return;
             leftSaber = sab->get_transform()->get_parent();
             getLogger().info("x6");
-            if(!leftSaber) return;
+            if(leftSaber.ptr() == nullptr) return;
         }
         getLogger().info("x7");
 
@@ -75,7 +75,7 @@ void VRMQavatars::TargetManager::Update()
             if(sab == nullptr) return;
             rightSaber = sab->get_transform()->get_parent();
             getLogger().info("x9");
-            if(!rightSaber) return;
+            if(rightSaber.ptr() == nullptr) return;
         }
         getLogger().info("x10");
 

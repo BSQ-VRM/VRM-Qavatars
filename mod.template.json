@@ -10,7 +10,7 @@
   "description": "A VRM based Custom Avatar mod for Beat Saber",
   "dependencies": [],
   "modFiles": [],
-  "libraryFiles": [],
+  "libraryFiles": ["libOVRLipSync.so"],
   "fileCopies": [
     {
       "name": "shaders.sbund",

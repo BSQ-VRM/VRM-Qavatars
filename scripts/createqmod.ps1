@@ -21,6 +21,7 @@ $mod = "./mod.json"
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
+
 $modJson = Get-Content $mod -Raw | ConvertFrom-Json
 
 if ($qmodName -eq "") {
@@ -52,11 +53,15 @@ foreach ($lib in $modJson.libraryFiles) {
         $path = "./extern/libs/" + $lib
     }
     if (-not (Test-Path $path)) {
+        $path = "./OVRLipSync/" + $lib
+    }
+    if (-not (Test-Path $path)) {
         Write-Output "Error: could not find dependency: $path"
         exit 1
     }
     $filelist += $path
 }
+
 $filelist += "./shaders.sbund";
 
 $zip = $qmodName + ".zip"
