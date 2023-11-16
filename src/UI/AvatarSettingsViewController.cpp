@@ -349,6 +349,27 @@ namespace VRMQavatars::UI::ViewControllers {
             });
     }
 
+    std::shared_ptr<CP_SDK::XUI::XUITabControl> AvatarSettingsViewController::BuildVMCTab()
+    {
+        return CP_SDK::XUI::XUITabControl::Make({
+                {
+                    u"Reveiver",
+                    CP_SDK::XUI::XUIVLayout::Make({
+                    })
+                },
+                {
+                    u"Sender",
+                    CP_SDK::XUI::XUIVLayout::Make({
+                    })
+                },
+                {
+                    u"FBT",
+                    CP_SDK::XUI::XUIVLayout::Make({
+                    })
+                }
+            });
+    }
+
     std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildIKSettingsTab()
     {
         return CP_SDK::XUI::XUIHLayout::Make(
