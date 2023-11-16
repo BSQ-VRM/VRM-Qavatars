@@ -281,7 +281,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                 CP_SDK::XUI::XUIText::Make(u"Facial Expression Events"),
                                 CP_SDK::XUI::XUIToggle::Make()
                             })
-                            ->SetSpacing(-1.0f)
+                            ->SetSpacing(-0.5f)
                             ->AsShared(),
                             CP_SDK::XUI::XUIVLayout::Make({
                                 CP_SDK::XUI::XUIText::Make(u"Mock Eye Movement"),
@@ -289,7 +289,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                 CP_SDK::XUI::XUIText::Make(u"Default Facial Expression"),
                                 CP_SDK::XUI::XUIToggle::Make()
                             })
-                            ->SetSpacing(-1.0f)
+                            ->SetSpacing(-0.5f)
                             ->AsShared()
                         }),
                         CP_SDK::XUI::XUISecondaryButton::Make(u"Blendshape Triggers")
@@ -310,7 +310,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Threshold"),
                                     CP_SDK::XUI::XUISlider::Make(),
                                 })
-                                ->SetSpacing(-1.0f)
+                                ->SetSpacing(-0.5f)
                                 ->AsShared(),
                                 CP_SDK::XUI::XUIVLayout::Make({
                                     CP_SDK::XUI::XUIText::Make(u"Weight"),
@@ -318,7 +318,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Framerate"),
                                     CP_SDK::XUI::XUISlider::Make()
                                 })
-                                ->SetSpacing(-1.0f)
+                                ->SetSpacing(-0.5f)
                                 ->AsShared()
                             }),
                             CP_SDK::XUI::XUIHLayout::Make({
@@ -328,7 +328,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Weight E"),
                                     CP_SDK::XUI::XUISlider::Make(),
                                 })
-                                ->SetSpacing(-1.0f)
+                                ->SetSpacing(-0.5f)
                                 ->AsShared(),
                                 CP_SDK::XUI::XUIVLayout::Make({
                                     CP_SDK::XUI::XUIText::Make(u"Weight ih"),
@@ -338,7 +338,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Weight ou"),
                                     CP_SDK::XUI::XUISlider::Make()
                                 })
-                                ->SetSpacing(-1.0f)
+                                ->SetSpacing(-0.5f)
                                 ->AsShared()
                             })
                         })
