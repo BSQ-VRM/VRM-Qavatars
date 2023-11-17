@@ -39,46 +39,32 @@ void VRMQavatars::VRMSpringBone::SetLocalRotationsIdentity()
 
 void VRMQavatars::VRMSpringBone::Setup(bool force)
 {
-    getLogger().info("x1");
     if(rootBones)
     {
-        getLogger().info("x2");
         if (force || this->initialLocalRotationMap.size() == 0)
         {
-            getLogger().info("x3");
             initialLocalRotationMap = std::map<UnityEngine::Transform*, UnityEngine::Quaternion>();
         }
         else
         {
-            getLogger().info("x4");
             for (auto& pair : initialLocalRotationMap)
             {
-                getLogger().info("x5");
                 pair.first->set_localRotation(pair.second);
             }
-            getLogger().info("x6");
             initialLocalRotationMap.clear();
         }
-        getLogger().info("x7");
         verlet.clear();
-        getLogger().info("x8");
         for (auto& boneTrans : rootBones)
         {
-            getLogger().info("x9");
             if(boneTrans != nullptr)
             {
-                getLogger().info("x10");
                 for (auto& child : boneTrans->GetComponentsInChildren<UnityEngine::Transform*>(true))
                 {
-                    getLogger().info("x11");
                     initialLocalRotationMap[child] = child->get_localRotation();
                 }
-                getLogger().info("x12");
                 SetupRecursive(center, boneTrans);
             }
-            getLogger().info("x13");
         }
-        getLogger().info("x14");
     }
 }
 

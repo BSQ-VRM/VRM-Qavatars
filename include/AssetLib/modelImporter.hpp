@@ -43,6 +43,8 @@
 
 #include "customTypes/VRMSpringBone.hpp"
 
+#include "AssetLib/structure/VRM/VRMBlendShapeMaster.hpp"
+
 namespace AssetLib
 {
     class ModelImporter
@@ -50,9 +52,9 @@ namespace AssetLib
         public:
         //Should work with any file type that assimp supports
         //Also works with VRM files but will not parse out springbones and other stuff
-        static AssetLib::Structure::ModelContext* Load(const std::string& filename, bool loadMaterials);
+        static Structure::ModelContext* Load(const std::string& filename, bool loadMaterials);
         //Use ONLY for vrm files
-        static AssetLib::Structure::VRM::VRMModelContext* LoadVRM(const std::string& filename, UnityEngine::Shader* mtoon);
+        static Structure::VRM::VRMModelContext* LoadVRM(const std::string& filename, UnityEngine::Shader* mtoon);
 
         static SafePtrUnity<UnityEngine::Shader> mtoon;
     };

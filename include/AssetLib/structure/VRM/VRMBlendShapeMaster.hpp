@@ -1,17 +1,58 @@
 #pragma once
 #include <vector>
+
 #include "vrm/vrmIncludes.hpp"
 
 namespace AssetLib::Structure::VRM
 {
+    enum BlendShapePreset
+    {
+        Unknown,
+        Neutral,
+        A,
+        I,
+        U,
+        E,
+        O,
+        Blink,
+        Joy,
+        Angry,
+        Sorrow,
+        Fun,
+        LookUp,
+        LookDown,
+        LookLeft,
+        LookRight,
+        Blink_L,
+        Blink_R
+    };
+
     struct VRMBlendShapeBind
     {
+        VRMBlendShapeBind(const int index, const int mesh, const float weight)
+            : index(index),
+              mesh(mesh),
+              weight(weight)
+        {
+        }
+
+        VRMBlendShapeBind() = default;
+
         int index;
         int mesh;
         float weight;
     };
 
-    struct VRMBlendshapeMaterialbind {
+    struct VRMBlendshapeMaterialBind {
+        VRMBlendshapeMaterialBind(const std::string& material_name, const std::string& property_name,
+            const std::vector<float>& target_value)
+            : materialName(material_name),
+              propertyName(property_name),
+              targetValue(target_value)
+        {
+        }
+        VRMBlendshapeMaterialBind() = default;
+
         std::string materialName;
         std::string propertyName;
         std::vector<float> targetValue;
@@ -21,9 +62,9 @@ namespace AssetLib::Structure::VRM
     {
         std::vector<VRMBlendShapeBind> binds;
         bool isBinary;
-        std::vector<VRMBlendshapeMaterialbind> materialBinds;
+        std::vector<VRMBlendshapeMaterialBind> materialBinds;
         std::string name;
-        std::string presetName;
+        BlendShapePreset preset;
     };
 
     class VRMBlendShapeMaster
@@ -33,25 +74,25 @@ namespace AssetLib::Structure::VRM
 
         static VRMBlendShapeMaster* LoadFromVRM0(VRMC_VRM_0_0::Vrm vrm)
         {
-            const std::vector<std::string> PresetNameMappings = {
-                "Unknown",
-                "Neutral",
-                "A",
-                "I",
-                "U",
-                "E",
-                "O",
-                "Blink",
-                "Joy",
-                "Angry",
-                "Sorrow",
-                "Fun",
-                "Lookup",
-                "Lookdown",
-                "Lookleft",
-                "Lookright",
-                "Blink_l",
-                "Blink_r"
+            const std::vector PresetNameMappings = {
+                Unknown,
+                Neutral,
+                A,
+                I,
+                U,
+                E,
+                O,
+                Blink,
+                Joy,
+                Angry,
+                Sorrow,
+                Fun,
+                LookUp,
+                LookDown,
+                LookLeft,
+                LookRight,
+                Blink_L,
+                Blink_R
             };
 
             VRMBlendShapeMaster* master = new VRMBlendShapeMaster();
@@ -63,9 +104,9 @@ namespace AssetLib::Structure::VRM
 
                 bSGroup.isBinary = isBinary;
                 bSGroup.name = name;
-                bSGroup.presetName = PresetNameMappings[static_cast<int>(presetName)];
+                bSGroup.preset = PresetNameMappings[static_cast<int>(presetName)];
                 bSGroup.binds = std::vector<VRMBlendShapeBind>(binds.size());
-                bSGroup.materialBinds = std::vector<VRMBlendshapeMaterialbind>(materialValues.size());
+                bSGroup.materialBinds = std::vector<VRMBlendshapeMaterialBind>(materialValues.size());
 
                 for (int k = 0; k < binds.size(); ++k)
                 {
@@ -76,7 +117,7 @@ namespace AssetLib::Structure::VRM
                 for (int k = 0; k < materialValues.size(); ++k)
                 {
                     const auto [materialName, propertyName, targetValue] = materialValues[k];
-                    bSGroup.materialBinds[k] = VRMBlendshapeMaterialbind(materialName, propertyName, targetValue);
+                    bSGroup.materialBinds[k] = VRMBlendshapeMaterialBind(materialName, propertyName, targetValue);
                 }
 
                 master->groups[i] = bSGroup;

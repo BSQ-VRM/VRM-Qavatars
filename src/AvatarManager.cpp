@@ -3,6 +3,8 @@
 #include <functional>
 #include <HandController.hpp>
 
+#include "customTypes/BlendShape/BlendShapeController.hpp"
+
 namespace VRMQavatars {
     AssetLib::Structure::VRM::VRMModelContext* AvatarManager::currentContext;
     RootMotion::FinalIK::VRIK* AvatarManager::_vrik;
@@ -12,16 +14,27 @@ namespace VRMQavatars {
 
     void AvatarManager::SetContext(AssetLib::Structure::VRM::VRMModelContext* context)
     {
+        getLogger().info("x1");
         if(currentContext != nullptr)
         {
             UnityEngine::GameObject::Destroy(currentContext->rootGameObject);
             delete currentContext;
         }
+        getLogger().info("x2");
         currentContext = context;
         const auto root = currentContext->rootGameObject;
+        getLogger().info("x3");
         _vrik = root->GetComponent<RootMotion::FinalIK::VRIK*>();
+        getLogger().info("x4");
         _targetManager = root->GetComponent<TargetManager*>();
         _wristTwistFix = root->GetComponent<WristTwistFix*>();
+        getLogger().info("x5");
+        auto blendShapeMaster = root->GetComponent<BlendShape::BlendShapeController*>();
+        getLogger().info("x6");
+        blendShapeMaster->Init();
+        getLogger().info("x7");
+        blendShapeMaster->SetBlendshape(AssetLib::Structure::VRM::Blink_L, 100.0f);
+        getLogger().info("x8");
 
         OnLoad();
     }

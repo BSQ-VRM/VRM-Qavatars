@@ -6,6 +6,18 @@
 
 namespace VRMQavatars::AniLipSync
 {
+    CP_SDK_IL2CPP_INHERIT_INIT(LowLatencyLipSyncContext);
+
+    CP_SDK_IL2CPP_DECLARE_CTOR_IMPL(LowLatencyLipSyncContext)
+    {
+
+    }
+
+    CP_SDK_IL2CPP_DECLARE_DTOR_MONOBEHAVIOUR_IMPL(LowLatencyLipSyncContext)
+    {
+
+    }
+
     void LowLatencyLipSyncContext::Start()
     {
         if (Microphone::get_devices().size() == 0)

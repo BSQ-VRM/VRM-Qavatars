@@ -1,5 +1,9 @@
 #include "AssetLib/modelImporter.hpp"
 
+#include "customTypes/AniLipSync/AnimMorphTarget.hpp"
+#include "customTypes/AniLipSync/LowLatencyLipSyncContext.hpp"
+#include "customTypes/BlendShape/BlendShapeController.hpp"
+
 SafePtrUnity<UnityEngine::Shader> AssetLib::ModelImporter::mtoon;
 
 //Used for debugging armatures
@@ -561,13 +565,15 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             renderer->set_sharedMaterials(matArray);
         }
     }
-    getLogger().info("x11");
-    
+
+    modelContext->blendShapeMaster = Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm);
 
     auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->nodes, modelContext->armature.value().rootBone->gameObject);
 
     auto anim = modelContext->rootGameObject->AddComponent<UnityEngine::Animator*>();
     anim->set_avatar(avatar);
+
+    modelContext->rootGameObject->AddComponent<VRMQavatars::BlendShape::BlendShapeController*>();
 
     auto vrik = modelContext->rootGameObject->AddComponent<RootMotion::FinalIK::VRIK*>();
 
@@ -575,7 +581,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     targetManager->vrik = vrik;
     targetManager->Initialize();
 
-    /*auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Neck);
+    auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Neck);
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
@@ -607,15 +613,13 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             newObj->set_layer(6); //First Person
             gameObject->set_layer(3); //Third Person
         }
-    }*/
-
-    for (auto renderer : modelContext->rootGameObject->GetComponentsInChildren<UnityEngine::SkinnedMeshRenderer*>())
-    {
-        renderer->SetBlendShapeWeight(14, 100.0f);
     }
 
     auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
     secondary->get_transform()->SetParent(modelContext->rootGameObject->get_transform());
+
+    modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::LowLatencyLipSyncContext*>();
+    modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::AnimMorphTarget*>();
 
     auto colliders = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>();
     for (auto colliderGroup : vrm.secondaryAnimation.colliderGroups)
@@ -640,7 +644,6 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     auto springs = vrm.secondaryAnimation.boneGroups;
     for (size_t i = 0; i < springs.size(); i++)
     {
-        getLogger().info("x13");
         auto springRef = springs[i];
 
         auto springBone = secondary->get_gameObject()->AddComponent<VRMQavatars::VRMSpringBone*>();

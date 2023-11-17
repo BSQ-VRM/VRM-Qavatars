@@ -1,6 +1,7 @@
 #pragma once
 
 #include "customTypes/OVRLipSyncPlugin/OVRLipSyncContextBase.hpp"
+#include "UnityEngine/AudioClip.hpp"
 
 namespace VRMQavatars::AniLipSync {
     class LowLatencyLipSyncContext : public OVRLipSync::OVRLipSyncContextBase

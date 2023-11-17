@@ -45,6 +45,7 @@
 #include "config/ConfigManager.hpp"
 
 #include "questui/shared/ArrayUtil.hpp"
+#include "AssetLib/structure/VRM/VRMBlendShapeMaster.hpp"
 static ModInfo modInfo;
 
 Logger& getLogger() {

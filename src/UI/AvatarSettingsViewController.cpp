@@ -672,7 +672,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
                         {
                             auto settings = Config::ConfigManager::GetLocomotionSettings();
-                            settings.stepOffset = val;
+                            settings.stepOffset.z = val;
                             Config::ConfigManager::SetLocomotionSettings(settings);
                             AvatarManager::SetStepOffsetZ(val);
                         }))
