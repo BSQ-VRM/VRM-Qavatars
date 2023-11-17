@@ -4,6 +4,9 @@
 
 #include "UnityEngine/AudioSettings.hpp"
 
+#include "System/Runtime/InteropServices/GCHandle.hpp"
+#include "System/Runtime/InteropServices/GCHandleType.hpp"
+
 namespace VRMQavatars::OVRLipSync
 {
     CP_SDK_IL2CPP_INHERIT_INIT(OVRLipSync);
@@ -23,17 +26,24 @@ namespace VRMQavatars::OVRLipSync
 
     void OVRLipSync::Awake()
     {
-        if(sInstance.ptr() == nullptr)
+        getLogger().info("ovr x1");
+        if(!sInstance)
         {
+            getLogger().info("ovr x2");
             sInstance = this;
             if(IsInitialized() != ovrLipSyncSuccess)
             {
+                getLogger().info("ovr x3");
                 sInitialized = Initialize();
+                getLogger().info("ovr x4");
                 if(IsInitialized() != ovrLipSyncSuccess)
                 {
+                    getLogger().info("ovr x5");
                     getLogger().error("OvrLipSync Awake: Failed to init Speech Rec library");
                 }
+                getLogger().info("ovr x6");
             }
+            getLogger().info("ovr x7");
             return;
         }
         getLogger().error("OVRLipSync Awake: Only one instance of OVRPLipSync can exist in the scene.");
@@ -82,7 +92,7 @@ namespace VRMQavatars::OVRLipSync
         return sInitialized;
     }
 
-    ovrLipSyncResult OVRLipSync::ProcessFrame(ovrLipSyncContext context, ArrayW<float> audioBuffer, ovrLipSyncFrame frame, bool stereo)
+    ovrLipSyncResult OVRLipSync::ProcessFrame(ovrLipSyncContext context, float* audioBuffer, int bufferSize, ovrLipSyncFrame frame, bool stereo)
     {
         if (IsInitialized() != ovrLipSyncSuccess)
         {
@@ -90,10 +100,15 @@ namespace VRMQavatars::OVRLipSync
         }
 
         auto audioDataType = (stereo ? ovrLipSyncAudioDataType_F32_Stereo : ovrLipSyncAudioDataType_F32_Mono);
-        auto num = (uint)(stereo ? (audioBuffer.size() / 2) : audioBuffer.size());
+        auto num = (uint)(stereo ? (bufferSize / 2) : bufferSize);
 
-        auto result = ovrLipSyncDll_ProcessFrameEx(context, audioBuffer.convert(), num, audioDataType, &frame);
+        //float* testBuffer = new float[bufferSize];
+        //memcpy(audioBuffer, testBuffer, sizeof(float)*bufferSize);
 
+        auto gcHandle = System::Runtime::InteropServices::GCHandle::Alloc(static_cast<Il2CppArray*>(ArrayW<float>(audioBuffer)), System::Runtime::InteropServices::GCHandleType::Pinned);
+        auto result = ovrLipSyncDll_ProcessFrameEx(context, gcHandle.AddrOfPinnedObject(), num, audioDataType, &frame);
+        gcHandle.Free();
+        //delete[] testBuffer;
         return result;
     }
 

@@ -40,28 +40,29 @@ namespace VRMQavatars::AniLipSync
             return;
         }
         clip->GetData(microphoneBuffer, 0);
-        while (GetDataLength(microphoneBuffer.size(), head, position) > processBuffer.size())
+        while (GetDataLength(microphoneBuffer.size(), head, position) > procBufSize)
         {
-            if (const int num = microphoneBuffer.size() - head; num < processBuffer.size())
+            if (const int num = microphoneBuffer.size() - head; num < procBufSize)
             {
                 for (int i = 0; i < num; i++)
                 {
                     processBuffer[i] = microphoneBuffer[head + i] * gain;
                 }
-                for (int j = num; j < processBuffer.size() - num; j++)
+                for (int j = num; j < procBufSize - num; j++)
                 {
                     processBuffer[j] = microphoneBuffer[j - num] * gain;
                 }
             }
             else
             {
-                for (int k = 0; k < processBuffer.size(); k++)
+                for (int k = 0; k < procBufSize; k++)
                 {
                     processBuffer[k] = microphoneBuffer[head + k] * gain;
                 }
             }
-            OVRLipSync::OVRLipSync::ProcessFrame(context, processBuffer, frame, false);
-            head += processBuffer.size();
+
+            OVRLipSync::OVRLipSync::ProcessFrame(context, processBuffer, procBufSize, frame, false);
+            head += procBufSize;
             if (head > microphoneBuffer.size())
             {
                 head -= microphoneBuffer.size();
@@ -89,11 +90,12 @@ namespace VRMQavatars::AniLipSync
     float LowLatencyLipSyncContext::GetMicVolume()
     {
         float num = 0.0f;
-        for (const float num2 : processBuffer)
+        for (int k = 0; k < procBufSize; k++)
         {
+            float num2 = processBuffer[k];
             num += std::powf(num2, 2.0f);
         }
-        return std::sqrtf(num / static_cast<float>(processBuffer.size()));
+        return std::sqrtf(num / static_cast<float>(procBufSize));
     }
 
     int LowLatencyLipSyncContext::GetDataLength(const int bufferLength, const int head, const int tail)

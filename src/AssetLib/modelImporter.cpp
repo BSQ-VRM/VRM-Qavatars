@@ -556,15 +556,17 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         {
             auto mesh = node->mesh.value();
             ArrayW<UnityEngine::Material*> matArray = ArrayW<UnityEngine::Material*>(mesh.materialIdxs.size());
-            for (size_t i = 0; i < mesh.materialIdxs.size(); i++)
+            for (size_t k = 0; k < mesh.materialIdxs.size(); k++)
             {
-                matArray[i] = materials[mesh.materialIdxs[i]];
+                matArray[k] = materials[mesh.materialIdxs[k]];
             }
             
             auto renderer = node->gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
             renderer->set_sharedMaterials(matArray);
         }
     }
+
+    modelContext->rootGameObject->AddComponent<VRMQavatars::OVRLipSync::OVRLipSync*>();
 
     modelContext->blendShapeMaster = Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm);
 

@@ -27,7 +27,8 @@ namespace VRMQavatars::AniLipSync {
         int head = -1;
         int lengthSeconds = 1;
         ArrayW<float> microphoneBuffer;
-        ArrayW<float> processBuffer = ArrayW<float>(1024);
+        float* processBuffer = new float[1024];
+        int procBufSize = 1024;
         std::string selectedDevice;
 
         const std::string defaultDevice = "(Default Device)";
