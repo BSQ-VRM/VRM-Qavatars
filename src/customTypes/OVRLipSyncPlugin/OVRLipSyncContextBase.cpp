@@ -80,5 +80,8 @@ namespace VRMQavatars::OVRLipSync
         _smoothing = value;
     }
 
-
+    int OVRLipSyncContextBase::get_smoothing()
+    {
+        return _smoothing;
+    }
 };

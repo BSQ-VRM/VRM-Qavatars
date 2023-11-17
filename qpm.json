@@ -70,6 +70,11 @@
       "id": "conditional-dependencies",
       "versionRange": "^0.1.0",
       "additionalData": {}
+    },
+    {
+      "id": "fmt",
+      "versionRange": "^10.0.0",
+      "additionalData": {}
     }
   ],
   "workspace": {

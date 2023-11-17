@@ -47,11 +47,6 @@
 #include "questui/shared/ArrayUtil.hpp"
 static ModInfo modInfo;
 
-Configuration& getConfig() {
-    static Configuration config(modInfo);
-    return config;
-}
-
 Logger& getLogger() {
     static Logger* logger = new Logger(modInfo, LoggerOptions(false, true));
     return *logger;
@@ -127,7 +122,7 @@ custom_types::Helpers::Coroutine Setup() {
     auto mainCamera = UnityEngine::GameObject::FindGameObjectWithTag("MainCamera");
     mainCamera->GetComponent<UnityEngine::Camera*>()->set_cullingMask(fpmask);
 
-    /*auto mirror = UnityEngine::GameObject::Instantiate(data->mirror);
+    auto mirror = UnityEngine::GameObject::Instantiate(data->mirror);
 
     auto screen = BSML::FloatingScreen::CreateFloatingScreen({32.5f, 54.0f}, true, {0.0f, 1.5f, 2.0f}, UnityEngine::Quaternion::Euler(15.0f, 180.0f, 0.0f), 0.0f, true);
     mirror->get_transform()->SetParent(screen->get_transform(), false);
@@ -142,9 +137,6 @@ custom_types::Helpers::Coroutine Setup() {
     auto parent = camera->get_transform()->get_parent();
     UnityEngine::GameObject::Destroy(camera->get_gameObject());
 
-    auto mainCamera = UnityEngine::GameObject::FindGameObjectWithTag("MainCamera");
-    mainCamera->GetComponent<UnityEngine::Camera*>()->set_cullingMask(fpmask);
-
     auto newCamera = UnityEngine::GameObject::Instantiate(mainCamera, parent, false);
     auto camcomp = newCamera->GetComponent<UnityEngine::Camera*>();
 
@@ -154,7 +146,7 @@ custom_types::Helpers::Coroutine Setup() {
 
     camcomp->set_targetDisplay(0);
     camcomp->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
-    camcomp->set_tag("");
+    camcomp->set_tag("Untagged");
 
     camcomp->set_targetTexture(renderTex);
 
@@ -171,7 +163,6 @@ custom_types::Helpers::Coroutine Setup() {
         x->set_material(GetBGMat("UINoGlow"));
         x->set_color({1.0f, 1.0f, 1.0f, 1.0f});
     }
-*/
     co_return;
 }
  
@@ -187,21 +178,19 @@ extern "C" void setup(ModInfo& info) {
     info.id = MOD_ID;
     info.version = VERSION;
     modInfo = info;
-    
-    getConfig().Load();
+
+    getGlobalConfig().Init(Configuration::getConfigFilePath(modInfo));
 }
 
 extern "C" void load() {
     il2cpp_functions::Init();
-
-    getGlobalConfig().Init(Configuration::getConfigFilePath(modInfo));
 
     mkpath(vrm_path);
     mkpath(avaconfig_path);
 
     custom_types::Register::AutoRegister(); 
 
-    BSML::Register::RegisterMainMenu<VRMQavatars::UI::FlowCoordinators::AvatarsFlowCoordinator*>("Avatars", "VRM Custom Avatars");
+    BSML::Register::RegisterMainMenu<FlowCoordinators::AvatarsFlowCoordinator*>("Avatars", "VRM Custom Avatars");
 
     INSTALL_HOOK(getLogger(), MainMenuUIHook);
 }

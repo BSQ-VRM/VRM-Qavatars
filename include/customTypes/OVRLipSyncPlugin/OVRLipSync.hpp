@@ -30,7 +30,7 @@ namespace VRMQavatars::OVRLipSync
         static ovrLipSyncResult DestroyContext(ovrLipSyncContext context);
         static ovrLipSyncResult Initialize();
         static ovrLipSyncResult IsInitialized();
-        static ovrLipSyncResult ProcessFrame(ovrLipSyncContext context, std::vector<float> audioBuffer, ovrLipSyncFrame frame, bool stereo = true);
+        static ovrLipSyncResult ProcessFrame(ovrLipSyncContext context, ArrayW<float> audioBuffer, ovrLipSyncFrame frame, bool stereo = true);
         static ovrLipSyncResult SendSignal(ovrLipSyncContext context, ovrLipSyncSignals signal, int arg1, int arg2);
         static void Shutdown();
     };

@@ -10,7 +10,7 @@ namespace AssetLib::Structure::VRM
 {
     struct VRMSpringBoneColliderGroupData
     {
-        AssetLib::Structure::Node* nodeRef;
+        Node* nodeRef;
         std::vector<VRMSpringBoneColliderData> colliders;
     };
 };

@@ -49,6 +49,18 @@ namespace VRMQavatars::UI::Modals {
                         }))
                         ->AsShared()
                 }),
+                CP_SDK::XUI::XUIVLayout::Make({
+                    CP_SDK::XUI::XUIText::Make(u"Use Individual IK Settings"),
+                    CP_SDK::XUI::XUIToggle::Make()
+                        ->SetValue(AvatarManager::currentContext != nullptr ? Config::ConfigManager::GetAvatarConfig().OverrideIKSettings.GetValue() : false)
+                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                        ->OnValueChanged(CP_SDK::Utils::Action<bool>([this](bool val)
+                        {
+                            Config::ConfigManager::GetAvatarConfig().OverrideIKSettings.SetValue(val);
+                            VController->GetComponent<ViewControllers::AvatarSettingsViewController*>()->UpdateIKTab();
+                        }))
+                        ->AsShared()
+                }),
             }),
             CP_SDK::XUI::XUIPrimaryButton::Make(u"Close")
                 ->OnClick(CP_SDK::Utils::Action<>([this]

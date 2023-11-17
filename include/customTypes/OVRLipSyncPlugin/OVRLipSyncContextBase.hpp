@@ -16,7 +16,7 @@ namespace VRMQavatars::OVRLipSync {
         DECLARE_INSTANCE_METHOD(void, OnDestroy);
 
         DECLARE_INSTANCE_FIELD(UnityEngine::AudioSource*, audioSource);
-
+    public:
         void set_smoothing(int value);
         int get_smoothing();
 

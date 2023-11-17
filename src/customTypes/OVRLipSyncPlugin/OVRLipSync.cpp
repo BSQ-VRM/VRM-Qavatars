@@ -82,7 +82,7 @@ namespace VRMQavatars::OVRLipSync
         return sInitialized;
     }
 
-    ovrLipSyncResult OVRLipSync::ProcessFrame(ovrLipSyncContext context, std::vector<float> audioBuffer, ovrLipSyncFrame frame, bool stereo)
+    ovrLipSyncResult OVRLipSync::ProcessFrame(ovrLipSyncContext context, ArrayW<float> audioBuffer, ovrLipSyncFrame frame, bool stereo)
     {
         if (IsInitialized() != ovrLipSyncSuccess)
         {
@@ -92,7 +92,7 @@ namespace VRMQavatars::OVRLipSync
         auto audioDataType = (stereo ? ovrLipSyncAudioDataType_F32_Stereo : ovrLipSyncAudioDataType_F32_Mono);
         auto num = (uint)(stereo ? (audioBuffer.size() / 2) : audioBuffer.size());
 
-        auto result = ovrLipSyncDll_ProcessFrameEx(context, audioBuffer.data(), num, audioDataType, &frame);
+        auto result = ovrLipSyncDll_ProcessFrameEx(context, audioBuffer.convert(), num, audioDataType, &frame);
 
         return result;
     }

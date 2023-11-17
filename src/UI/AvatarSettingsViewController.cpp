@@ -33,19 +33,22 @@ namespace VRMQavatars::UI::ViewControllers {
     {
         configModal = CreateModal<Modals::IndividualConfigModal>();
         CP_SDK::XUI::Templates::FullRectLayoutMainView({
-            CP_SDK::XUI::Templates::TitleBar(u"Avatar Settings")->AsShared(),
-            CP_SDK::XUI::XUIIconButton::Make(QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::settings_png))
-                ->OnClick(CP_SDK::Utils::Action<>([this]
-                {
-                    ShowModal(configModal.Ptr());
-                }))
-                ->SetWidth(6.0f)
-                ->SetHeight(6.0f)
-                ->AsShared(),
+            CP_SDK::XUI::XUIHLayout::Make({
+                CP_SDK::XUI::XUIIconButton::Make(QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::settings_png))
+                    ->OnClick(CP_SDK::Utils::Action<>([this]
+                    {
+                        ShowModal(configModal.Ptr());
+                    }))
+                    ->SetWidth(6.0f)
+                    ->SetHeight(6.0f)
+                    ->AsShared(),
+                CP_SDK::XUI::Templates::TitleBar(u"Avatar Settings")->AsShared(),
+            }),
             CP_SDK::XUI::XUITabControl::Make(u"Settings Tab", {
                 { u"Calibration", BuildCalibrationTab() },
                 { u"Hands", BuildHandOffsetsTab() },
                 { u"Face", BuildFaceTab() },
+                { u"VMC", BuildVMCTab() },
                 { u"Fingers", BuildFingerPoseSettingsTab() },
                 { u"IK", BuildIKSettingsTab() },
                 { u"Locomotion", BuildLocoSettingsTab() },
@@ -111,18 +114,22 @@ namespace VRMQavatars::UI::ViewControllers {
     {
         return CP_SDK::XUI::XUIVLayout::Make(
             {
-                CP_SDK::XUI::XUIVSpacer::Make(0.1f),
+                CP_SDK::XUI::XUIText::Make(u"(Global)")
+                    ->SetFontSize(6.0f)
+                    ->AsShared(),
+                CP_SDK::XUI::XUIVSpacer::Make(0.3f),
 
                 CP_SDK::XUI::XUIText::Make(u"Calibration Type"),
                 CP_SDK::XUI::XUIDropdown::Make({ u"Match Armspans", u"Match Heights", u"Fixed" })
                     ->SetValue(convertToU16StringView(Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue()))
-                    ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([](int idx, std::u16string_view val)
+                    ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, std::u16string_view val)
                     {
+                        fixedSlider->SetInteractable(val == u"Fixed");
                         Config::ConfigManager::GetGlobalConfig().CalibrationType.SetValue(convertToUTF8(val));
                     }))
                     ->AsShared(),
 
-                CP_SDK::XUI::XUIVSpacer::Make(0.1f),
+                CP_SDK::XUI::XUIVSpacer::Make(0.2f),
 
                 CP_SDK::XUI::XUIText::Make(u"Fixed Scale"),
                 CP_SDK::XUI::XUISlider::Make()
@@ -134,7 +141,8 @@ namespace VRMQavatars::UI::ViewControllers {
                         Config::ConfigManager::GetGlobalConfig().FixedScale.SetValue(val);
                     }))
                     ->SetIncrements(0.1f)
-                    ->SetInteractable(false)
+                    ->SetInteractable(Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue() == "Fixed")
+                    ->Bind(&fixedSlider)
                     ->AsShared()
             }
         );
@@ -281,7 +289,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                 CP_SDK::XUI::XUIText::Make(u"Facial Expression Events"),
                                 CP_SDK::XUI::XUIToggle::Make()
                             })
-                            ->SetSpacing(-0.5f)
+                            ->SetSpacing(-0.3f)
                             ->AsShared(),
                             CP_SDK::XUI::XUIVLayout::Make({
                                 CP_SDK::XUI::XUIText::Make(u"Mock Eye Movement"),
@@ -289,7 +297,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                 CP_SDK::XUI::XUIText::Make(u"Default Facial Expression"),
                                 CP_SDK::XUI::XUIToggle::Make()
                             })
-                            ->SetSpacing(-0.5f)
+                            ->SetSpacing(-0.3f)
                             ->AsShared()
                         }),
                         CP_SDK::XUI::XUISecondaryButton::Make(u"Blendshape Triggers")
@@ -310,7 +318,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Threshold"),
                                     CP_SDK::XUI::XUISlider::Make(),
                                 })
-                                ->SetSpacing(-0.5f)
+                                ->SetSpacing(-0.3f)
                                 ->AsShared(),
                                 CP_SDK::XUI::XUIVLayout::Make({
                                     CP_SDK::XUI::XUIText::Make(u"Weight"),
@@ -318,7 +326,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Framerate"),
                                     CP_SDK::XUI::XUISlider::Make()
                                 })
-                                ->SetSpacing(-0.5f)
+                                ->SetSpacing(-0.3f)
                                 ->AsShared()
                             }),
                             CP_SDK::XUI::XUIHLayout::Make({
@@ -328,7 +336,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Weight E"),
                                     CP_SDK::XUI::XUISlider::Make(),
                                 })
-                                ->SetSpacing(-0.5f)
+                                ->SetSpacing(-0.3f)
                                 ->AsShared(),
                                 CP_SDK::XUI::XUIVLayout::Make({
                                     CP_SDK::XUI::XUIText::Make(u"Weight ih"),
@@ -338,7 +346,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Weight ou"),
                                     CP_SDK::XUI::XUISlider::Make()
                                 })
-                                ->SetSpacing(-0.5f)
+                                ->SetSpacing(-0.3f)
                                 ->AsShared()
                             })
                         })
@@ -381,7 +389,11 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(100.0f)
                         ->SetMinValue(-50.0f)
                         ->SetMaxValue(50.0f)
+                        ->SetValue(Config::ConfigManager::GetIKSettings().legSwivel)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            auto settings = Config::ConfigManager::GetIKSettings();
+                            settings.legSwivel = val;
+                            Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::SetLegSwivel(val);
                         }))
                         ->AsShared(),
@@ -390,7 +402,11 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(100.0f)
                         ->SetMinValue(-50.0f)
                         ->SetMaxValue(50.0f)
+                        ->SetValue(Config::ConfigManager::GetIKSettings().armSwivel)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            auto settings = Config::ConfigManager::GetIKSettings();
+                            settings.armSwivel = val;
+                            Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::SetArmSwivel(val);
                         }))
                         ->AsShared(),
@@ -399,19 +415,27 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(100.0f)
                         ->SetMinValue(0.0f)
                         ->SetMaxValue(5.0f)
+                        ->SetValue(Config::ConfigManager::GetIKSettings().bodyStiffness)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            auto settings = Config::ConfigManager::GetIKSettings();
+                            settings.bodyStiffness = val;
+                            Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::SetBodyStiffness(val);
                         }))
                         ->AsShared()
                 }),
                 CP_SDK::XUI::XUIVLayout::Make(
                 {
-                    CP_SDK::XUI::XUIText::Make(u"Shoulder Height"),
+                    CP_SDK::XUI::XUIText::Make(u"Shoulder Rotation Weight"),
                     CP_SDK::XUI::XUISlider::Make()
                         ->SetIncrements(10.0f)
                         ->SetMinValue(0.0f)
                         ->SetMaxValue(1.0f)
+                        ->SetValue(Config::ConfigManager::GetIKSettings().shoulderRotationWeight)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            auto settings = Config::ConfigManager::GetIKSettings();
+                            settings.shoulderRotationWeight = val;
+                            Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::SetShoulderRotation(val);
                         }))
                         ->AsShared(),
@@ -420,7 +444,11 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(80.0f)
                         ->SetMinValue(0.0f)
                         ->SetMaxValue(0.8f)
+                        ->SetValue(Config::ConfigManager::GetIKSettings().wristTwistFixAmount)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            auto settings = Config::ConfigManager::GetIKSettings();
+                            settings.wristTwistFixAmount = val;
+                            Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::SetWristFixWeight(val);
                         }))
                         ->AsShared(),
@@ -429,13 +457,27 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetIncrements(80.0f)
                         ->SetMinValue(0.0f)
                         ->SetMaxValue(0.8f)
+                        ->SetValue(Config::ConfigManager::GetIKSettings().shoulderTwistFixAmount)
                         ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val) {
+                            auto settings = Config::ConfigManager::GetIKSettings();
+                            settings.shoulderTwistFixAmount = val;
+                            Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::SetShoulderFixWeight(val);
                         }))
                         ->AsShared()
                 })
             }
         );
+    }
+
+    void AvatarSettingsViewController::UpdateIKTab()
+    {
+        legSwivelSlider->SetValue(Config::ConfigManager::GetIKSettings().legSwivel);
+        armSwivelSlider->SetValue(Config::ConfigManager::GetIKSettings().armSwivel);
+        bodyStiffnessSlider->SetValue(Config::ConfigManager::GetIKSettings().bodyStiffness);
+        shoulderRotationWeightSlider->SetValue(Config::ConfigManager::GetIKSettings().shoulderRotationWeight);
+        wristTwistFixSlider->SetValue(Config::ConfigManager::GetIKSettings().wristTwistFixAmount);
+        shoulderTwistFixSlider->SetValue(Config::ConfigManager::GetIKSettings().shoulderTwistFixAmount);
     }
 
     std::shared_ptr<CP_SDK::XUI::XUISlider> AvatarSettingsViewController::BuildFingerSlider(const int finger)
@@ -574,49 +616,68 @@ namespace VRMQavatars::UI::ViewControllers {
     {
         return CP_SDK::XUI::XUIHLayout::Make({
             CP_SDK::XUI::XUIVLayout::Make({
-                CP_SDK::XUI::XUIText::Make(u"Foot Distance"),
-                CP_SDK::XUI::XUISlider::Make()
-                    ->SetIncrements(50.0f)
-                    ->SetMinValue(0.0f)
-                    ->SetMaxValue(1.0f)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
-                    {
-                        AvatarManager::SetFootDist(val);
-                    }))
-                    ->AsShared(),
+                CP_SDK::XUI::XUIHLayout::Make({
+                    CP_SDK::XUI::XUIText::Make(u"Foot Distance"),
+                    CP_SDK::XUI::XUISlider::Make()
+                        ->SetIncrements(30.0f)
+                        ->SetMinValue(0.0f)
+                        ->SetMaxValue(0.3f)
+                        ->SetValue(Config::ConfigManager::GetLocomotionSettings().footDistance)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                        {
+                            auto settings = Config::ConfigManager::GetLocomotionSettings();
+                            settings.footDistance = val;
+                            Config::ConfigManager::SetLocomotionSettings(settings);
+                            AvatarManager::SetFootDist(val);
+                        }))
+                        ->AsShared(),
 
-                CP_SDK::XUI::XUIText::Make(u"Step Threshold"),
-                CP_SDK::XUI::XUISlider::Make()
-                    ->SetIncrements(50.0f)
-                    ->SetMinValue(0.0f)
-                    ->SetMaxValue(1.0f)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
-                    {
-                        AvatarManager::SetStepThreshold(val);
-                    }))
-                    ->AsShared(),
+                    CP_SDK::XUI::XUIText::Make(u"Step Threshold"),
+                    CP_SDK::XUI::XUISlider::Make()
+                        ->SetIncrements(30.0f)
+                        ->SetMinValue(0.0f)
+                        ->SetMaxValue(0.3f)
+                        ->SetValue(Config::ConfigManager::GetLocomotionSettings().stepThreshold)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                        {
+                            auto settings = Config::ConfigManager::GetLocomotionSettings();
+                            settings.stepThreshold = val;
+                            Config::ConfigManager::SetLocomotionSettings(settings);
+                            AvatarManager::SetStepThreshold(val);
+                        }))
+                        ->AsShared(),
+                }),
+                CP_SDK::XUI::XUIHLayout::Make({
+                    CP_SDK::XUI::XUIText::Make(u"Step Height"),
+                    CP_SDK::XUI::XUISlider::Make()
+                        ->SetIncrements(10.0f)
+                        ->SetMinValue(0.0f)
+                        ->SetMaxValue(0.1f)
+                        ->SetValue(Config::ConfigManager::GetLocomotionSettings().stepHeight)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                        {
+                            auto settings = Config::ConfigManager::GetLocomotionSettings();
+                            settings.stepHeight = val;
+                            Config::ConfigManager::SetLocomotionSettings(settings);
+                            AvatarManager::SetStepHeight(val);
+                        }))
+                        ->AsShared(),
 
-                CP_SDK::XUI::XUIText::Make(u"Step Height"),
-                CP_SDK::XUI::XUISlider::Make()
-                    ->SetIncrements(100.0f)
-                    ->SetMinValue(0.0f)
-                    ->SetMaxValue(1.0f)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
-                    {
-                        AvatarManager::SetStepHeight(val);
-                    }))
-                    ->AsShared(),
-
-                CP_SDK::XUI::XUIText::Make(u"Step Offset Z"),
-                CP_SDK::XUI::XUISlider::Make()
-                    ->SetIncrements(20.0f)
-                    ->SetMinValue(-1.0f)
-                    ->SetMaxValue(1.0f)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
-                    {
-                        AvatarManager::SetStepOffsetZ(val);
-                    }))
-                    ->AsShared(),
+                    CP_SDK::XUI::XUIText::Make(u"Step Offset Z"),
+                    CP_SDK::XUI::XUISlider::Make()
+                        ->SetIncrements(40.0f)
+                        ->SetMinValue(-0.2f)
+                        ->SetMaxValue(0.2f)
+                        ->SetValue(Config::ConfigManager::GetLocomotionSettings().stepOffset.z)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                        {
+                            auto settings = Config::ConfigManager::GetLocomotionSettings();
+                            settings.stepOffset = val;
+                            Config::ConfigManager::SetLocomotionSettings(settings);
+                            AvatarManager::SetStepOffsetZ(val);
+                        }))
+                        ->AsShared()
+                })
             })
         });
     }
@@ -629,8 +690,12 @@ namespace VRMQavatars::UI::ViewControllers {
             {
                 CP_SDK::XUI::XUIText::Make(u"Global Light Color"),
                 CP_SDK::XUI::XUIColorInput::Make()
+                    ->SetValue(Config::ConfigManager::GetLightingSettings().globalColor)
                     ->OnValueChanged(CP_SDK::Utils::Action<UnityEngine::Color>([](UnityEngine::Color val)
                     {
+                        auto settings = Config::ConfigManager::GetLightingSettings();
+                        settings.globalColor = val;
+                        Config::ConfigManager::SetLightingSettings(settings);
                         LightManager::SetGlobalLightColor(val);
                     }))
                     ->AsShared(),
@@ -639,8 +704,12 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUISlider::Make()
                     ->SetMinValue(0.0f)
                     ->SetMaxValue(2.5f)
+                    ->SetValue(Config::ConfigManager::GetLightingSettings().globalLightIntensity)
                     ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
                     {
+                        auto settings = Config::ConfigManager::GetLightingSettings();
+                        settings.globalLightIntensity = val;
+                        Config::ConfigManager::SetLightingSettings(settings);
                         LightManager::SetGlobalLightIntensity(val);
                     }))
                     ->AsShared(),
@@ -650,11 +719,13 @@ namespace VRMQavatars::UI::ViewControllers {
                     ->SetIncrements(360.0f)
                     ->SetMinValue(0.0f)
                     ->SetMaxValue(360.0f)
-                    ->SetValue(lightRotation.x)
+                    ->SetValue(Config::ConfigManager::GetLightingSettings().lightRotation.x)
                     ->OnValueChanged(CP_SDK::Utils::Action<float>([this](float val)
                     {
-                        lightRotation.x = val;
-                        LightManager::SetGlobalLightRotation(lightRotation);
+                        auto settings = Config::ConfigManager::GetLightingSettings();
+                        settings.lightRotation.x = val;
+                        Config::ConfigManager::SetLightingSettings(settings);
+                        LightManager::SetGlobalLightRotation(Config::ConfigManager::GetLightingSettings().lightRotation);
                     }))
                     ->AsShared(),
 
@@ -663,11 +734,13 @@ namespace VRMQavatars::UI::ViewControllers {
                     ->SetIncrements(360.0f)
                     ->SetMinValue(0.0f)
                     ->SetMaxValue(360.0f)
-                    ->SetValue(lightRotation.y)
+                    ->SetValue(Config::ConfigManager::GetLightingSettings().lightRotation.y)
                     ->OnValueChanged(CP_SDK::Utils::Action<float>([this](float val)
                     {
-                        lightRotation.y = val;
-                        LightManager::SetGlobalLightRotation(lightRotation);
+                        auto settings = Config::ConfigManager::GetLightingSettings();
+                        settings.lightRotation.y = val;
+                        Config::ConfigManager::SetLightingSettings(settings);
+                        LightManager::SetGlobalLightRotation(Config::ConfigManager::GetLightingSettings().lightRotation);
                     }))
                     ->AsShared()
             }),
@@ -675,20 +748,65 @@ namespace VRMQavatars::UI::ViewControllers {
             CP_SDK::XUI::XUIVLayout::Make(
             {
                 CP_SDK::XUI::XUIText::Make(u"Beatmap Lighting"),
-                CP_SDK::XUI::XUIToggle::Make(),
+                CP_SDK::XUI::XUIToggle::Make()
+                    ->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLighting)
+                    ->OnValueChanged(CP_SDK::Utils::Action<bool>([](bool val)
+                    {
+                        auto settings = Config::ConfigManager::GetLightingSettings();
+                        settings.beatmapLighting = val;
+                        Config::ConfigManager::SetLightingSettings(settings);
+                    }))
+                    ->AsShared(),
 
                 CP_SDK::XUI::XUIText::Make(u"BM Lighting Brightness"),
-                CP_SDK::XUI::XUISlider::Make(),
+                CP_SDK::XUI::XUISlider::Make()
+                ->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLightingBrightness)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                    {
+                        auto settings = Config::ConfigManager::GetLightingSettings();
+                        settings.beatmapLightingBrightness = val;
+                        Config::ConfigManager::SetLightingSettings(settings);
+                    }))
+                    ->AsShared(),
 
                 CP_SDK::XUI::XUIText::Make(u"BM Lighting Min Brightness"),
                 CP_SDK::XUI::XUISlider::Make()
+                    ->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLightingMinimumBrightness)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                    {
+                        auto settings = Config::ConfigManager::GetLightingSettings();
+                        settings.beatmapLightingMinimumBrightness = val;
+                        Config::ConfigManager::SetLightingSettings(settings);
+                    }))
+                    ->AsShared(),
             }),
 
             CP_SDK::XUI::XUIVLayout::Make(
             {
                 CP_SDK::XUI::XUIText::Make(u"Saber Lighting"),
                 CP_SDK::XUI::XUIToggle::Make()
+                    ->SetValue(Config::ConfigManager::GetLightingSettings().saberLighting)
+                    ->OnValueChanged(CP_SDK::Utils::Action<bool>([](bool val)
+                    {
+                        auto settings = Config::ConfigManager::GetLightingSettings();
+                        settings.saberLighting = val;
+                        Config::ConfigManager::SetLightingSettings(settings);
+                    }))
+                    ->AsShared(),
             })
         });
     }
+
+    void AvatarSettingsViewController::UpdateLightingTab()
+    {
+        globalColorInput->SetValue(Config::ConfigManager::GetLightingSettings().globalColor);
+        globalIntensitySlider->SetValue(Config::ConfigManager::GetLightingSettings().globalLightIntensity);
+        lightRotationXSlider->SetValue(Config::ConfigManager::GetLightingSettings().lightRotation.x);
+        lightRotationYSlider->SetValue(Config::ConfigManager::GetLightingSettings().lightRotation.y);
+        beatmapLightingToggle->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLighting);
+        beatmapLightingBrightnessSlider->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLightingBrightness);
+        beatmapLightingMinBrightnessSlider->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLightingMinimumBrightness);
+        saberLightingToggle->SetValue(Config::ConfigManager::GetLightingSettings().saberLighting);
+    }
+
 }
