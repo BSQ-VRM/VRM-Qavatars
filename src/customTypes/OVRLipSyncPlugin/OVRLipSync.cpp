@@ -100,12 +100,12 @@ namespace VRMQavatars::OVRLipSync
         }
 
         auto audioDataType = (stereo ? ovrLipSyncAudioDataType_F32_Stereo : ovrLipSyncAudioDataType_F32_Mono);
-        auto num = (uint)(stereo ? (bufferSize / 2) : bufferSize);
+        auto num = static_cast<uint>(stereo ? (bufferSize / 2) : bufferSize);
 
         //float* testBuffer = new float[bufferSize];
         //memcpy(audioBuffer, testBuffer, sizeof(float)*bufferSize);
 
-        auto gcHandle = System::Runtime::InteropServices::GCHandle::Alloc(static_cast<Il2CppArray*>(ArrayW<float>(audioBuffer)), System::Runtime::InteropServices::GCHandleType::Pinned);
+        auto gcHandle = System::Runtime::InteropServices::GCHandle::Alloc(static_cast<Array<float>*>(ArrayW<float>(audioBuffer)), System::Runtime::InteropServices::GCHandleType::Pinned);
         auto result = ovrLipSyncDll_ProcessFrameEx(context, gcHandle.AddrOfPinnedObject(), num, audioDataType, &frame);
         gcHandle.Free();
         //delete[] testBuffer;

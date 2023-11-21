@@ -41,6 +41,7 @@
 #include "UI/components/AvatarListTableCell.hpp"
 
 #include "LightManager.hpp"
+#include "sceneEventManager.hpp"
 
 #include "config/ConfigManager.hpp"
 
@@ -110,8 +111,6 @@ custom_types::Helpers::Coroutine Setup() {
 
     AssetLib::ModelImporter::mtoon = data->mToonShader;
 
-    VRMQavatars::LightManager::Init();
-
     const int tpmask =
            2147483647 &
            ~(1 << 6);
@@ -164,6 +163,9 @@ custom_types::Helpers::Coroutine Setup() {
         x->set_material(GetBGMat("UINoGlow"));
         x->set_color({1.0f, 1.0f, 1.0f, 1.0f});
     }
+
+    VRMQavatars::SceneEventManager::Init();
+    UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
     co_return;
 }
  

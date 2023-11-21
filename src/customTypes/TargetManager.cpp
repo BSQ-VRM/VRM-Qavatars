@@ -45,49 +45,34 @@ void VRMQavatars::TargetManager::Update()
     const static auto replay = CondDeps::Find<bool>("replay", "IsInReplay");
     if(replay.has_value() && replay.value()())
     {
-        getLogger().info("x1");
         auto camTrans = UnityEngine::GameObject::Find("PlayerTransformsHeadReplacement");
         if(camTrans == nullptr) return;
-        getLogger().info("x2");
         headPos = camTrans->get_transform()->get_position();
         headRot = camTrans->get_transform()->get_rotation();
-        getLogger().info("x3");
 
         auto sabers = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::Saber*>();
 
-        getLogger().info("x4");
-
         if(!leftSaber.isHandleValid() || !leftSaber.isAlive() || leftSaber.ptr() == nullptr)
         {
-            getLogger().info("x5");
             const auto sab = sabers.FirstOrDefault([](GlobalNamespace::Saber* s) { return s->get_saberType() == GlobalNamespace::SaberType::SaberA; });
             if(sab == nullptr) return;
             leftSaber = sab->get_transform()->get_parent();
-            getLogger().info("x6");
             if(leftSaber.ptr() == nullptr) return;
         }
-        getLogger().info("x7");
 
         if(!rightSaber.isHandleValid() || !rightSaber.isAlive() || rightSaber.ptr() == nullptr)
         {
-            getLogger().info("x8");
             const auto sab = sabers.FirstOrDefault([](GlobalNamespace::Saber* s) { return s->get_saberType() == GlobalNamespace::SaberType::SaberB; });
             if(sab == nullptr) return;
             rightSaber = sab->get_transform()->get_parent();
-            getLogger().info("x9");
             if(rightSaber.ptr() == nullptr) return;
         }
-        getLogger().info("x10");
 
         leftHandPos = leftSaber->get_position();
-        getLogger().info("x11");
         leftHandRot = leftSaber->get_rotation();
-        getLogger().info("x12");
 
         rightHandPos = rightSaber->get_position();
-        getLogger().info("x13");
         rightHandRot = rightSaber->get_rotation();
-        getLogger().info("x14");
     }
     else
     {

@@ -175,7 +175,6 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
                 meshData.morphTargetTangents[name].push_back(UnityEngine::Vector3(tang.x, tang.y, tang.z));
             }
         }
-        getLogger().info("%s", animMesh->mName.C_Str());
     }
     
     //TODO: Load in animations/blendshapes. Do we do this now or as a postprocess step?
@@ -188,13 +187,10 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
     if(node->mesh.has_value())
     {
         auto mesh = node->mesh.value();
-        getLogger().info("constructing renderer %s", node->name.c_str());
     
         UnityEngine::Mesh* unityMesh = UnityEngine::Mesh::New_ctor();
         unityMesh->set_name(node->name);
         unityMesh->set_indexFormat(mesh.vertices.size() > 65535 ? UnityEngine::Rendering::IndexFormat::UInt32 : UnityEngine::Rendering::IndexFormat::UInt16);
-        
-        getLogger().info("Mesh object created, setting values");
 
         unityMesh->set_vertices(ArrayUtils::vector2ArrayW(mesh.vertices));
         unityMesh->set_normals(ArrayUtils::vector2ArrayW(mesh.normals));
@@ -204,8 +200,6 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
         unityMesh->set_uv3(ArrayUtils::vector2ArrayW(mesh.uv3));
         unityMesh->set_uv4(ArrayUtils::vector2ArrayW(mesh.uv4));
         unityMesh->set_colors(ArrayUtils::vector2ArrayW(mesh.colors));
-
-        getLogger().info("loading bones");
         
         std::vector<UnityEngine::BoneWeight> convertedBW = std::vector<UnityEngine::BoneWeight>(mesh.boneWeights.size());
 
@@ -214,34 +208,24 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
             convertedBW[i] = mesh.boneWeights[i].convert();
             float weightSum = convertedBW[i].m_Weight0 + convertedBW[i].m_Weight1 + convertedBW[i].m_Weight2 + convertedBW[i].m_Weight3;
         }
-
-        getLogger().info("loaded bones");
         
         unityMesh->set_boneWeights(ArrayUtils::vector2ArrayW(convertedBW));
-        getLogger().info("x1");
         unityMesh->set_subMeshCount(mesh.indices.size());
-        getLogger().info("x2");
         uint baseVertex = 0;
         for (int i = 0; i < mesh.indices.size(); i++)
         {
-            getLogger().info("x3");
             unityMesh->SetIndices(ArrayW<int>(ArrayUtils::vector2ArrayW(mesh.indices[i])), mesh.topology[i], i, false, (int)baseVertex);
             baseVertex += mesh.vertexCounts[i];
         }
-        getLogger().info("x4");
         unityMesh->RecalculateBounds();
-        getLogger().info("x5");
         //Support blendshapes one day
         if (mesh.morphTargetVertices.size() > 0)
         {
-            getLogger().info("x6");
             for (auto const& [name, _] : mesh.morphTargetVertices)
             {
-                getLogger().info("name %s", name.c_str());
                 auto verts = mesh.morphTargetVertices[name];
                 auto norms = mesh.morphTargetNormals[name];
                 auto tangs = mesh.morphTargetTangents[name];
-                getLogger().info("%lu, %lu, %lu", verts.size(), norms.size(), tangs.size());
                 unityMesh->AddBlendShapeFrame(name, 100,
                     ArrayUtils::vector2ArrayW(verts),
                     ArrayUtils::vector2ArrayW(norms),
@@ -270,11 +254,6 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
                 bindPoses[i] = armature.bones[i]->gameObject->get_transform()->get_worldToLocalMatrix() * renderer->get_transform()->get_localToWorldMatrix();
             } 
 
-            getLogger().info("%lu", convertedBW.size());
-            getLogger().info("%lu", armature.bones.size());
-            getLogger().info("%lu", bindPoses.size());
-            getLogger().info("%s", armature.rootBone->name.c_str());
-
             unityMesh->set_bindposes(ArrayUtils::vector2ArrayW(bindPoses));
 
             renderer->set_rootBone(armature.rootBone->gameObject->get_transform());
@@ -296,8 +275,6 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
             auto renderer = node->gameObject->AddComponent<UnityEngine::MeshRenderer*>();
             filter->set_sharedMesh(unityMesh);
         }
-
-        getLogger().info("mesh components setup");
     }
     else
     {
@@ -461,14 +438,11 @@ std::vector<UnityEngine::Transform*> Ancestors(UnityEngine::Transform* root)
 //TODO: Figure out 1.0.0 support
 AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(const std::string& filename, UnityEngine::Shader* mtoon)
 {
-    getLogger().info("x1");
     const auto originalContext = Load(filename, false);
 
-    getLogger().info("x2");
     //Load inital data to post process
     const auto modelContext = new Structure::VRM::VRMModelContext(std::move(*originalContext));//Don't load materials because we are replacing them with VRM materials
 
-    getLogger().info("x3");
     //Load in binary to parse out VRM data
 
     std::ifstream binFile(filename, std::ios::binary);
@@ -488,8 +462,6 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     modelContext->vrm0 = vrm;
 
-    getLogger().info("x4");
-
     //Generate Textures
 
     std::vector<UnityEngine::Texture2D*> textures;
@@ -504,9 +476,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     for (size_t i = 0; i < vrm.materialProperties.size(); i++)
     {
-        getLogger().info("x8");
         auto material = vrm.materialProperties[i];
-        getLogger().info("material %s: %s", material.name.c_str(), material.shader.c_str());
         
         auto mat = UnityEngine::Material::New_ctor(mtoon);
 
@@ -547,7 +517,6 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
         materials.push_back(mat);
     }
-    getLogger().info("x9");
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
@@ -566,7 +535,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         }
     }
 
-    modelContext->rootGameObject->AddComponent<VRMQavatars::OVRLipSync::OVRLipSync*>();
+    //modelContext->rootGameObject->AddComponent<VRMQavatars::OVRLipSync::OVRLipSync*>();
 
     modelContext->blendShapeMaster = Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm);
 
@@ -590,7 +559,6 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         auto node = modelContext->nodes[i];
         if(node->mesh.has_value() && node->processed)
         {
-            getLogger().info("x12");
             auto gameObject = modelContext->nodes[i]->gameObject;
             auto skinnedRenderer = gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
 
