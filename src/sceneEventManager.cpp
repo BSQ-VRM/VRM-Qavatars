@@ -2,6 +2,7 @@
 
 #include <custom-types/shared/delegate.hpp>
 #include <UnityEngine/SceneManagement/SceneManager.hpp>
+#include <UnityEngine/Events/UnityAction_2.hpp>
 
 #include "main.hpp"
 
@@ -23,9 +24,8 @@ namespace VRMQavatars
         using namespace UnityEngine::SceneManagement;
 
         //We may need to remove this delegate but prob not necesary since it persists.
-        using type = UnityEngine::Events::UnityAction_2<Scene, LoadSceneMode>*;
-        SceneManager::add_sceneLoaded(
-            custom_types::MakeDelegate<type>(classof(type), static_cast<std::function<void(Scene, LoadSceneMode)>>([](const Scene scene, LoadSceneMode mode)
+        using Type = UnityEngine::Events::UnityAction_2<Scene, LoadSceneMode>*;
+        SceneManager::add_sceneLoaded(custom_types::MakeDelegate<Type>(static_cast<std::function<void(Scene, LoadSceneMode)>>([](const Scene scene, LoadSceneMode mode)
             {
                 GameSceneChanged(scene);
             }))

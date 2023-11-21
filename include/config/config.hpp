@@ -76,7 +76,8 @@ DECLARE_JSON_CLASS(LightingSettings,
     VALUE_DEFAULT(float, globalLightIntensity, 1.0f);
     VALUE_DEFAULT(VectorThree, lightRotation, UnityEngine::Vector3(30.0f, 240.0f, 0.0f));
     VALUE_DEFAULT(bool, beatmapLighting, true);
-    VALUE_DEFAULT(float, beatmapLightingBrightness, 0.25f);
+    VALUE_DEFAULT(float, beatmapLightingColorIntensity, 0.25f);
+    VALUE_DEFAULT(float, beatmapLightingBrightness, 0.5f);
     VALUE_DEFAULT(float, beatmapLightingMinimumBrightness, 0.75f);
     VALUE_DEFAULT(bool, saberLighting, false);
     VALUE_DEFAULT(float, saberLightingIntensity, 2.0f);

@@ -588,8 +588,8 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
     secondary->get_transform()->SetParent(modelContext->rootGameObject->get_transform());
 
-    modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::LowLatencyLipSyncContext*>();
-    modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::AnimMorphTarget*>();
+    //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::LowLatencyLipSyncContext*>();
+    //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::AnimMorphTarget*>();
 
     auto colliders = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>();
     for (auto colliderGroup : vrm.secondaryAnimation.colliderGroups)

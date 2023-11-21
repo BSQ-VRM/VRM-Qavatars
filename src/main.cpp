@@ -177,6 +177,16 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
     }
 }
 
+//FP/TP stuff should be in its own mod...
+MAKE_HOOK_MATCH(MainCameraHook, &GlobalNamespace::MainCamera::Awake, void, GlobalNamespace::MainCamera* self)
+{
+    MainCameraHook(self);
+    const int fpmask =
+           2147483647 &
+           ~(1 << 3);
+    self->get_camera()->set_cullingMask(fpmask);
+}
+
 extern "C" void setup(ModInfo& info) {
     info.id = MOD_ID;
     info.version = VERSION;
@@ -196,4 +206,5 @@ extern "C" void load() {
     BSML::Register::RegisterMainMenu<FlowCoordinators::AvatarsFlowCoordinator*>("Avatars", "VRM Custom Avatars");
 
     INSTALL_HOOK(getLogger(), MainMenuUIHook);
+    INSTALL_HOOK(getLogger(), MainCameraHook);
 }

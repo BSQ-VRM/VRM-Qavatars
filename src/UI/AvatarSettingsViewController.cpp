@@ -696,7 +696,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.globalColor = val;
                         Config::ConfigManager::SetLightingSettings(settings);
-                        LightManager::SetGlobalLightColor(val);
+                        LightManager::UpdateLightValues();
                     }))
                     ->AsShared(),
 
@@ -710,7 +710,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.globalLightIntensity = val;
                         Config::ConfigManager::SetLightingSettings(settings);
-                        LightManager::SetGlobalLightIntensity(val);
+                        LightManager::UpdateLightValues();
                     }))
                     ->AsShared(),
 
@@ -725,7 +725,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.lightRotation.x = val;
                         Config::ConfigManager::SetLightingSettings(settings);
-                        LightManager::SetGlobalLightRotation(Config::ConfigManager::GetLightingSettings().lightRotation);
+                        LightManager::UpdateLightValues();
                     }))
                     ->AsShared(),
 
@@ -740,7 +740,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.lightRotation.y = val;
                         Config::ConfigManager::SetLightingSettings(settings);
-                        LightManager::SetGlobalLightRotation(Config::ConfigManager::GetLightingSettings().lightRotation);
+                        LightManager::UpdateLightValues();
                     }))
                     ->AsShared()
             }),
@@ -755,6 +755,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.beatmapLighting = val;
                         Config::ConfigManager::SetLightingSettings(settings);
+                        LightManager::UpdateLightValues();
                     }))
                     ->AsShared(),
 
@@ -766,6 +767,19 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.beatmapLightingBrightness = val;
                         Config::ConfigManager::SetLightingSettings(settings);
+                        LightManager::UpdateLightValues();
+                    }))
+                    ->AsShared(),
+
+                CP_SDK::XUI::XUIText::Make(u"BM Lighting Saturation"),
+                CP_SDK::XUI::XUISlider::Make()
+                ->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLightingColorIntensity)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](float val)
+                    {
+                        auto settings = Config::ConfigManager::GetLightingSettings();
+                        settings.beatmapLightingColorIntensity = val;
+                        Config::ConfigManager::SetLightingSettings(settings);
+                        LightManager::UpdateLightValues();
                     }))
                     ->AsShared(),
 
@@ -777,6 +791,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.beatmapLightingMinimumBrightness = val;
                         Config::ConfigManager::SetLightingSettings(settings);
+                        LightManager::UpdateLightValues();
                     }))
                     ->AsShared(),
             }),
@@ -791,6 +806,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.saberLighting = val;
                         Config::ConfigManager::SetLightingSettings(settings);
+                        LightManager::UpdateLightValues();
                     }))
                     ->AsShared(),
             })
