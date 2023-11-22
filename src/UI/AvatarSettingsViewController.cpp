@@ -305,7 +305,9 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Condition"),
                                     CP_SDK::XUI::XUIText::Make(u"BlendShape"),
                                     CP_SDK::XUI::XUIText::Make(u"Duration")
-                                }),
+                                })
+                                    ->SetSpacing(5.0f)
+                                    ->AsShared(),
                                 CP_SDK::XUI::XUIHLayout::Make({
                                     CP_SDK::XUI::XUIText::Make(u"On Combo Reached"),
                                     CP_SDK::XUI::XUIDropdown::Make(),
@@ -345,6 +347,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Y (Left controller top)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&YTriggerDropdown)
+                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, std::u16string_view val)
+                                        {
+                                            auto settings = Config::ConfigManager::GetControllerTriggerSettings();
+                                            settings.Y = to_utf8(val);
+                                            Config::ConfigManager::SetControllerTriggerSettings(settings);
+                                        }))
                                         ->AsShared()
                                 }),
                                 //X
@@ -352,6 +360,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"X (Left controller bottom)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&XTriggerDropdown)
+                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, std::u16string_view val)
+                                        {
+                                            auto settings = Config::ConfigManager::GetControllerTriggerSettings();
+                                            settings.X = to_utf8(val);
+                                            Config::ConfigManager::SetControllerTriggerSettings(settings);
+                                        }))
                                         ->AsShared()
                                 }),
                                 //B
@@ -359,6 +373,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"B (Right controller top)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&BTriggerDropdown)
+                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, std::u16string_view val)
+                                        {
+                                            auto settings = Config::ConfigManager::GetControllerTriggerSettings();
+                                            settings.B = to_utf8(val);
+                                            Config::ConfigManager::SetControllerTriggerSettings(settings);
+                                        }))
                                         ->AsShared()
                                 }),
                                 //A
@@ -366,6 +386,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"A (Right controller bottom)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&ATriggerDropdown)
+                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, std::u16string_view val)
+                                        {
+                                            auto settings = Config::ConfigManager::GetControllerTriggerSettings();
+                                            settings.A = to_utf8(val);
+                                            Config::ConfigManager::SetControllerTriggerSettings(settings);
+                                        }))
                                         ->AsShared()
                                 })
                             })
@@ -378,6 +404,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Left Grip"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&LGripTriggerDropdown)
+                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, std::u16string_view val)
+                                        {
+                                            auto settings = Config::ConfigManager::GetControllerTriggerSettings();
+                                            settings.LGrip = to_utf8(val);
+                                            Config::ConfigManager::SetControllerTriggerSettings(settings);
+                                        }))
                                         ->AsShared()
                                 }),
                                 //RGrip
@@ -385,6 +417,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Right Grip"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&RGripTriggerDropdown)
+                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, std::u16string_view val)
+                                        {
+                                            auto settings = Config::ConfigManager::GetControllerTriggerSettings();
+                                            settings.RGrip = to_utf8(val);
+                                            Config::ConfigManager::SetControllerTriggerSettings(settings);
+                                        }))
                                         ->AsShared()
                                 }),
                                 //LTrigger
@@ -392,6 +430,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Left Trigger"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&LTriggerTriggerDropdown)
+                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, std::u16string_view val)
+                                        {
+                                            auto settings = Config::ConfigManager::GetControllerTriggerSettings();
+                                            settings.LTrigger = to_utf8(val);
+                                            Config::ConfigManager::SetControllerTriggerSettings(settings);
+                                        }))
                                         ->AsShared()
                                 }),
                                 //RTrigger
@@ -399,6 +443,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Right Trigger"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&RTriggerTriggerDropdown)
+                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, std::u16string_view val)
+                                        {
+                                            auto settings = Config::ConfigManager::GetControllerTriggerSettings();
+                                            settings.RTrigger = to_utf8(val);
+                                            Config::ConfigManager::SetControllerTriggerSettings(settings);
+                                        }))
                                         ->AsShared()
                                 })
                             })

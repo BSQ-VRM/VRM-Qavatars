@@ -23,6 +23,8 @@ namespace VRMQavatars::BlendShape {
         void SetBlendshape(AssetLib::Structure::VRM::BlendShapePreset preset, float value);
 
         std::map<AssetLib::Structure::VRM::BlendShapePreset, AssetLib::Structure::VRM::VRMBlendShapeGroup> blendShapeMappings;
+        std::map<std::string, AssetLib::Structure::VRM::BlendShapePreset> reverseMappings;
+
         std::map<AssetLib::Structure::VRM::BlendShapePreset, float> blendShapeValues;
         std::map<AssetLib::Structure::VRM::BlendShapePreset, float> blendShapeTargetValues;
 

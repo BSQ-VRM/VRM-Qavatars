@@ -96,10 +96,6 @@ namespace VRMQavatars {
         {
             UpdateGameLights();
         }
-        else
-        {
-            UpdateMenuLights();
-        }
     }
 
     //Create Lights

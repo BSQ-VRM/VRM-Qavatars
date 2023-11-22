@@ -39,6 +39,12 @@ namespace VRMQavatars {
         OnLoad();
     }
 
+    void AvatarManager::SetHandOffset(const Structs::OffsetPose& pose)
+    {
+        if(_targetManager == nullptr) return;
+        _targetManager->offset = pose;
+    }
+
     ArrayW<UnityEngine::Keyframe> GetStepFrames(const float val) {
         auto array = ArrayW<UnityEngine::Keyframe>(3);
         array[0].m_Time = 0.0f;

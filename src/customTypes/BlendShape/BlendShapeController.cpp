@@ -72,6 +72,7 @@ namespace VRMQavatars::BlendShape
             blendShapeMappings[blendShape.preset] = blendShape;
             blendShapeValues[blendShape.preset] = 0.0f;
             blendShapeTargetValues[blendShape.preset] = 0.0f;
+            reverseMappings[blendShape.name] = blendShape.preset;
         }
         init = true;
     }
@@ -104,12 +105,76 @@ namespace VRMQavatars::BlendShape
     {
         bool any = false; //Used to determine if we should lerp to neutral preset
         auto triggerConfig = Config::ConfigManager::GetControllerTriggerSettings();
-        if(true)
+
+        if(triggerConfig.A != "None")
         {
-            bool val = IsButtonDown(3, 1);
+            const bool val = IsButtonDown(3, 1);
             any |= val; //If any is false and the output is true then set it
 
-            auto preset = AssetLib::Structure::VRM::BlendShapePreset::Unknown;
+            const auto preset = reverseMappings[triggerConfig.A];
+            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+        }
+
+        if(triggerConfig.B != "None")
+        {
+            const bool val = IsButtonDown(4, 1);
+            any |= val; //If any is false and the output is true then set it
+
+            const auto preset = reverseMappings[triggerConfig.B];
+            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+        }
+
+        if(triggerConfig.X != "None")
+        {
+            const bool val = IsButtonDown(3, 0);
+            any |= val; //If any is false and the output is true then set it
+
+            const auto preset = reverseMappings[triggerConfig.X];
+            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+        }
+
+        if(triggerConfig.Y != "None")
+        {
+            const bool val = IsButtonDown(4, 0);
+            any |= val; //If any is false and the output is true then set it
+
+            const auto preset = reverseMappings[triggerConfig.Y];
+            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+        }
+
+        if(triggerConfig.LGrip != "None")
+        {
+            const bool val = IsButtonDown(1, 0);
+            any |= val; //If any is false and the output is true then set it
+
+            const auto preset = reverseMappings[triggerConfig.LGrip];
+            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+        }
+
+        if(triggerConfig.RGrip != "None")
+        {
+            const bool val = IsButtonDown(1, 1);
+            any |= val; //If any is false and the output is true then set it
+
+            const auto preset = reverseMappings[triggerConfig.RGrip];
+            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+        }
+
+        if(triggerConfig.LTrigger != "None")
+        {
+            const bool val = IsButtonDown(2, 0);
+            any |= val; //If any is false and the output is true then set it
+
+            const auto preset = reverseMappings[triggerConfig.LTrigger];
+            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+        }
+
+        if(triggerConfig.RTrigger != "None")
+        {
+            const bool val = IsButtonDown(2, 1);
+            any |= val; //If any is false and the output is true then set it
+
+            const auto preset = reverseMappings[triggerConfig.RTrigger];
             blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
         }
 
