@@ -57,11 +57,6 @@
       "additionalData": {}
     },
     {
-      "id": "chatplex-sdk-bs",
-      "versionRange": "^1.0.3",
-      "additionalData": {}
-    },
-    {
       "id": "rapidjson-macros",
       "versionRange": "^1.0.0",
       "additionalData": {}
@@ -74,6 +69,16 @@
     {
       "id": "fmt",
       "versionRange": "^10.0.0",
+      "additionalData": {}
+    },
+    {
+      "id": "sombrero",
+      "versionRange": "^0.1.37",
+      "additionalData": {}
+    },
+    {
+      "id": "chatplex-sdk-bs",
+      "versionRange": "^6.2.0",
       "additionalData": {}
     }
   ],

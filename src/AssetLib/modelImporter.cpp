@@ -11,7 +11,7 @@ void AddSphere(UnityEngine::Transform* obj)
 {
     auto gameObject = UnityEngine::GameObject::CreatePrimitive(UnityEngine::PrimitiveType::Sphere)->get_transform();
     gameObject->SetParent(obj, false);
-    gameObject->set_localScale(UnityEngine::Vector3(0.05f, 0.05f, 0.05f));
+    gameObject->set_localScale(Sombrero::FastVector3(0.05f, 0.05f, 0.05f));
 }
 
 //TODO: find something better lmao
@@ -33,12 +33,12 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
     for (size_t i = 0; i < mesh->mNumVertices; i++)
     {
         auto vert = mesh->mVertices[i];
-        meshData.vertices.push_back(UnityEngine::Vector3(vert.x, vert.y, vert.z));
+        meshData.vertices.push_back(Sombrero::FastVector3(vert.x, vert.y, vert.z));
     }
     for (size_t i = 0; i < mesh->mNumVertices; i++)
     {
         auto norm = mesh->mNormals[i];
-        meshData.normals.push_back(UnityEngine::Vector3(norm.x, norm.y, norm.z));
+        meshData.normals.push_back(Sombrero::FastVector3(norm.x, norm.y, norm.z));
     }
     if (mesh->mTangents != nullptr)
     {
@@ -53,7 +53,7 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
         for (size_t i = 0; i < mesh->mNumVertices; i++)
         {
             auto tex = mesh->mTextureCoords[0][i];
-            meshData.uv1.push_back(UnityEngine::Vector2(tex.x, tex.y));
+            meshData.uv1.push_back(Sombrero::FastVector2(tex.x, tex.y));
         }
     }
     if (mesh->mTextureCoords[1] != nullptr)
@@ -61,7 +61,7 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
         for (size_t i = 0; i < mesh->mNumVertices; i++)
         {
             auto tex = mesh->mTextureCoords[1][i];
-            meshData.uv2.push_back(UnityEngine::Vector2(tex.x, tex.y));
+            meshData.uv2.push_back(Sombrero::FastVector2(tex.x, tex.y));
         }
     }
     if (mesh->mTextureCoords[2] != nullptr)
@@ -69,7 +69,7 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
         for (size_t i = 0; i < mesh->mNumVertices; i++)
         {
             auto tex = mesh->mTextureCoords[2][i];
-            meshData.uv3.push_back(UnityEngine::Vector2(tex.x, tex.y));
+            meshData.uv3.push_back(Sombrero::FastVector2(tex.x, tex.y));
         }
     }
     if (mesh->mTextureCoords[3] != nullptr)
@@ -77,7 +77,7 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
         for (size_t i = 0; i < mesh->mNumVertices; i++)
         {
             auto tex = mesh->mTextureCoords[3][i];
-            meshData.uv4.push_back(UnityEngine::Vector2(tex.x, tex.y));
+            meshData.uv4.push_back(Sombrero::FastVector2(tex.x, tex.y));
         }
     }
     if (mesh->mColors[0] != nullptr)
@@ -85,7 +85,7 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
         for (size_t i = 0; i < mesh->mNumVertices; i++)
         {
             auto col = mesh->mColors[0][i];
-            meshData.colors.push_back(UnityEngine::Color(col.r, col.g, col.b, col.a));
+            meshData.colors.push_back(Sombrero::FastColor(col.r, col.g, col.b, col.a));
         }
     }
     getLogger().info("mesh1");
@@ -177,17 +177,16 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
         {
             auto vert = animMesh->mVertices[i];
             auto ogVert = mesh->mVertices[i];
-            meshData.morphTargetInfos[index].vertices.push_back(UnityEngine::Vector3(vert.x - ogVert.x, vert.y - ogVert.y, vert.z - ogVert.z));
+            meshData.morphTargetInfos[index].vertices.push_back(Sombrero::FastVector3(vert.x - ogVert.x, vert.y - ogVert.y, vert.z - ogVert.z));
         }
         getLogger().info("mesh13");
         if (animMesh->mNormals != nullptr)
         {
             for (size_t i = 0; i < animMesh->mNumVertices; i++)
             {
-                getLogger().info("mesh13.5");
                 auto norm = animMesh->mNormals[i];
                 auto ogNorm = mesh->mNormals[i];
-                meshData.morphTargetInfos[index].normals.push_back(UnityEngine::Vector3(norm.x - ogNorm.x, norm.y - ogNorm.y, norm.z - ogNorm.z));
+                meshData.morphTargetInfos[index].normals.push_back(Sombrero::FastVector3(norm.x - ogNorm.x, norm.y - ogNorm.y, norm.z - ogNorm.z));
             }
         }
         getLogger().info("mesh14");
@@ -196,7 +195,7 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
             for (size_t i = 0; i < animMesh->mNumVertices; i++)
             {
                 auto tang = animMesh->mTangents[i];
-                meshData.morphTargetInfos[index].tangents.push_back(UnityEngine::Vector3(tang.x, tang.y, tang.z));
+                meshData.morphTargetInfos[index].tangents.push_back(Sombrero::FastVector3(tang.x, tang.y, tang.z));
             }
         }
         getLogger().info("mesh15");
@@ -300,14 +299,14 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
     }
 }
 
-UnityEngine::Vector3 convertVector(VRMC_VRM_0_0::Vector3 vec)
+Sombrero::FastVector3 convertVector(VRMC_VRM_0_0::Vector3 vec)
 {
-    return UnityEngine::Vector3(vec.x, vec.y, vec.z);
+    return Sombrero::FastVector3(vec.x, vec.y, vec.z);
 }
 
 void IterateNode(aiNode* assnode, AssetLib::Structure::Node* parentNode, AssetLib::Structure::ModelContext* context)
 {
-    auto node = new AssetLib::Structure::Node(std::string(assnode->mName.C_Str()), {}, parentNode, false, false, UnityEngine::Vector3(assnode->mTransformation.a4, assnode->mTransformation.b4, assnode->mTransformation.c4), std::nullopt, assnode);
+    auto node = new AssetLib::Structure::Node(std::string(assnode->mName.C_Str()), {}, parentNode, false, false, Sombrero::FastVector3(assnode->mTransformation.a4, assnode->mTransformation.b4, assnode->mTransformation.c4), std::nullopt, assnode);
 
     if(!(assnode->mNumMeshes > 1))
     {
@@ -375,9 +374,9 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     
     auto Root = UnityEngine::GameObject::New_ctor("ROOT");
     UnityEngine::GameObject::DontDestroyOnLoad(Root);
-    Root->get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
+    Root->get_transform()->set_position(Sombrero::FastVector3(0.0f, 0.0f, 0.0f));
     Root->get_transform()->set_rotation(UnityEngine::Quaternion::Euler(0.0f, 0.0f, 0.0f));
-    Root->get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
+    Root->get_transform()->set_localScale(Sombrero::FastVector3(1.0f, 1.0f, 1.0f));
 
     modelContext->rootGameObject = Root;
     modelContext->armature = Structure::Armature();
@@ -529,7 +528,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
         for (const auto & [ key, value ] : vectorProperties )
         {
-            mat->SetColor(key.c_str(), UnityEngine::Color(value[0], value[1], value[2], value[3]));
+            mat->SetColor(key.c_str(), Sombrero::FastColor(value[0], value[1], value[2], value[3]));
         }
 
         for (const auto & [ key, value ] : tagMap )

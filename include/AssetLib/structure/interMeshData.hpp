@@ -11,13 +11,17 @@
 
 #include "AssetLib/skinTypes/boneWeightProxy.hpp"
 
+#include "sombrero/shared/FastVector3.hpp"
+#include "sombrero/shared/FastVector2.hpp"
+#include "sombrero/shared/FastColor.hpp"
+
 namespace AssetLib::Structure
 {
     struct BlendShapeInfo
     {
-        std::vector<UnityEngine::Vector3> vertices;
-        std::vector<UnityEngine::Vector3> normals;
-        std::vector<UnityEngine::Vector3> tangents;
+        std::vector<Sombrero::FastVector3> vertices;
+        std::vector<Sombrero::FastVector3> normals;
+        std::vector<Sombrero::FastVector3> tangents;
     };
     //Based off https://github.com/KhronosGroup/UnityGLTF/blob/master/UnityGLTF/Assets/UnityGLTF/Runtime/Scripts/GLTFSceneImporter.cs#L41
     //Intermediate format containing mesh data
@@ -28,15 +32,15 @@ namespace AssetLib::Structure
     //      UnityEngine::(Skinned)MeshRenderer*
     struct InterMeshData
     {
-        std::vector<UnityEngine::Vector3> vertices;
-        std::vector<UnityEngine::Vector3> normals;
+        std::vector<Sombrero::FastVector3> vertices;
+        std::vector<Sombrero::FastVector3> normals;
         std::vector<UnityEngine::Vector4> tangents;
-        std::vector<UnityEngine::Vector2> uv1;
-        std::vector<UnityEngine::Vector2> uv2;
-        std::vector<UnityEngine::Vector2> uv3;
-        std::vector<UnityEngine::Vector2> uv4;
-        std::vector<UnityEngine::Color> colors;
-        std::vector<AssetLib::SkinTypes::BoneWeightProxy> boneWeights;
+        std::vector<Sombrero::FastVector2> uv1;
+        std::vector<Sombrero::FastVector2> uv2;
+        std::vector<Sombrero::FastVector2> uv3;
+        std::vector<Sombrero::FastVector2> uv4;
+        std::vector<Sombrero::FastColor> colors;
+        std::vector<SkinTypes::BoneWeightProxy> boneWeights;
 
         std::vector<int> vertexCounts;
         std::vector<int> materialIdxs;

@@ -67,6 +67,7 @@ namespace VRMQavatars::UI::ViewControllers {
             UpdateControllerTriggerTab();
             UpdateLocomotionTab();
             UpdateLightingTab();
+            UpdateBlendshapesTab();
         });
     }
 

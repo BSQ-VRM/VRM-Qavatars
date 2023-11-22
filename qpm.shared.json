@@ -58,11 +58,6 @@
         "additionalData": {}
       },
       {
-        "id": "chatplex-sdk-bs",
-        "versionRange": "^1.0.3",
-        "additionalData": {}
-      },
-      {
         "id": "rapidjson-macros",
         "versionRange": "^1.0.0",
         "additionalData": {}
@@ -75,6 +70,16 @@
       {
         "id": "fmt",
         "versionRange": "^10.0.0",
+        "additionalData": {}
+      },
+      {
+        "id": "sombrero",
+        "versionRange": "^0.1.37",
+        "additionalData": {}
+      },
+      {
+        "id": "chatplex-sdk-bs",
+        "versionRange": "^6.2.0",
         "additionalData": {}
       }
     ],
@@ -144,17 +149,28 @@
     {
       "dependency": {
         "id": "chatplex-sdk-bs",
-        "versionRange": "=1.0.3-v6.2.0",
+        "versionRange": "=6.2.0",
         "additionalData": {
-          "soLink": "https://github.com/hardcpp/QuestChatPlexSDK-BS/releases/download/v1.0.3-v6.2.0/libchatplex-sdk-bs.so",
-          "debugSoLink": "https://github.com/hardcpp/QuestChatPlexSDK-BS/releases/download/v1.0.3-v6.2.0/debug_libchatplex-sdk-bs.so",
+          "soLink": "https://github.com/hardcpp/QuestChatPlexSDK-BS/releases/download/v6.2.0/libchatplex-sdk-bs.so",
+          "debugSoLink": "https://github.com/hardcpp/QuestChatPlexSDK-BS/releases/download/v6.2.0/debug_libchatplex-sdk-bs.so",
           "overrideSoName": "libchatplex-sdk-bs.so",
-          "modLink": "https://github.com/hardcpp/QuestChatPlexSDK-BS/releases/download/v1.0.3-v6.2.0/ChatPlexSDK-BS.qmod",
-          "branchName": "version/v1_0_3-v6_2_0",
+          "modLink": "https://github.com/hardcpp/QuestChatPlexSDK-BS/releases/download/v6.2.0/ChatPlexSDK-BS.qmod",
+          "branchName": "version/v6_2_0",
           "cmake": true
         }
       },
-      "version": "1.0.3-v6.2.0"
+      "version": "6.2.0"
+    },
+    {
+      "dependency": {
+        "id": "sombrero",
+        "versionRange": "=0.1.37",
+        "additionalData": {
+          "headersOnly": true,
+          "branchName": "version-v0.1.37"
+        }
+      },
+      "version": "0.1.37"
     },
     {
       "dependency": {
@@ -182,20 +198,6 @@
     },
     {
       "dependency": {
-        "id": "tinyxml2",
-        "versionRange": "=9.0.5",
-        "additionalData": {
-          "soLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/libtinyxml2.so",
-          "debugSoLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/debug_libtinyxml2.so",
-          "overrideSoName": "libtinyxml2.so",
-          "modLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/tinyxml2.qmod",
-          "branchName": "version-v9.0.5"
-        }
-      },
-      "version": "9.0.5"
-    },
-    {
-      "dependency": {
         "id": "questui",
         "versionRange": "=0.17.12",
         "additionalData": {
@@ -215,18 +217,31 @@
     },
     {
       "dependency": {
-        "id": "paper",
-        "versionRange": "=1.2.18",
+        "id": "tinyxml2",
+        "versionRange": "=9.0.5",
         "additionalData": {
-          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.18/libpaperlog.so",
-          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.18/debug_libpaperlog.so",
-          "overrideSoName": "libpaperlog.so",
-          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.18/paperlog.qmod",
-          "branchName": "version/v1_2_18",
-          "cmake": true
+          "soLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/libtinyxml2.so",
+          "debugSoLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/debug_libtinyxml2.so",
+          "overrideSoName": "libtinyxml2.so",
+          "modLink": "https://github.com/MillzyDev/NDK-tinyxml2/releases/download/v9.0.5/tinyxml2.qmod",
+          "branchName": "version-v9.0.5"
         }
       },
-      "version": "1.2.18"
+      "version": "9.0.5"
+    },
+    {
+      "dependency": {
+        "id": "paper",
+        "versionRange": "=1.2.20",
+        "additionalData": {
+          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.20/libpaperlog.so",
+          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.20/debug_libpaperlog.so",
+          "overrideSoName": "libpaperlog.so",
+          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.20/paperlog.qmod",
+          "branchName": "version/v1_2_20"
+        }
+      },
+      "version": "1.2.20"
     },
     {
       "dependency": {
