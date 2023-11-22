@@ -215,4 +215,32 @@ namespace VRMQavatars::Config
         getGlobalConfig().ControllerTriggers.SetValue(settings);
         getGlobalConfig().Save();
     }
+
+    //BlendShapes
+    BlendshapeSettings ConfigManager::GetBlendShapeSettings()
+    {
+        if(InitAvatarConfig())
+        {
+            if(getAvatarConfig().OverrideBlendshapeSettings.GetValue())
+            {
+                return getAvatarConfig().Blendshapes.GetValue();
+            }
+        }
+        return getGlobalConfig().Blendshapes.GetValue();
+    }
+
+    void ConfigManager::SetBlendShapeSettings(const BlendshapeSettings& settings)
+    {
+        if(InitAvatarConfig())
+        {
+            if(getAvatarConfig().OverrideBlendshapeSettings.GetValue())
+            {
+                getAvatarConfig().Blendshapes.SetValue(settings);
+                getAvatarConfig().Save();
+                return;
+            }
+        }
+        getGlobalConfig().Blendshapes.SetValue(settings);
+        getGlobalConfig().Save();
+    }
 }

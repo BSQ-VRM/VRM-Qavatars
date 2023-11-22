@@ -103,6 +103,15 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUIDropdown> RGripTriggerDropdown;
         std::shared_ptr<CP_SDK::XUI::XUIDropdown> LTriggerTriggerDropdown;
         std::shared_ptr<CP_SDK::XUI::XUIDropdown> RTriggerTriggerDropdown;
+
+        //Blendshapes
+
+        void UpdateBlendshapesTab();
+
+        std::shared_ptr<CP_SDK::XUI::XUIToggle> autoBlinkToggle;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> autoBlinkWaitSlider;
+        std::shared_ptr<CP_SDK::XUI::XUIToggle> mockEyeMovementToggle;
+        std::shared_ptr<CP_SDK::XUI::XUIDropdown> neutralExpressionDropdown;
     };
 }
 

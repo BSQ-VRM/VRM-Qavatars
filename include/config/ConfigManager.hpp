@@ -56,5 +56,11 @@ namespace VRMQavatars::Config
         static ControllerTriggerSettings GetControllerTriggerSettings();
 
         static void SetControllerTriggerSettings(const ControllerTriggerSettings& settings);
+
+        //BlendShapes
+
+        static BlendshapeSettings GetBlendShapeSettings();
+
+        static void SetBlendShapeSettings(const BlendshapeSettings& settings);
     };
 };

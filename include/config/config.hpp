@@ -83,6 +83,13 @@ DECLARE_JSON_CLASS(ControllerTriggerSettings,
     VALUE_DEFAULT(std::string, RTrigger, "None");
 )
 
+DECLARE_JSON_CLASS(BlendshapeSettings,
+    VALUE_DEFAULT(bool, autoBlink, false);
+    VALUE_DEFAULT(float, waitTime, 4.0f);
+    VALUE_DEFAULT(bool, mockEyeMovement, false);
+    VALUE_DEFAULT(std::string, neutralExpression, "Neutral");
+)
+
 DECLARE_JSON_CLASS(LightingSettings,
     VALUE(Color2, globalColor);
     VALUE_DEFAULT(float, globalLightIntensity, 1.0f);
@@ -132,6 +139,7 @@ DECLARE_CONFIG(GlobalConfig,
     CONFIG_VALUE(Locomotion, LocomotionSettings, "Locomotion", {});
     CONFIG_VALUE(Lighting, LightingSettings, "Lighting", {});
     CONFIG_VALUE(ControllerTriggers, ControllerTriggerSettings, "Controller Triggers", {});
+    CONFIG_VALUE(Blendshapes, BlendshapeSettings, "Blendshapes", {});
 
     //Global
 
@@ -147,6 +155,7 @@ DECLARE_CONFIG(AvatarConfig,
     CONFIG_VALUE(Locomotion, LocomotionSettings, "Locomotion", {});
     CONFIG_VALUE(Lighting, LightingSettings, "Lighting", {});
     CONFIG_VALUE(ControllerTriggers, ControllerTriggerSettings, "Controller Triggers", {});
+    CONFIG_VALUE(Blendshapes, BlendshapeSettings, "Blendshapes", {});
 
     //Individual
     CONFIG_VALUE(OverrideOffsetSettings, bool, "OverrideOffsetSettings", false);
@@ -155,6 +164,7 @@ DECLARE_CONFIG(AvatarConfig,
     CONFIG_VALUE(OverrideLocoSettings, bool, "OverrideLocoSettings", true);
     CONFIG_VALUE(OverrideLightingSettings, bool, "OverrideLightingSettings", false);
     CONFIG_VALUE(OverrideControllerTriggerSettings, bool, "OverrideControllerTriggerSettings", true);
+    CONFIG_VALUE(OverrideBlendshapeSettings, bool, "OverrideBlendshapeSettings", true);
 
     CONFIG_VALUE(HasAgreedToTerms, bool, "HasAgreedToTerms", false);
     CONFIG_VALUE(HasCalibrated, bool, "HasCalibrated", false);
