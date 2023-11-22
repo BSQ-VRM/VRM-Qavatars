@@ -4,8 +4,6 @@
 #include "HMUI/ViewController.hpp"
 #include "bsml/shared/BSML.hpp"
 
-#include "utils/structs/OffsetPose.hpp"
-
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/XUI.hpp"
 #include "chatplex-sdk-bs/shared/CP_SDK_BS/UI/ViewController.hpp"
 #include "modals/IndividualConfigModal.hpp"
@@ -74,10 +72,15 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUISlider> globalIntensitySlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> lightRotationXSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> lightRotationYSlider;
+
         std::shared_ptr<CP_SDK::XUI::XUIToggle> beatmapLightingToggle;
         std::shared_ptr<CP_SDK::XUI::XUISlider> beatmapLightingBrightnessSlider;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> beatmapLightingColorIntensitySlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> beatmapLightingMinBrightnessSlider;
+
         std::shared_ptr<CP_SDK::XUI::XUIToggle> saberLightingToggle;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> saberLightingIntensitySlider;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> saberLightingRangeSlider;
 
         //Locomotion
 
@@ -87,6 +90,19 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUISlider> stepThresholdSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> stepOffsetZSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> stepHeightSlider;
+
+        //Controller Triggers
+
+        void UpdateControllerTriggerTab();
+
+        std::shared_ptr<CP_SDK::XUI::XUIDropdown> ATriggerDropdown;
+        std::shared_ptr<CP_SDK::XUI::XUIDropdown> BTriggerDropdown;
+        std::shared_ptr<CP_SDK::XUI::XUIDropdown> XTriggerDropdown;
+        std::shared_ptr<CP_SDK::XUI::XUIDropdown> YTriggerDropdown;
+        std::shared_ptr<CP_SDK::XUI::XUIDropdown> LGripTriggerDropdown;
+        std::shared_ptr<CP_SDK::XUI::XUIDropdown> RGripTriggerDropdown;
+        std::shared_ptr<CP_SDK::XUI::XUIDropdown> LTriggerTriggerDropdown;
+        std::shared_ptr<CP_SDK::XUI::XUIDropdown> RTriggerTriggerDropdown;
     };
 }
 

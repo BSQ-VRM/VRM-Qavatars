@@ -6,6 +6,7 @@
 
 #include "main.hpp"
 
+//Scene manager is bad
 namespace VRMQavatars
 {
     CP_SDK::Utils::Event<> SceneEventManager::OnGameEnter;
@@ -13,24 +14,6 @@ namespace VRMQavatars
 
     bool SceneEventManager::inGame;
     bool SceneEventManager::inMenu;
-
-    //I know
-    //I know
-    //I know
-    //Scene manager is bad
-    //Open a PR (please)
-    void SceneEventManager::Init()
-    {
-        using namespace UnityEngine::SceneManagement;
-
-        //We may need to remove this delegate but prob not necesary since it persists.
-        using Type = UnityEngine::Events::UnityAction_2<Scene, LoadSceneMode>*;
-        SceneManager::add_sceneLoaded(custom_types::MakeDelegate<Type>(static_cast<std::function<void(Scene, LoadSceneMode)>>([](const Scene scene, LoadSceneMode mode)
-            {
-                GameSceneChanged(scene);
-            }))
-        );
-    }
 
     void SceneEventManager::GameSceneChanged(UnityEngine::SceneManagement::Scene scene)
     {
@@ -54,7 +37,7 @@ namespace VRMQavatars
             return;
         }
 
-        if((name == "MainMenu" || name == "MenuViewControllers") && inGame)
+        if((name == "MainMenu" || name == "MenuViewControllers") && !inMenu)
         {
             //We are in menu
             inMenu = true;

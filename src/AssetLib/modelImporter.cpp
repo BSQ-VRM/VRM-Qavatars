@@ -88,13 +88,13 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
             meshData.colors.push_back(UnityEngine::Color(col.r, col.g, col.b, col.a));
         }
     }
-
+    getLogger().info("mesh1");
     meshData.vertexCounts.push_back(mesh->mNumVertices);
     meshData.materialIdxs.push_back(mesh->mMaterialIndex);
 
     meshData.indices.push_back(std::vector<int>(0));
     meshData.topology.push_back(UnityEngine::MeshTopology::Triangles); //TODO
-
+    getLogger().info("mesh2");
     if (mesh->mFaces != nullptr)
     {
         for (size_t i = 0; i < mesh->mNumFaces; i++)
@@ -106,6 +106,7 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
             }
         }
     }
+    getLogger().info("mesh3");
     if(context->isSkinned)
     {
         int start = 0;
@@ -118,6 +119,7 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
             start = meshData.boneWeights.size();
             meshData.boneWeights.resize(start + mesh->mNumVertices);
         }
+        getLogger().info("mesh4");
 
         //i: bone
         //j: current vertexWeight in bone
@@ -140,44 +142,66 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
                 meshData.boneWeights[VertexID].AddBoneData(IndexForName(aiBone->mName.C_Str(), context), Weight);
             }
         }
+        getLogger().info("mesh5");
     }
-
+    getLogger().info("Loading Blendshapes");
     for (size_t k = 0; k < mesh->mNumAnimMeshes; k++)
     {
+        getLogger().info("mesh6");
         auto animMesh = mesh->mAnimMeshes[k];
+        getLogger().info("mesh7");
+
         std::string name = animMesh->mName.C_Str();
-        if(!meshData.morphTargetVertices.contains(name))
+        getLogger().info("mesh8");
+        auto names = meshData.morphTargetNames;
+        auto find = std::find(names.begin(), names.end(), name);
+        getLogger().info("mesh9");
+
+        int index = 0;
+
+        if(find == names.end())
         {
-            meshData.morphTargetVertices[name] = {};
-            meshData.morphTargetNormals[name] = {};
-            meshData.morphTargetTangents[name] = {};
+            getLogger().info("mesh10");
+            meshData.morphTargetNames.push_back(name);
+            meshData.morphTargetInfos.push_back({});
+            index = meshData.morphTargetNames.size()-1;
         }
+        else
+        {
+            getLogger().info("mesh11");
+            index = find - names.begin();
+        }
+        getLogger().info("mesh12 %d", index);
+
         for (size_t i = 0; i < animMesh->mNumVertices; i++)
         {
             auto vert = animMesh->mVertices[i];
             auto ogVert = mesh->mVertices[i];
-            meshData.morphTargetVertices[name].push_back(UnityEngine::Vector3(vert.x - ogVert.x, vert.y - ogVert.y, vert.z - ogVert.z));
+            meshData.morphTargetInfos[index].vertices.push_back(UnityEngine::Vector3(vert.x - ogVert.x, vert.y - ogVert.y, vert.z - ogVert.z));
         }
+        getLogger().info("mesh13");
         if (animMesh->mNormals != nullptr)
         {
             for (size_t i = 0; i < animMesh->mNumVertices; i++)
             {
+                getLogger().info("mesh13.5");
                 auto norm = animMesh->mNormals[i];
                 auto ogNorm = mesh->mNormals[i];
-                meshData.morphTargetNormals[name].push_back(UnityEngine::Vector3(norm.x - ogNorm.x, norm.y - ogNorm.y, norm.z - ogNorm.z));
+                meshData.morphTargetInfos[index].normals.push_back(UnityEngine::Vector3(norm.x - ogNorm.x, norm.y - ogNorm.y, norm.z - ogNorm.z));
             }
         }
+        getLogger().info("mesh14");
         if (animMesh->mTangents != nullptr)
         {
             for (size_t i = 0; i < animMesh->mNumVertices; i++)
             {
                 auto tang = animMesh->mTangents[i];
-                meshData.morphTargetTangents[name].push_back(UnityEngine::Vector3(tang.x, tang.y, tang.z));
+                meshData.morphTargetInfos[index].tangents.push_back(UnityEngine::Vector3(tang.x, tang.y, tang.z));
             }
         }
+        getLogger().info("mesh15");
     }
-    
-    //TODO: Load in animations/blendshapes. Do we do this now or as a postprocess step?
+    getLogger().info("Loaded blendshapes");
 
     return meshData;
 }
@@ -206,7 +230,6 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
         for (size_t i = 0; i < mesh.boneWeights.size(); i++)
         {
             convertedBW[i] = mesh.boneWeights[i].convert();
-            float weightSum = convertedBW[i].m_Weight0 + convertedBW[i].m_Weight1 + convertedBW[i].m_Weight2 + convertedBW[i].m_Weight3;
         }
         
         unityMesh->set_boneWeights(ArrayUtils::vector2ArrayW(convertedBW));
@@ -218,21 +241,20 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
             baseVertex += mesh.vertexCounts[i];
         }
         unityMesh->RecalculateBounds();
-        //Support blendshapes one day
-        if (mesh.morphTargetVertices.size() > 0)
+
+        getLogger().info("Importing blendshapes");
+        for (int i = 0; i < mesh.morphTargetNames.size(); ++i)
         {
-            for (auto const& [name, _] : mesh.morphTargetVertices)
-            {
-                auto verts = mesh.morphTargetVertices[name];
-                auto norms = mesh.morphTargetNormals[name];
-                auto tangs = mesh.morphTargetTangents[name];
-                unityMesh->AddBlendShapeFrame(name, 100,
-                    ArrayUtils::vector2ArrayW(verts),
-                    ArrayUtils::vector2ArrayW(norms),
-                    nullptr
-                );
-            }
+            auto name = mesh.morphTargetNames[i];
+            getLogger().info("%d, %s", i, name.c_str());
+            auto [vertices, normals, tangents] = mesh.morphTargetInfos[i];
+            unityMesh->AddBlendShapeFrame(name, 100,
+                ArrayUtils::vector2ArrayW(vertices),
+                ArrayUtils::vector2ArrayW(normals),
+                nullptr
+            );
         }
+        getLogger().info("Imported Blendshapes");
 
         /*if (mesh.normals.size() < 1 && mesh.topology[0] == UnityEngine::MeshTopology::Triangles)
         {
@@ -260,8 +282,8 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
             renderer->set_bones(
                 ArrayUtils::vector2ArrayW(
                     ArrayUtils::Select<UnityEngine::Transform*>(armature.bones, 
-                        [](AssetLib::Structure::Node* node){
-                            return node->gameObject->get_transform();
+                        [](AssetLib::Structure::Node* libNode){
+                            return libNode->gameObject->get_transform();
                         }
                     )
                 )
@@ -272,14 +294,9 @@ void ConstructUnityMesh(AssetLib::Structure::Node* node, AssetLib::Structure::Mo
         else
         {
             auto filter = node->gameObject->AddComponent<UnityEngine::MeshFilter*>();
-            auto renderer = node->gameObject->AddComponent<UnityEngine::MeshRenderer*>();
+            node->gameObject->AddComponent<UnityEngine::MeshRenderer*>();
             filter->set_sharedMesh(unityMesh);
         }
-    }
-    else
-    {
-        //die
-        return;
     }
 }
 
@@ -363,7 +380,7 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     Root->get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
 
     modelContext->rootGameObject = Root;
-    modelContext->armature = AssetLib::Structure::Armature();
+    modelContext->armature = Structure::Armature();
 
     //STEP ONE: Create initial node tree
 
@@ -378,7 +395,7 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
 
     //STEP THREE: Load in armature
 
-    AssetLib::Structure::Node* armatureNode = nullptr;
+    Structure::Node* armatureNode = nullptr;
 
     //TODO: perform this how the assimp docs say to (i'm lazy)
     for (size_t i = 1; i < modelContext->nodes.size(); i++)
@@ -391,7 +408,7 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
             break;
         }
     }
-
+    getLogger().info("x1");
     modelContext->armature.value().rootBone = armatureNode;
 
     //STEP FOUR: Load in meshes
@@ -402,20 +419,21 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
         if(node->originalNode->mNumMeshes > 0)
         {
             node->isBone = false;
-            for (size_t i = 0; i < node->originalNode->mNumMeshes; i++)
+            for (size_t x = 0; x < node->originalNode->mNumMeshes; x++)
             {
-                if(i == 0)
+                if(x == 0)
                 {
-                    node->mesh = LoadMesh(scene->mMeshes[node->originalNode->mMeshes[i]], modelContext);
+                    node->mesh = LoadMesh(scene->mMeshes[node->originalNode->mMeshes[x]], modelContext);
                 }
                 else
                 {
-                    node->mesh = LoadMesh(scene->mMeshes[node->originalNode->mMeshes[i]], modelContext, node->mesh);
+                    node->mesh = LoadMesh(scene->mMeshes[node->originalNode->mMeshes[x]], modelContext, node->mesh);
                 }
             }
             ConstructUnityMesh(node, modelContext);
         }
     }
+    getLogger().info("x2");
 
     return modelContext;
 }
@@ -435,6 +453,12 @@ std::vector<UnityEngine::Transform*> Ancestors(UnityEngine::Transform* root)
     return ancestors;
 }
 
+void SetXLocalRot(UnityEngine::Transform* trans, float x)
+{
+    auto rot = trans->get_localRotation().get_eulerAngles();
+    trans->set_localRotation(UnityEngine::Quaternion::Euler(x, rot.y, rot.z));
+}
+
 //TODO: Figure out 1.0.0 support
 AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(const std::string& filename, UnityEngine::Shader* mtoon)
 {
@@ -449,7 +473,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     binFile.seekg(12); //Skip past the 12 byte header, to the json header
     uint32_t jsonLength;
-    binFile.read((char*)&jsonLength, sizeof(uint32_t)); //Read the length of the json file from it's header
+    binFile.read(reinterpret_cast<char*>(&jsonLength), sizeof(uint32_t)); //Read the length of the json file from it's header
 
     std::string jsonStr;
     jsonStr.resize(jsonLength);
@@ -476,16 +500,16 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     for (size_t i = 0; i < vrm.materialProperties.size(); i++)
     {
-        auto material = vrm.materialProperties[i];
+        auto [name, shader, renderQueue, floatProperties, vectorProperties, textureProperties, keywordMap, tagMap] = vrm.materialProperties[i];
         
         auto mat = UnityEngine::Material::New_ctor(mtoon);
 
-        for (const auto & [ key, value ] : material.floatProperties )
+        for (const auto & [ key, value ] : floatProperties )
         {
             mat->SetFloat(key.c_str(), value);
         }
 
-        for (const auto & [ key, value ] : material.keywordMap )
+        for (const auto & [ key, value ] : keywordMap )
         {
             if(value)
             {
@@ -498,30 +522,29 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
         }
 
-        for (const auto & [ key, value ] : material.textureProperties )
+        for (const auto & [ key, value ] : textureProperties )
         {
             mat->SetTexture(key.c_str(), textures[value]);
         }
 
-        for (const auto & [ key, value ] : material.vectorProperties )
+        for (const auto & [ key, value ] : vectorProperties )
         {
             mat->SetColor(key.c_str(), UnityEngine::Color(value[0], value[1], value[2], value[3]));
         }
 
-        for (const auto & [ key, value ] : material.tagMap )
+        for (const auto & [ key, value ] : tagMap )
         {
             mat->SetOverrideTag(key, value);
         }
 
-        mat->set_renderQueue(material.renderQueue);
+        mat->set_renderQueue(renderQueue);
 
         materials.push_back(mat);
     }
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
-        auto node = modelContext->nodes[i];
-        if(node->mesh.has_value() && node->processed)
+        if(auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)
         {
             auto mesh = node->mesh.value();
             ArrayW<UnityEngine::Material*> matArray = ArrayW<UnityEngine::Material*>(mesh.materialIdxs.size());
@@ -544,6 +567,18 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     auto anim = modelContext->rootGameObject->AddComponent<UnityEngine::Animator*>();
     anim->set_avatar(avatar);
 
+    //Fix crossed legs
+
+    auto LUleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
+    auto RUleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperLeg);
+    auto LLleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::LeftLowerLeg);
+    auto RLleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::RightLowerLeg);
+
+    SetXLocalRot(LUleg, -4.0f);
+    SetXLocalRot(RUleg, -4.0f);
+    SetXLocalRot(LLleg, 4.0f);
+    SetXLocalRot(RLleg, 4.0f);
+
     modelContext->rootGameObject->AddComponent<VRMQavatars::BlendShape::BlendShapeController*>();
 
     auto vrik = modelContext->rootGameObject->AddComponent<RootMotion::FinalIK::VRIK*>();
@@ -556,20 +591,18 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
-        auto node = modelContext->nodes[i];
-        if(node->mesh.has_value() && node->processed)
+        if(const auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)
         {
             auto gameObject = modelContext->nodes[i]->gameObject;
             auto skinnedRenderer = gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
 
             std::vector<int> toErase;
 
-            auto armature = modelContext->armature.value();
+            const auto armature = modelContext->armature.value();
             for (size_t j = 0; j < armature.bones.size(); j++)
             {
                 auto bone = armature.bones[j];
-                auto ancestors = Ancestors(bone->gameObject->get_transform());
-                if(std::find(ancestors.begin(), ancestors.end(), headBone) != ancestors.end())
+                if(auto ancestors = Ancestors(bone->gameObject->get_transform()); std::find(ancestors.begin(), ancestors.end(), headBone) != ancestors.end())
                 {
                     toErase.push_back(j);
                 }
@@ -594,8 +627,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     auto colliders = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>();
     for (auto colliderGroup : vrm.secondaryAnimation.colliderGroups)
     {
-        auto node = modelContext->nodes[colliderGroup.node+1]->gameObject;
-        if (node)
+        if (auto node = modelContext->nodes[colliderGroup.node+1]->gameObject)
         {
             auto vrmGroup = node->AddComponent<VRMQavatars::VRMSpringBoneColliderGroup*>();
             for (auto colliderRef : colliderGroup.colliders)

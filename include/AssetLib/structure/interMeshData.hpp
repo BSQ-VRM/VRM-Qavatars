@@ -13,6 +13,12 @@
 
 namespace AssetLib::Structure
 {
+    struct BlendShapeInfo
+    {
+        std::vector<UnityEngine::Vector3> vertices;
+        std::vector<UnityEngine::Vector3> normals;
+        std::vector<UnityEngine::Vector3> tangents;
+    };
     //Based off https://github.com/KhronosGroup/UnityGLTF/blob/master/UnityGLTF/Assets/UnityGLTF/Runtime/Scripts/GLTFSceneImporter.cs#L41
     //Intermediate format containing mesh data
     //Assimp -> 
@@ -36,9 +42,8 @@ namespace AssetLib::Structure
         std::vector<int> materialIdxs;
 
         //Blend Shapes
-        std::map<std::string, std::vector<UnityEngine::Vector3>> morphTargetVertices;
-        std::map<std::string, std::vector<UnityEngine::Vector3>> morphTargetNormals;
-        std::map<std::string, std::vector<UnityEngine::Vector3>> morphTargetTangents;
+        std::vector<std::string> morphTargetNames = {};
+        std::vector<BlendShapeInfo> morphTargetInfos = {};
 
         std::vector<UnityEngine::MeshTopology> topology;
         std::vector<std::vector<int>> indices;

@@ -11,6 +11,8 @@
 #include "GlobalNamespace/SaberManager.hpp"
 #include "GlobalNamespace/ColorManager.hpp"
 
+#include "custom-types/shared/coroutine.hpp"
+
 namespace VRMQavatars
 {
 	class LightManager : public UnityEngine::MonoBehaviour
@@ -23,6 +25,8 @@ namespace VRMQavatars
 		DECLARE_INSTANCE_METHOD(void, Awake); //Init
 		DECLARE_INSTANCE_METHOD(void, Update); //UpdateLights
 	public:
+		static custom_types::Helpers::Coroutine GrabColorManager();
+
         static void Init();
 
 		static void UpdateMenuLights();
@@ -35,7 +39,6 @@ namespace VRMQavatars
 		static bool inGame;
 
 		static SafePtrUnity<UnityEngine::Light> _light;
-		static SafePtrUnity<UnityEngine::Light> _beatmapLight;
 
 		//Difference betwen this and global light? not sure but naluluna avatars has it equivalent just with the intensity multiplied by platform light intensity
 		static SafePtrUnity<UnityEngine::Light> _platform;

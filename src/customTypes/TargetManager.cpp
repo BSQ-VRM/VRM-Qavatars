@@ -107,17 +107,6 @@ void VRMQavatars::TargetManager::Update()
     headTarget->get_transform()->set_rotation(headRot);
 }
 
-ArrayW<UnityEngine::Keyframe> GetStepFrames(const float val) {
-    auto array = ArrayW<UnityEngine::Keyframe>(3);
-    array[0].m_Time = 0.0f;
-    array[0].m_Value = 0.0f;
-    array[1].m_Time = 0.5f;
-    array[1].m_Value = val;
-    array[2].m_Time = 1.0f;
-    array[2].m_Value = 0.0f;
-    return array;
-}
-
 void VRMQavatars::TargetManager::Calibrate()
 {
     get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
@@ -138,11 +127,6 @@ void VRMQavatars::TargetManager::Calibrate()
     vrik->set_enabled(true);
 
     get_gameObject()->AddComponent<WristTwistFix*>()->SetVRIK(vrik);
-
-    vrik->solver->locomotion->footDistance = 0.1f;
-    vrik->solver->locomotion->stepThreshold = 0.1f;
-    vrik->solver->locomotion->stepHeight->set_keys(GetStepFrames(0.02f));
-    vrik->solver->locomotion->heelHeight->set_keys(GetStepFrames(0.1f));
 }
 
 UnityEngine::Vector3 VRMQavatars::TargetManager::GetPosition(GlobalNamespace::OVRPlugin::Node node)

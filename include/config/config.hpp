@@ -71,6 +71,18 @@ DECLARE_JSON_CLASS(VectorThree,
     }
 )
 
+DECLARE_JSON_CLASS(ControllerTriggerSettings,
+    VALUE_DEFAULT(std::string, A, "None");
+    VALUE_DEFAULT(std::string, B, "None");
+    VALUE_DEFAULT(std::string, X, "None");
+    VALUE_DEFAULT(std::string, Y, "None");
+
+    VALUE_DEFAULT(std::string, LGrip, "None");
+    VALUE_DEFAULT(std::string, RGrip, "None");
+    VALUE_DEFAULT(std::string, LTrigger, "None");
+    VALUE_DEFAULT(std::string, RTrigger, "None");
+)
+
 DECLARE_JSON_CLASS(LightingSettings,
     VALUE(Color2, globalColor);
     VALUE_DEFAULT(float, globalLightIntensity, 1.0f);
@@ -116,9 +128,10 @@ DECLARE_JSON_CLASS(FingerPoseSettings,
 DECLARE_CONFIG(GlobalConfig,
     CONFIG_VALUE(Offsets, OffsetSettings, "Offsets", {});
     CONFIG_VALUE(FingerPoses, FingerPoseSettings, "Finger Poses", {});
-    CONFIG_VALUE(IKSettings, IKSettings, "IK", {});
-    CONFIG_VALUE(LocomotionSettings, LocomotionSettings, "Locomotion", {});
-    CONFIG_VALUE(LightingSettings, LightingSettings, "Lighting", {});
+    CONFIG_VALUE(IK, IKSettings, "IK", {});
+    CONFIG_VALUE(Locomotion, LocomotionSettings, "Locomotion", {});
+    CONFIG_VALUE(Lighting, LightingSettings, "Lighting", {});
+    CONFIG_VALUE(ControllerTriggers, ControllerTriggerSettings, "Controller Triggers", {});
 
     //Global
 
@@ -130,16 +143,18 @@ DECLARE_CONFIG(GlobalConfig,
 DECLARE_CONFIG(AvatarConfig,
     CONFIG_VALUE(Offsets, OffsetSettings, "Offsets", {});
     CONFIG_VALUE(FingerPoses, FingerPoseSettings, "Finger Poses", {});
-    CONFIG_VALUE(IKSettings, IKSettings, "IK", {});
-    CONFIG_VALUE(LocomotionSettings, LocomotionSettings, "Locomotion", {});
-    CONFIG_VALUE(LightingSettings, LightingSettings, "Lighting", {});
+    CONFIG_VALUE(IK, IKSettings, "IK", {});
+    CONFIG_VALUE(Locomotion, LocomotionSettings, "Locomotion", {});
+    CONFIG_VALUE(Lighting, LightingSettings, "Lighting", {});
+    CONFIG_VALUE(ControllerTriggers, ControllerTriggerSettings, "Controller Triggers", {});
 
     //Individual
     CONFIG_VALUE(OverrideOffsetSettings, bool, "OverrideOffsetSettings", false);
     CONFIG_VALUE(OverrideFingerPoseSettings, bool, "OverrideFingerPoseSettings", false);
-    CONFIG_VALUE(OverrideIKSettings, bool, "OverrideIKSettings", false);
-    CONFIG_VALUE(OverrideLocoSettings, bool, "OverrideLocoSettings", false);
+    CONFIG_VALUE(OverrideIKSettings, bool, "OverrideIKSettings", true);
+    CONFIG_VALUE(OverrideLocoSettings, bool, "OverrideLocoSettings", true);
     CONFIG_VALUE(OverrideLightingSettings, bool, "OverrideLightingSettings", false);
+    CONFIG_VALUE(OverrideControllerTriggerSettings, bool, "OverrideControllerTriggerSettings", true);
 
     CONFIG_VALUE(HasAgreedToTerms, bool, "HasAgreedToTerms", false);
     CONFIG_VALUE(HasCalibrated, bool, "HasCalibrated", false);

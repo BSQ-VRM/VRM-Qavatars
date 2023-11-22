@@ -50,5 +50,11 @@ namespace VRMQavatars::Config
         static LocomotionSettings GetLocomotionSettings();
 
         static void SetLocomotionSettings(const LocomotionSettings& settings);
+
+        //Controller Triggers
+
+        static ControllerTriggerSettings GetControllerTriggerSettings();
+
+        static void SetControllerTriggerSettings(const ControllerTriggerSettings& settings);
     };
 };

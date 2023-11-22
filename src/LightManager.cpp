@@ -1,13 +1,15 @@
 #include "LightManager.hpp"
 
-#include <UnityEngine/Resources.hpp>
-
 #include "sceneEventManager.hpp"
+
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Light.hpp"
 #include "UnityEngine/LightType.hpp"
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/SceneManagement/SceneManager.hpp"
+#include "UnityEngine/Resources.hpp"
+#include "UnityEngine/WaitForEndOfFrame.hpp"
+#include "UnityEngine/WaitForSeconds.hpp"
 
 #include "GlobalNamespace/DirectionalLight.hpp"
 #include "GlobalNamespace/PointLight.hpp"
@@ -17,13 +19,14 @@
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "config/ConfigManager.hpp"
 
+#include "chatplex-sdk-bs/shared/CP_SDK/Unity/MTCoroutineStarter.hpp"
+
 namespace VRMQavatars {
     CP_SDK_IL2CPP_INHERIT_INIT(LightManager);
 
     bool LightManager::inGame = false;
 
     SafePtrUnity<UnityEngine::Light> LightManager::_light;
-    SafePtrUnity<UnityEngine::Light> LightManager::_beatmapLight;
     SafePtrUnity<UnityEngine::Light> LightManager::_platform;
 
     SafePtrUnity<GlobalNamespace::SaberManager> LightManager::_saberManager;
@@ -42,31 +45,49 @@ namespace VRMQavatars {
 
     }
 
+    custom_types::Helpers::Coroutine LightManager::GrabColorManager()
+    {
+        co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(0.1f));
+        while(!_colorManager || _colorManager.ptr() == nullptr)
+        {
+            getLogger().info("finding ColorManager");
+            _colorManager = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberModelController*>().FirstOrDefault()->colorManager;
+            co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
+        }
+        co_return;
+    }
+
     //Proxy Funcs
     void LightManager::Awake()
     {
+        UnityEngine::GameObject::DontDestroyOnLoad(get_gameObject());
+
         Init();
 
         SceneEventManager::OnGameEnter += CP_SDK::Utils::Action<>([]
         {
             getLogger().info("hi game");
-            inGame = true;
-            UpdateLightValues();
-            if(!_saberManager)
+            if(!_saberManager || _saberManager.ptr() == nullptr)
             {
+                getLogger().info("finding saber manager");
                 _saberManager = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberManager*>().FirstOrDefault();
-                _colorManager = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberModelController*>().FirstOrDefault()->colorManager;
+                getLogger().info("found %p", _saberManager.ptr());
+                CP_SDK::Unity::MTCoroutineStarter::Start(GrabColorManager());
             }
+            inGame = true;
+            _saberLight1->set_enabled(true);
+            _saberLight2->set_enabled(true);
+            UpdateLightValues();
         });
 
         SceneEventManager::OnMenuEnter += CP_SDK::Utils::Action<>([]
         {
             getLogger().info("hi menu");
             inGame = false;
+            _saberLight1->set_enabled(false);
+            _saberLight2->set_enabled(false);
             UpdateLightValues();
         });
-
-        UnityEngine::GameObject::DontDestroyOnLoad(get_gameObject());
     }
 
     void LightManager::Update()
@@ -84,6 +105,7 @@ namespace VRMQavatars {
     //Create Lights
     void LightManager::Init()
     {
+
         //Global Light
         {
             _light = UnityEngine::GameObject::New_ctor("Global VRM Light")->AddComponent<UnityEngine::Light*>();
@@ -102,12 +124,29 @@ namespace VRMQavatars {
             UnityEngine::GameObject::DontDestroyOnLoad(_platform.ptr()->get_gameObject());
         }
 
+        //Saber Light (L)
+        {
+            _saberLight1 = UnityEngine::GameObject::New_ctor("Saber (L) Lighting")->AddComponent<UnityEngine::Light*>();
+            static auto setType = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, UnityEngine::LightType>("UnityEngine.Light::set_type");
+            setType(_saberLight1.ptr(), UnityEngine::LightType::Point);
+
+            UnityEngine::GameObject::DontDestroyOnLoad(_saberLight1.ptr()->get_gameObject());
+        }
+
+        //Saber Light (R)
+        {
+            _saberLight2 = UnityEngine::GameObject::New_ctor("Saber (R) Lighting")->AddComponent<UnityEngine::Light*>();
+            static auto setType = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, UnityEngine::LightType>("UnityEngine.Light::set_type");
+            setType(_saberLight2.ptr(), UnityEngine::LightType::Point);
+
+            UnityEngine::GameObject::DontDestroyOnLoad(_saberLight2.ptr()->get_gameObject());
+        }
+
         UpdateLightValues();
     }
 
     void LightManager::UpdateLightValues()
     {
-        getLogger().info("Update Lights");
         auto settings = Config::ConfigManager::GetLightingSettings();
         if(_light.isAlive() && _light.isHandleValid())
         {
@@ -125,12 +164,21 @@ namespace VRMQavatars {
                 _platform.ptr()->get_transform()->set_rotation(UnityEngine::Quaternion::Euler(settings.lightRotation));
             }
         }
+        static auto setRange = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, float>("UnityEngine.Light::set_range");
+
+        _saberLight1.ptr()->set_intensity(settings.saberLightingIntensity);
+        setRange(_saberLight1.ptr(), settings.saberLightingRange);
+
+        _saberLight2.ptr()->set_intensity(settings.saberLightingIntensity);
+        setRange(_saberLight2.ptr(), settings.saberLightingRange);
     }
 
     void LightManager::UpdateSaberLight(GlobalNamespace::SaberType type)
     {
         UnityEngine::Light* light;
         GlobalNamespace::Saber* saber;
+        if(!_saberManager || _saberManager.ptr() == nullptr) return;
+        if(!_colorManager || _colorManager.ptr() == nullptr) return;
         UnityEngine::Color color = _colorManager.ptr()->ColorForSaberType(type);
         if (type == GlobalNamespace::SaberType::SaberA)
         {
@@ -142,12 +190,7 @@ namespace VRMQavatars {
             light = _saberLight2.ptr();
             saber = _saberManager.ptr()->rightSaber;
         }
-        float num;
-        float num2;
-        float num3;
-        //Color.RGBToHSV(color, out num, out num2, out num3);
-        //num3 = std::lerp(num3, 1.0f, 0.75f);
-        //color = UnityEngine::Color::HSVToRGB(num, num2, num3);
+
         light->set_enabled(saber->get_isActiveAndEnabled());
         if (light->get_enabled())
         {
@@ -158,9 +201,8 @@ namespace VRMQavatars {
 
     void LightManager::UpdateMenuLights()
     {
-
+        UpdateLightValues();
     }
-
 
     void LightManager::UpdateGameLights()
     {
@@ -226,12 +268,11 @@ namespace VRMQavatars {
             _platform->set_color(normalizedColor);
             _platform->set_intensity(color.a * settings.beatmapLightingBrightness);
             getLogger().info("set light values");
-
-            if(settings.saberLighting)
-            {
-                UpdateSaberLight(GlobalNamespace::SaberType::SaberA);
-                UpdateSaberLight(GlobalNamespace::SaberType::SaberB);
-            }
+        }
+        if(settings.saberLighting)
+        {
+            UpdateSaberLight(GlobalNamespace::SaberType::SaberA);
+            UpdateSaberLight(GlobalNamespace::SaberType::SaberB);
         }
     }
 }

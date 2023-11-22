@@ -55,10 +55,10 @@ namespace VRMQavatars::Config
         {
             if(getAvatarConfig().OverrideIKSettings.GetValue())
             {
-                return getAvatarConfig().IKSettings.GetValue();
+                return getAvatarConfig().IK.GetValue();
             }
         }
-        return getGlobalConfig().IKSettings.GetValue();
+        return getGlobalConfig().IK.GetValue();
     }
 
     void ConfigManager::SetIKSettings(const IKSettings& settings)
@@ -67,12 +67,12 @@ namespace VRMQavatars::Config
         {
             if(getAvatarConfig().OverrideIKSettings.GetValue())
             {
-                getAvatarConfig().IKSettings.SetValue(settings);
+                getAvatarConfig().IK.SetValue(settings);
                 getAvatarConfig().Save();
                 return;
             }
         }
-        getGlobalConfig().IKSettings.SetValue(settings);
+        getGlobalConfig().IK.SetValue(settings);
         getGlobalConfig().Save();
     }
 
@@ -139,10 +139,10 @@ namespace VRMQavatars::Config
         {
             if(getAvatarConfig().OverrideLightingSettings.GetValue())
             {
-                return getAvatarConfig().LightingSettings.GetValue();
+                return getAvatarConfig().Lighting.GetValue();
             }
         }
-        return getGlobalConfig().LightingSettings.GetValue();
+        return getGlobalConfig().Lighting.GetValue();
     }
 
     void ConfigManager::SetLightingSettings(const LightingSettings& settings)
@@ -151,12 +151,12 @@ namespace VRMQavatars::Config
         {
             if(getAvatarConfig().OverrideLightingSettings.GetValue())
             {
-                getAvatarConfig().LightingSettings.SetValue(settings);
+                getAvatarConfig().Lighting.SetValue(settings);
                 getAvatarConfig().Save();
                 return;
             }
         }
-        getGlobalConfig().LightingSettings.SetValue(settings);
+        getGlobalConfig().Lighting.SetValue(settings);
         getGlobalConfig().Save();
     }
 
@@ -167,10 +167,10 @@ namespace VRMQavatars::Config
         {
             if(getAvatarConfig().OverrideLightingSettings.GetValue())
             {
-                return getAvatarConfig().LocomotionSettings.GetValue();
+                return getAvatarConfig().Locomotion.GetValue();
             }
         }
-        return getGlobalConfig().LocomotionSettings.GetValue();
+        return getGlobalConfig().Locomotion.GetValue();
     }
 
     void ConfigManager::SetLocomotionSettings(const LocomotionSettings& settings)
@@ -179,12 +179,40 @@ namespace VRMQavatars::Config
         {
             if(getAvatarConfig().OverrideLightingSettings.GetValue())
             {
-                getAvatarConfig().LocomotionSettings.SetValue(settings);
+                getAvatarConfig().Locomotion.SetValue(settings);
                 getAvatarConfig().Save();
                 return;
             }
         }
-        getGlobalConfig().LocomotionSettings.SetValue(settings);
+        getGlobalConfig().Locomotion.SetValue(settings);
+        getGlobalConfig().Save();
+    }
+
+    //Controller Triggers
+    ControllerTriggerSettings ConfigManager::GetControllerTriggerSettings()
+    {
+        if(InitAvatarConfig())
+        {
+            if(getAvatarConfig().OverrideControllerTriggerSettings.GetValue())
+            {
+                return getAvatarConfig().ControllerTriggers.GetValue();
+            }
+        }
+        return getGlobalConfig().ControllerTriggers.GetValue();
+    }
+
+    void ConfigManager::SetControllerTriggerSettings(const ControllerTriggerSettings& settings)
+    {
+        if(InitAvatarConfig())
+        {
+            if(getAvatarConfig().OverrideControllerTriggerSettings.GetValue())
+            {
+                getAvatarConfig().ControllerTriggers.SetValue(settings);
+                getAvatarConfig().Save();
+                return;
+            }
+        }
+        getGlobalConfig().ControllerTriggers.SetValue(settings);
         getGlobalConfig().Save();
     }
 }

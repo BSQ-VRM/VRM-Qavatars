@@ -1,8 +1,12 @@
 #include "customTypes/BlendShape/BlendShapeController.hpp"
 
+#include <GlobalNamespace/OVRInput_Button.hpp>
+#include <UnityEngine/Time.hpp>
+
 #include "chatplex-sdk-bs/shared/CP_SDK/ChatPlexSDK.hpp"
 
 #include "AvatarManager.hpp"
+
 #include "UnityEngine/Animator.hpp"
 #include "UnityEngine/HumanBodyBones.hpp"
 #include "UnityEngine/Transform.hpp"
@@ -10,8 +14,13 @@
 #include "UnityEngine/Mesh.hpp"
 #include "UnityEngine/Bounds.hpp"
 
+#include "GlobalNamespace/OVRInput.hpp"
+#include "GlobalNamespace/OVRInput_Button.hpp"
+#include "GlobalNamespace/OVRInput_RawButton.hpp"
+
 #include "chatplex-sdk-bs/shared/CP_SDK/Utils/Il2cpp.hpp"
 #include "main.hpp"
+#include "config/ConfigManager.hpp"
 
 namespace VRMQavatars::BlendShape
 {
@@ -29,66 +38,99 @@ namespace VRMQavatars::BlendShape
 
     void BlendShapeController::Init()
     {
-        getLogger().info("blendShape x1");
         init = false;
         const auto animator = GetComponent<UnityEngine::Animator*>();
         const auto headBone = animator->GetBoneTransform(UnityEngine::HumanBodyBones::Head);
         const auto yPos = headBone->get_position().y;
-        getLogger().info("blendShape x2");
         ArrayW<UnityEngine::SkinnedMeshRenderer*> renderers = GetComponentsInChildren<UnityEngine::SkinnedMeshRenderer*>();
         int maximumBlendShapeCount = -1;
         float minimumHeadDist = 999.0f;
         for (int i = 0; i < renderers.size(); i++)
         {
-            getLogger().info("blendShape x3");
             const auto rend = renderers[i];
             maximumBlendShapeCount = std::max(maximumBlendShapeCount, rend->get_sharedMesh()->get_blendShapeCount());
             float dist = std::abs(rend->get_bounds().get_center().y - yPos);
             minimumHeadDist = std::min(minimumHeadDist, dist);
         }
-        getLogger().info("blendShape x4");
         for (int i = 0; i < renderers.size(); i++)
         {
-            getLogger().info("blendShape x5");
             auto rend = renderers[i];
             if(rend->get_sharedMesh()->get_blendShapeCount() > (static_cast<float>(maximumBlendShapeCount) * 0.8f))
             {
-                getLogger().info("blendShape x6");
                 const float dist = std::abs(rend->get_bounds().get_center().y - yPos);
                 if(std::abs(dist - minimumHeadDist) < 0.1f)
                 {
-                    getLogger().info("blendShape x7 %s", static_cast<std::string>(rend->get_gameObject()->get_name()).c_str());
                     //Head Mesh Renderer
                     headRenderer = rend;
                 }
             }
         }
-        if(headRenderer != nullptr)
-        {
-            getLogger().info("blendShape x8");
-            for (int i = 0; i < headRenderer->get_sharedMesh()->get_blendShapeCount(); i++)
-            {
-                getLogger().info("blendShape x9");
-                std::string blendShapeName = headRenderer->get_sharedMesh()->GetBlendShapeName(i);
-                //this.meshBlendShapeIndexes.Add(blendShapeName, i);
-                //this.blendShapeList.Add(blendShapeName);
-                getLogger().info("blendShape blendShapeName[%d]=%s", i, blendShapeName.c_str());
-            }
-        }
-        getLogger().info("blendShape x10");
 
         auto blendShapeMaster = AvatarManager::currentContext->blendShapeMaster;
-        getLogger().info("blendShape x11");
         for (auto blendShape : blendShapeMaster->groups)
         {
-            getLogger().info("blendShape x12");
             blendShapeMappings[blendShape.preset] = blendShape;
+            blendShapeValues[blendShape.preset] = 0.0f;
+            blendShapeTargetValues[blendShape.preset] = 0.0f;
         }
         init = true;
     }
 
+    const std::vector<GlobalNamespace::OVRInput::Button> buttons = {
+        GlobalNamespace::OVRInput::Button::None,
+        GlobalNamespace::OVRInput::Button::PrimaryHandTrigger,
+        GlobalNamespace::OVRInput::Button::PrimaryIndexTrigger,
+        GlobalNamespace::OVRInput::Button::One,
+        GlobalNamespace::OVRInput::Button::Two,
+        GlobalNamespace::OVRInput::Button::PrimaryThumbstickUp,
+        GlobalNamespace::OVRInput::Button::PrimaryThumbstickDown,
+        GlobalNamespace::OVRInput::Button::PrimaryThumbstickLeft,
+        GlobalNamespace::OVRInput::Button::PrimaryThumbstickRight
+    };
+    const std::vector<GlobalNamespace::OVRInput::Controller> controllers = {
+        GlobalNamespace::OVRInput::Controller::LTouch,
+        GlobalNamespace::OVRInput::Controller::RTouch
+    };
+
+    inline bool IsButtonDown(const int& buttonIdx, int controller) {
+        if(buttonIdx <= 0) return false;
+        const auto button = buttons[buttonIdx];
+        if(controller == 2)
+            return GlobalNamespace::OVRInput::Get(button, controllers[0]) || GlobalNamespace::OVRInput::Get(button, controllers[1]);
+        return GlobalNamespace::OVRInput::Get(button, controllers[controller]);
+    }
+
     void BlendShapeController::Update()
     {
+        bool any = false; //Used to determine if we should lerp to neutral preset
+        auto triggerConfig = Config::ConfigManager::GetControllerTriggerSettings();
+        if(true)
+        {
+            bool val = IsButtonDown(3, 1);
+            any |= val; //If any is false and the output is true then set it
+
+            auto preset = AssetLib::Structure::VRM::BlendShapePreset::Unknown;
+            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+        }
+
+        auto neutralPreset = AssetLib::Structure::VRM::BlendShapePreset::Fun;
+
+        blendShapeTargetValues[neutralPreset] = any ? 0.0f : 1.0f;
+
+
+        //Lerp Values
+
+        for (auto const& [key, val] : blendShapeTargetValues)
+        {
+            blendShapeValues[key] = UnityEngine::Mathf::Lerp(blendShapeValues[key], val, UnityEngine::Time::get_deltaTime() * 10.0f);
+        }
+
+        //Set Values
+
+        for (auto const& [key, val] : blendShapeValues)
+        {
+            SetBlendshape(key, val * 100.0f);
+        }
     }
 
     void BlendShapeController::OnDestroy()
@@ -98,11 +140,7 @@ namespace VRMQavatars::BlendShape
 
     void BlendShapeController::SetBlendshape(const AssetLib::Structure::VRM::BlendShapePreset preset, const float value)
     {
-        getLogger().info("set value %f", value);
-        getLogger().info("set preset %d", static_cast<int>(preset));
         auto [binds, isBinary, materialBinds, name, presetName] = blendShapeMappings[preset];
-        getLogger().info("set presetName %d", static_cast<int>(presetName));
-        getLogger().info("set name %s", name.c_str());
         for (int i = 0; i < binds.size(); i++)
         {
             const auto bind = binds[i];

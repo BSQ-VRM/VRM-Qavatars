@@ -1,6 +1,7 @@
 #include "main.hpp"
 
 #include <UnityEngine/Camera.hpp>
+#include <UnityEngine/SceneManagement/SceneManager.hpp>
 
 #include "custom-types/shared/coroutine.hpp"
 #include "custom-types/shared/register.hpp"
@@ -91,6 +92,9 @@ UnityEngine::Texture2D* GetRTPixels(UnityEngine::RenderTexture* rt)
 #define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
 
 custom_types::Helpers::Coroutine Setup() {
+
+    UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
+
     getLogger().info("Starting Load!");
 
     UnityEngine::AssetBundle* ass;
@@ -144,6 +148,8 @@ custom_types::Helpers::Coroutine Setup() {
     UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<GlobalNamespace::MainCamera*>());
     UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<GlobalNamespace::VisualEffectsController*>());
 
+    camcomp->set_nearClipPlane(1.0f);
+
     camcomp->set_targetDisplay(0);
     camcomp->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
     camcomp->set_tag("Untagged");
@@ -151,6 +157,9 @@ custom_types::Helpers::Coroutine Setup() {
     camcomp->set_targetTexture(renderTex);
 
     camcomp->set_cullingMask(tpmask);
+
+    newCamera->get_transform()->set_localPosition({0.0f, 0.0f, -1.0f});
+    newCamera->get_transform()->set_localRotation(UnityEngine::Quaternion::Euler(0.0f, 0.0f, 0.0f));
 
     auto getBgSprite = GetBGSprite("RoundRect10BorderFade");
 
@@ -163,9 +172,6 @@ custom_types::Helpers::Coroutine Setup() {
         x->set_material(GetBGMat("UINoGlow"));
         x->set_color({1.0f, 1.0f, 1.0f, 1.0f});
     }
-
-    VRMQavatars::SceneEventManager::Init();
-    UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
     co_return;
 }
  
@@ -185,6 +191,16 @@ MAKE_HOOK_MATCH(MainCameraHook, &GlobalNamespace::MainCamera::Awake, void, Globa
            2147483647 &
            ~(1 << 3);
     self->get_camera()->set_cullingMask(fpmask);
+}
+
+//I know
+//I know
+//I know
+//Scene manager is bad
+//Open a PR (please)
+MAKE_HOOK_MATCH(SceneManager_Internal_ActiveSceneChanged, &UnityEngine::SceneManagement::SceneManager::Internal_ActiveSceneChanged, void, UnityEngine::SceneManagement::Scene prevScene, UnityEngine::SceneManagement::Scene nextScene) {
+    SceneManager_Internal_ActiveSceneChanged(prevScene, nextScene);
+    VRMQavatars::SceneEventManager::GameSceneChanged(nextScene);
 }
 
 extern "C" void setup(ModInfo& info) {
@@ -207,4 +223,5 @@ extern "C" void load() {
 
     INSTALL_HOOK(getLogger(), MainMenuUIHook);
     INSTALL_HOOK(getLogger(), MainCameraHook);
+    INSTALL_HOOK(getLogger(), SceneManager_Internal_ActiveSceneChanged);
 }

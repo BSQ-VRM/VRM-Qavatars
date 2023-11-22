@@ -24,19 +24,7 @@ namespace VRMQavatars {
 
         static void SetHandOffset(const Structs::OffsetPose& pose);
 
-        static void SetLegSwivel(float value);
-        static void SetArmSwivel(float value);
-
-        static void SetBodyStiffness(float value);
-        static void SetShoulderRotation(float value);
-
-        static void SetWristFixWeight(float value);
-        static void SetShoulderFixWeight(float value);
-
-        static void SetFootDist(float value);
-        static void SetStepThreshold(float value);
-        static void SetStepHeight(float value);
-        static void SetStepOffsetZ(float value);
+        static void UpdateVRIK();
 
         static void SetFingerPose(std::string value);
 
