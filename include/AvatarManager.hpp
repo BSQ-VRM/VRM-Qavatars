@@ -24,9 +24,11 @@ namespace VRMQavatars {
 
         static void SetHandOffset(const Structs::OffsetPose& pose);
 
+        static void CalibrateScale(float value);
+
         static void UpdateVRIK();
 
-        static void SetFingerPose(std::string value);
+        static void SetFingerPose(const std::string& value);
 
         static CP_SDK::Utils::Event<> OnLoad;
 

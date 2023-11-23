@@ -2,11 +2,10 @@
 
 #include <custom-types/shared/delegate.hpp>
 #include <UnityEngine/SceneManagement/SceneManager.hpp>
-#include <UnityEngine/Events/UnityAction_2.hpp>
 
 #include "main.hpp"
 
-//Scene manager is bad
+//Scene manager is bad ik
 namespace VRMQavatars
 {
     CP_SDK::Utils::Event<> SceneEventManager::OnGameEnter;
@@ -42,7 +41,6 @@ namespace VRMQavatars
             //We are in menu
             inMenu = true;
             OnMenuEnter();
-            return;
         }
     }
 }

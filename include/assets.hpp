@@ -45,5 +45,6 @@ namespace IncludedAssets {
 
 	DECLARE_FILE(cd_png)
 	DECLARE_FILE(settings_png)
+	DECLARE_FILE(tpose_json)
 
 }

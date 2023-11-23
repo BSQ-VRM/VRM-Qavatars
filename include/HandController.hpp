@@ -8,7 +8,7 @@ namespace VRMQavatars
     {
         public:
         static void ApplyHandPose(UnityEngine::Animator* animator, std::string pose);
-        static std::vector<std::string> SplitPose(std::string pose);
-        static std::vector<float> ParseRotations(std::vector<std::string> pose);
+        static std::vector<std::string> SplitPose(const std::string& pose);
+        static std::vector<float> ParseRotations(const std::vector<std::string>& pose);
     };
 };

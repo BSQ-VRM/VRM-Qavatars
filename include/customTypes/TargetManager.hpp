@@ -32,7 +32,6 @@
 DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_METHOD(void, Initialize);
     DECLARE_INSTANCE_METHOD(void, Update);
-    DECLARE_INSTANCE_METHOD(void, Calibrate);
 
     DECLARE_INSTANCE_METHOD(UnityEngine::Vector3, GetPosition, GlobalNamespace::OVRPlugin::Node node);
     DECLARE_INSTANCE_METHOD(float, GetAvatarHandHeight);
@@ -47,6 +46,8 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
 
     public:
     Structs::OffsetPose offset;
+
+    void Calibrate(std::optional<float> scale = std::nullopt);
 
     float GetCalibrateScale(std::optional<float> baseScale = std::nullopt);
 

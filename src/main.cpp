@@ -47,7 +47,7 @@
 #include "config/ConfigManager.hpp"
 
 #include "questui/shared/ArrayUtil.hpp"
-#include "AssetLib/structure/VRM/VRMBlendShapeMaster.hpp"
+
 static ModInfo modInfo;
 
 Logger& getLogger() {
@@ -117,34 +117,34 @@ custom_types::Helpers::Coroutine Setup() {
 
     AssetLib::ModelImporter::mtoon = data->mToonShader;
 
-    const int tpmask =
+    constexpr int tpmask =
            2147483647 &
            ~(1 << 6);
 
-    const int fpmask =
+    constexpr int fpmask =
            2147483647 &
            ~(1 << 3);
 
-    auto mainCamera = UnityEngine::GameObject::FindGameObjectWithTag("MainCamera");
+    const auto mainCamera = UnityEngine::GameObject::FindGameObjectWithTag("MainCamera");
     mainCamera->GetComponent<UnityEngine::Camera*>()->set_cullingMask(fpmask);
 
-    auto mirror = UnityEngine::GameObject::Instantiate(data->mirror);
+    const auto mirror = UnityEngine::GameObject::Instantiate(data->mirror);
 
-    auto screen = BSML::FloatingScreen::CreateFloatingScreen({32.5f, 54.0f}, true, {0.0f, 1.5f, 2.0f}, UnityEngine::Quaternion::Euler(15.0f, 180.0f, 0.0f), 0.0f, true);
+    const auto screen = BSML::FloatingScreen::CreateFloatingScreen({32.5f, 54.0f}, true, {0.0f, 1.5f, 2.0f}, UnityEngine::Quaternion::Euler(15.0f, 180.0f, 0.0f), 0.0f, true);
     mirror->get_transform()->SetParent(screen->get_transform(), false);
     UnityEngine::GameObject::DontDestroyOnLoad(screen->get_gameObject());
     mirror->get_transform()->set_localScale({32.0f, 32.0f, 32.0f});
     mirror->get_transform()->set_localPosition({0.0f, 0.0f, 0.05f});
 
-    auto camera = screen->GetComponentInChildren<UnityEngine::Camera*>();
+    const auto camera = screen->GetComponentInChildren<UnityEngine::Camera*>();
 
-    auto renderTex = camera->get_targetTexture();
+    const auto renderTex = camera->get_targetTexture();
 
-    auto parent = camera->get_transform()->get_parent();
+    const auto parent = camera->get_transform()->get_parent();
     UnityEngine::GameObject::Destroy(camera->get_gameObject());
 
-    auto newCamera = UnityEngine::GameObject::Instantiate(mainCamera, parent, false);
-    auto camcomp = newCamera->GetComponent<UnityEngine::Camera*>();
+    const auto newCamera = UnityEngine::GameObject::Instantiate(mainCamera, parent, false);
+    const auto camcomp = newCamera->GetComponent<UnityEngine::Camera*>();
 
     UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<UnityEngine::AudioListener*>());
     UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<GlobalNamespace::MainCamera*>());
@@ -163,9 +163,9 @@ custom_types::Helpers::Coroutine Setup() {
     newCamera->get_transform()->set_localPosition({0.0f, 0.0f, -1.0f});
     newCamera->get_transform()->set_localRotation(UnityEngine::Quaternion::Euler(0.0f, 0.0f, 0.0f));
 
-    auto getBgSprite = GetBGSprite("RoundRect10BorderFade");
+    const auto getBgSprite = GetBGSprite("RoundRect10BorderFade");
 
-    for(auto x : screen->GetComponentsInChildren<HMUI::ImageView*>()) {
+    for(const auto x : screen->GetComponentsInChildren<HMUI::ImageView*>()) {
         if(!x)
             continue;
         x->skew = 0.0f;
@@ -183,6 +183,9 @@ custom_types::Helpers::Coroutine Setup() {
         {
             const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
             VRMQavatars::AvatarManager::SetContext(ctx);
+
+            auto& avaConfig = VRMQavatars::Config::ConfigManager::GetAvatarConfig();
+            VRMQavatars::AvatarManager::CalibrateScale(avaConfig.CalibratedScale.GetValue());
         }
     }
     co_return;
@@ -200,7 +203,7 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
 MAKE_HOOK_MATCH(MainCameraHook, &GlobalNamespace::MainCamera::Awake, void, GlobalNamespace::MainCamera* self)
 {
     MainCameraHook(self);
-    const int fpmask =
+    constexpr int fpmask =
            2147483647 &
            ~(1 << 3);
     self->get_camera()->set_cullingMask(fpmask);

@@ -1,6 +1,5 @@
 #include "AvatarManager.hpp"
 
-#include <functional>
 #include <HandController.hpp>
 
 #include "config/ConfigManager.hpp"
@@ -28,7 +27,7 @@ namespace VRMQavatars {
         _targetManager = root->GetComponent<TargetManager*>();
         _wristTwistFix = root->GetComponent<WristTwistFix*>();
 
-        auto blendShapeMaster = root->GetComponent<BlendShape::BlendShapeController*>();
+        const auto blendShapeMaster = root->GetComponent<BlendShape::BlendShapeController*>();
         blendShapeMaster->Init();
 
         UpdateVRIK();
@@ -88,7 +87,12 @@ namespace VRMQavatars {
         _vrik->UpdateSolverExternal();
     }
 
-    void AvatarManager::SetFingerPose(std::string value)
+    void AvatarManager::CalibrateScale(float value)
+    {
+        _targetManager->Calibrate(value);
+    }
+
+    void AvatarManager::SetFingerPose(const std::string& value)
     {
         if(_vrik == nullptr) return;
         HandController::ApplyHandPose(_vrik->animator, value);

@@ -281,7 +281,7 @@ namespace VRMQavatars::BlendShape
         {
             if(UnityEngine::Time::get_time() > time)
             {
-                //switch eye positions
+                //Switch eye positions
                 Sombrero::FastVector3 unitPos = UnityEngine::Random::get_insideUnitSphere(); //random lookdir
                 eyeVec.x = unitPos.x * 2.5f; //vert
                 eyeVec.y = unitPos.y * 5.0f; //horz
@@ -294,10 +294,13 @@ namespace VRMQavatars::BlendShape
         {
             eyeVec = Sombrero::FastVector3::zero();
         }
-        auto leftAngle = UnityEngine::Quaternion::Lerp(leftEye->get_localRotation(), UnityEngine::Quaternion::Euler(eyeVec), UnityEngine::Time::get_deltaTime() * 15.0f);
-        auto rightAngle = UnityEngine::Quaternion::Lerp(leftEye->get_localRotation(), UnityEngine::Quaternion::Euler(eyeVec), UnityEngine::Time::get_deltaTime() * 15.0f);
-        leftEye->set_localRotation(leftAngle);
-        rightEye->set_localRotation(rightAngle);
+        if(leftEye != nullptr && rightEye != nullptr)
+        {
+            auto leftAngle = UnityEngine::Quaternion::Lerp(leftEye->get_localRotation(), UnityEngine::Quaternion::Euler(eyeVec), UnityEngine::Time::get_deltaTime() * 15.0f);
+            auto rightAngle = UnityEngine::Quaternion::Lerp(rightEye->get_localRotation(), UnityEngine::Quaternion::Euler(eyeVec), UnityEngine::Time::get_deltaTime() * 15.0f);
+            leftEye->set_localRotation(leftAngle);
+            rightEye->set_localRotation(rightAngle);
+        }
     }
 
     void BlendShapeController::OnDestroy()

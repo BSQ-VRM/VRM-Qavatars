@@ -1,6 +1,7 @@
 #include "UI/AvatarSelectionViewController.hpp"
 
 #include <string_view>
+#include <UnityEngine/WaitForEndOfFrame.hpp>
 
 #include "AssetLib/modelImporter.hpp"
 #include "AssetLib/mappings/gLTFImageReader.hpp"
@@ -8,6 +9,8 @@
 #include "config/ConfigManager.hpp"
 #include "UI/components/AvatarListCell.hpp"
 #include "UI/components/AvatarListItem.hpp"
+
+#include "UnityEngine/HumanPoseHandler.hpp"
 
 namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSelectionViewController);
@@ -89,8 +92,6 @@ namespace VRMQavatars::UI::ViewControllers {
                 avatarSet.push_back(std::make_shared<Components::AvatarListItem>(LoadVRMDescriptor(vrm)));
             }
             avatarList->SetListItems(avatarSet);
-            //avatarList->OnListItemSelected({this, &AvatarSelectionViewController::OnListSelect}, true);
-
             auto& globcon = Config::ConfigManager::GetGlobalConfig();
             if(globcon.hasSelected.GetValue())
             {
@@ -109,13 +110,48 @@ namespace VRMQavatars::UI::ViewControllers {
     void AvatarSelectionViewController::OnListSelect(const Components::AvatarListItem::Ptr& p_ListItem)
     {
         auto& globcon = Config::ConfigManager::GetGlobalConfig();
-        const auto item = reinterpret_cast<Components::AvatarListItem*>(p_ListItem.get());
+        const auto item = *reinterpret_cast<const std::shared_ptr<Components::AvatarListItem>*>(&p_ListItem);
+        if (item)
+        {
+            const auto path = item->descriptor.filePath;
+            getLogger().info("%s", (std::string(vrm_path) + "/" + path).c_str());
+            if(fileexists(std::string(vrm_path) + "/" + path))
+            {
+                const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
+                AvatarManager::SetContext(ctx);
+            }
+            globcon.hasSelected.SetValue(true);
+            globcon.selectedFileName.SetValue(path);
+        }
+    }
 
-        const auto path = item->descriptor.filePath;
-        getLogger().info("%s", (std::string(vrm_path) + "/" + path).c_str());
 
-        globcon.hasSelected.SetValue(true);
-        globcon.selectedFileName.SetValue(path);
+    custom_types::Helpers::Coroutine StartCalibration()
+    {
+        float time = 0.0f;
+        const auto rootGameObject = AvatarManager::currentContext->rootGameObject->get_transform();
+        const auto targetManager = rootGameObject->GetComponent<TargetManager*>();
+        targetManager->vrik->set_enabled(false);
+
+        while(time < 4.0f)
+        {
+            time += UnityEngine::Time::get_deltaTime();
+
+            auto headPos = targetManager->GetPosition(GlobalNamespace::OVRPlugin::Node::Head);
+            const auto leftHandPos = targetManager->GetPosition(GlobalNamespace::OVRPlugin::Node::HandLeft);
+            const auto rightHandPos = targetManager->GetPosition(GlobalNamespace::OVRPlugin::Node::HandRight);
+
+            headPos.y = 0.0f;
+
+            const float yRotation = UnityEngine::Vector2::Angle(UnityEngine::Vector2(leftHandPos.x, leftHandPos.z), UnityEngine::Vector2(rightHandPos.x, rightHandPos.z));
+
+            rootGameObject->set_position(headPos);
+            rootGameObject->set_rotation(UnityEngine::Quaternion::Euler(0.0f, yRotation, 0.0f));
+
+            co_yield reinterpret_cast<System::Collections::IEnumerator*>(CRASH_UNLESS(UnityEngine::WaitForEndOfFrame::New_ctor()));
+        }
+        targetManager->Calibrate();
+        co_return;
     }
 
     void AvatarSelectionViewController::DidActivate()
@@ -125,13 +161,16 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUISecondaryButton::Make(u"Refresh")
                     ->OnClick({this, &AvatarSelectionViewController::Refresh})
                     ->AsShared(),
-                CP_SDK::XUI::XUIPrimaryButton::Make(u"Recalibrate"),
+                CP_SDK::XUI::XUIPrimaryButton::Make(u"Recalibrate")
+                    ->OnClick([this]{ this->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(StartCalibration())); })
+                    ->AsShared(),
             })
             ->SetSpacing(8.0f)
             ->AsShared(),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIVVList::Make()
                     ->SetListCellPrefab(CP_SDK::UI::Data::ListCellPrefabs<Components::AvatarListCell>::Get())
+                    ->OnListItemSelected({this, &AvatarSelectionViewController::OnListSelect})
                     ->Bind(&avatarList)
                     ->AsShared()
             })
