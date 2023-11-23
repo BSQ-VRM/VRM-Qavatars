@@ -113,6 +113,8 @@ custom_types::Helpers::Coroutine Setup() {
         co_return;
     }
 
+    ass->Unload(false);
+
     AssetLib::ModelImporter::mtoon = data->mToonShader;
 
     const int tpmask =

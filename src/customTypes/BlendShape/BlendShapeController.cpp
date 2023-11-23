@@ -38,11 +38,9 @@ namespace VRMQavatars::BlendShape
 
     custom_types::Helpers::Coroutine BlendShapeController::AutoBlinkCoroutine()
     {
-        getLogger().info("x");
         while(true)
         {
-            getLogger().info("x1");
-            const float minTime = 1.0f;
+            const float minTime = 1.5f;
             auto config = Config::ConfigManager::GetBlendShapeSettings();
             float toWait = UnityEngine::Time::get_time() + minTime + (UnityEngine::Random::get_value() * config.waitTime);
             while(UnityEngine::Time::get_time() < toWait)
@@ -53,10 +51,10 @@ namespace VRMQavatars::BlendShape
             {
                 float blinkValue = 0.0f;
 
-                float closeSpeed = 10.0f;
-                float openSpeed = 25.0f;
+                float closeSpeed = 9.0f;
+                float openSpeed = 9.0f;
 
-                float closeDuration = 0.05f;
+                float closeDuration = 0.15f;
                 //Animate closing
                 while(true)
                 {
@@ -65,12 +63,12 @@ namespace VRMQavatars::BlendShape
                     {
                         break;
                     }
-                    blendShapeTargetValues[AssetLib::Structure::VRM::Blink] = blinkValue;
+                    blendShapeValues[AssetLib::Structure::VRM::Blink] = blinkValue;
                     co_yield nullptr;
                 }
                 //Ensure full blink
                 blinkValue = 1.0f;
-                blendShapeTargetValues[AssetLib::Structure::VRM::Blink] = blinkValue;
+                blendShapeValues[AssetLib::Structure::VRM::Blink] = blinkValue;
 
                 //Wait for duration of blink
                 co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(closeDuration));
@@ -83,12 +81,12 @@ namespace VRMQavatars::BlendShape
                     {
                         break;
                     }
-                    blendShapeTargetValues[AssetLib::Structure::VRM::Blink] = blinkValue;
+                    blendShapeValues[AssetLib::Structure::VRM::Blink] = blinkValue;
                     co_yield nullptr;
                 }
                 //Ensure no more blinking
                 blinkValue = 0.0f;
-                blendShapeTargetValues[AssetLib::Structure::VRM::Blink] = blinkValue;
+                blendShapeValues[AssetLib::Structure::VRM::Blink] = blinkValue;
             }
         }
         co_return;
@@ -177,18 +175,15 @@ namespace VRMQavatars::BlendShape
     void BlendShapeController::Update()
     {
         if(!init) return;
-        getLogger().info("blend x1");
         bool any = false; //Used to determine if we should lerp to neutral preset
         auto triggerConfig = Config::ConfigManager::GetControllerTriggerSettings();
         auto blendShapeConfig = Config::ConfigManager::GetBlendShapeSettings();
-        getLogger().info("blend x2");
 
         //Reset All to 0
         for (auto const& [key, val] : blendShapeTargetValues)
         {
             blendShapeTargetValues[key] = 0.0f;
         }
-        getLogger().info("blend x3");
 
         //Check for inputs
         if(triggerConfig.A != "None")
@@ -263,22 +258,17 @@ namespace VRMQavatars::BlendShape
             blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
         }
 
-        getLogger().info("blend x4");
-
         const auto neutralPreset = reverseMappings[blendShapeConfig.neutralExpression];
 
         blendShapeTargetValues[neutralPreset] = any ? 0.0f : 1.0f;
 
-        getLogger().info("blend x5");
         //Lerp Values
 
         for (auto const& [key, val] : blendShapeTargetValues)
         {
-            if(SkipBlendShape(key, blendShapeConfig)) continue;
+            if(SkipBlendShape(key, blendShapeConfig) && !any) continue;
             blendShapeValues[key] = UnityEngine::Mathf::Lerp(blendShapeValues[key], val, UnityEngine::Time::get_deltaTime() * 10.0f);
         }
-
-        getLogger().info("blend x6");
 
         //Set Values
 
@@ -286,8 +276,6 @@ namespace VRMQavatars::BlendShape
         {
             SetBlendshape(key, val * 100.0f);
         }
-
-        getLogger().info("blend x7");
 
         if(blendShapeConfig.mockEyeMovement)
         {

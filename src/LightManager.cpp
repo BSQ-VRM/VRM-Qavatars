@@ -12,6 +12,9 @@
 #include "UnityEngine/WaitForSeconds.hpp"
 
 #include "GlobalNamespace/DirectionalLight.hpp"
+#include "GlobalNamespace/LightGroup.hpp"
+#include "GlobalNamespace/TrackLaneRing.hpp"
+#include "GlobalNamespace/LightPairRotationEventEffect.hpp"
 #include "GlobalNamespace/PointLight.hpp"
 #include "GlobalNamespace/Saber.hpp"
 #include "GlobalNamespace/SaberModelController.hpp"
@@ -35,6 +38,8 @@ namespace VRMQavatars {
     SafePtrUnity<UnityEngine::Light> LightManager::_saberLight1;
     SafePtrUnity<UnityEngine::Light> LightManager::_saberLight2;
 
+    std::vector<SafePtrUnity<GlobalNamespace::TubeBloomPrePassLight>> LightManager::lights;
+
     CP_SDK_IL2CPP_DECLARE_CTOR_IMPL(LightManager)
     {
 
@@ -45,14 +50,104 @@ namespace VRMQavatars {
 
     }
 
-    custom_types::Helpers::Coroutine LightManager::GrabColorManager()
+    custom_types::Helpers::Coroutine LightManager::Grab()
     {
-        co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(0.1f));
+        co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(0.15f));
         while(!_colorManager || _colorManager.ptr() == nullptr)
         {
             getLogger().info("finding ColorManager");
             _colorManager = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberModelController*>().FirstOrDefault()->colorManager;
             co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
+        }
+        getLogger().info("adding tubies");
+        lights.clear();
+
+        //Find Front Lights First
+        auto frontLight = UnityEngine::GameObject::Find("Environment/FrontLights");
+        if (frontLight != nullptr)
+        {
+            getLogger().info("h1");
+            //Exists
+            auto frontLights = frontLight->GetComponentsInChildren<GlobalNamespace::TubeBloomPrePassLight*>();
+            getLogger().info("h2");
+            //add lights
+            for (auto front_light : frontLights)
+            {
+                getLogger().info("h3");
+                lights.push_back(front_light);
+            }
+        }
+        else
+        {
+            getLogger().info("h4");
+            //Frontlight doesn't exist
+
+            //Find Left Laser
+            auto leftLaser = UnityEngine::GameObject::Find("Environment/LeftLaser");
+            if (leftLaser != nullptr)
+            {
+                getLogger().info("h5");
+                auto leftLaserLights = leftLaser->GetComponentsInChildren<GlobalNamespace::TubeBloomPrePassLight*>();
+                //add lights
+                getLogger().info("h6");
+                for (auto laser_light : leftLaserLights)
+                {
+                    lights.push_back(laser_light);
+                }
+            }
+            getLogger().info("h7");
+            //Find Right Laser
+            auto rightLaser = UnityEngine::GameObject::Find("Environment/RightLaser");
+            if (rightLaser != nullptr)
+            {
+                getLogger().info("h8");
+                auto rightLaserLights = rightLaser->GetComponentsInChildren<GlobalNamespace::TubeBloomPrePassLight*>();
+                //add lights
+                getLogger().info("h9");
+                for (auto laser_light : rightLaserLights)
+                {
+                    lights.push_back(laser_light);
+                }
+            }
+            getLogger().info("h10");
+        }
+
+        //Now to add rotating lights :)
+
+        auto rotatingLightPairs = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::LightPairRotationEventEffect*>();
+        for (auto pair : rotatingLightPairs)
+        {
+            for (auto rotating_light : pair->GetComponentsInChildren<GlobalNamespace::TubeBloomPrePassLight*>())
+            {
+                lights.push_back(rotating_light);
+            }
+        }
+
+
+        //MOAR LIGHTS
+
+        auto trackLaneRings = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::TrackLaneRing*>();
+        for (auto pair : trackLaneRings)
+        {
+            auto name = pair->get_gameObject()->get_name();
+            for (auto trackLight : pair->GetComponentsInChildren<GlobalNamespace::TubeBloomPrePassLight*>())
+            {
+                if(trackLight->get_transform()->get_parent()->get_name() == name)
+                {
+                    lights.push_back(trackLight);
+                }
+            }
+        }
+
+        //MOARRRRRRRRRRRRRR
+
+        auto lightGroups = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::LightGroup*>();
+        for (auto group : lightGroups)
+        {
+            for (auto Light : group->GetComponentsInChildren<GlobalNamespace::TubeBloomPrePassLight*>())
+            {
+                lights.push_back(Light);
+            }
         }
         co_return;
     }
@@ -72,7 +167,7 @@ namespace VRMQavatars {
                 getLogger().info("finding saber manager");
                 _saberManager = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberManager*>().FirstOrDefault();
                 getLogger().info("found %p", _saberManager.ptr());
-                CP_SDK::Unity::MTCoroutineStarter::Start(GrabColorManager());
+                CP_SDK::Unity::MTCoroutineStarter::Start(Grab());
             }
             inGame = true;
             _saberLight1->set_enabled(true);
@@ -205,23 +300,19 @@ namespace VRMQavatars {
         auto settings = Config::ConfigManager::GetLightingSettings();
         if(settings.beatmapLighting)
         {
-            getLogger().info("beatmap Lighting!!");
             UnityEngine::Color color;
-            int lights = 0;
+            int lightCount = 0;
             for (auto dirLight : GlobalNamespace::DirectionalLight::get_lights()->items)
             {
-                getLogger().info("light %d", lights);
-                if(lights > 4) break;
+                if(lightCount > 4) break;
                 if(dirLight == nullptr) continue;
                 if(!dirLight->get_isActiveAndEnabled()) continue;
-                getLogger().info("x1");
+
                 float distance = dirLight->get_transform()->get_position().get_magnitude();
                 float radius = dirLight->radius;
                 float intensity = dirLight->intensity;
-                getLogger().info("x2");
                 if (radius > 0.0f && radius > distance)
                 {
-                    getLogger().info("x3");
                     intensity = intensity * (radius - distance) / radius; //Intensity of light relative to the distance to player
                     UnityEngine::Color toAdd = UnityEngine::Color(dirLight->color.r * intensity,
                                                                   dirLight->color.g * intensity,
@@ -231,16 +322,29 @@ namespace VRMQavatars {
                     color.g += toAdd.g;
                     color.b += toAdd.b;
                     color.a = std::max(color.a, intensity);
-                    getLogger().info("x4");
                 }
-                lights++;
+                lightCount++;
             }
-            getLogger().info("Calc lights");
+            getLogger().info("updating tubies");
+            for (auto light : lights)
+            {
+                if(!light || !light.isHandleValid() || !light.isAlive()) continue;
+                if(!light.ptr()->get_isActiveAndEnabled()) continue;
+                float alpha = light.ptr()->color.a; //Multiply color by alpha of color for intensity.
+                UnityEngine::Color toAdd = UnityEngine::Color(light.ptr()->color.r * alpha,
+                                                              light.ptr()->color.g * alpha,
+                                                              light.ptr()->color.b * alpha,
+                                                                  0.0f); //Multiplied color
+                color.r += toAdd.r;
+                color.g += toAdd.g;
+                color.b += toAdd.b;
+                color.a = std::max(color.a, alpha);
+            }
+
             auto maxComponents = { 1.0f, color.r, color.g, color.b };
             float maxComponent = *std::max_element(std::begin(maxComponents), std::end(maxComponents));
             UnityEngine::Color normalizedColor = UnityEngine::Color(color.r / maxComponent, color.g / maxComponent, color.b / maxComponent, 1.0f);
             color.a = std::min(color.a, maxComponent);
-            getLogger().info("got color");
             if (settings.beatmapLightingColorIntensity < 1.0f || settings.beatmapLightingMinimumBrightness > 0.0f)
             {
                 float hue;

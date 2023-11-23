@@ -7,11 +7,10 @@
 
 #include "assets.hpp"
 #include "AvatarManager.hpp"
-#include "customTypes/TargetManager.hpp"
 
 #include <string_view>
 #include <questui/shared/BeatSaberUI.hpp>
-#include <questui/shared/CustomTypes/Components/List/QuestUIBoxTableCell.hpp>
+#include "chatplex-sdk-bs/shared/CP_SDK/UI/Data/"
 
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/Templates.hpp"
 #include "config/ConfigManager.hpp"
@@ -291,6 +290,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                 CP_SDK::XUI::XUIText::Make(u"Blink Wait Time"),
                                 CP_SDK::XUI::XUISlider::Make()
                                     ->Bind(&autoBlinkWaitSlider)
+                                    ->SetMaxValue(4.0f)
                                     ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
                                         auto settings = Config::ConfigManager::GetBlendShapeSettings();
                                         settings.waitTime = val;
@@ -597,6 +597,8 @@ namespace VRMQavatars::UI::ViewControllers {
                 {
                     u"Reveiver",
                     CP_SDK::XUI::XUIVLayout::Make({
+                        CP_SDK::XUI::XUIVVList::Make()
+                        ->SetListCellPrefab(CP_SDK::UI::Data::ListCellPrefabs<CP_SDK::UI::Data::>)
                     })
                 },
                 {
