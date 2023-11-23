@@ -10,11 +10,11 @@
 
 #include <string_view>
 #include <questui/shared/BeatSaberUI.hpp>
-#include "chatplex-sdk-bs/shared/CP_SDK/UI/Data/"
 
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/Templates.hpp"
 #include "config/ConfigManager.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
+#include "UI/components/AvatarListCell.hpp"
 
 namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSettingsViewController);
@@ -597,8 +597,6 @@ namespace VRMQavatars::UI::ViewControllers {
                 {
                     u"Reveiver",
                     CP_SDK::XUI::XUIVLayout::Make({
-                        CP_SDK::XUI::XUIVVList::Make()
-                        ->SetListCellPrefab(CP_SDK::UI::Data::ListCellPrefabs<CP_SDK::UI::Data::>)
                     })
                 },
                 {

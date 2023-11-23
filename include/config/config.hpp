@@ -143,6 +143,9 @@ DECLARE_CONFIG(GlobalConfig,
 
     //Global
 
+    CONFIG_VALUE(selectedFileName, std::string, "selectedFileName", "");
+    CONFIG_VALUE(hasSelected, bool, "hasSelected", false);
+
     CONFIG_VALUE(CalibrationType, std::string, "Calibration Type", "Match Armspans");
     CONFIG_VALUE(FixedScale, float, "Fixed Scale", 1.0f);
 )

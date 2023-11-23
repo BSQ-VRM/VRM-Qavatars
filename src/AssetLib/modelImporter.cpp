@@ -461,6 +461,7 @@ void SetXLocalRot(UnityEngine::Transform* trans, float x)
 //TODO: Figure out 1.0.0 support
 AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(const std::string& filename, UnityEngine::Shader* mtoon)
 {
+    getLogger().info("%s", filename.c_str());
     const auto originalContext = Load(filename, false);
 
     //Load inital data to post process

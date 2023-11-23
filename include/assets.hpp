@@ -43,8 +43,7 @@ struct IncludedAsset {
 
 namespace IncludedAssets {
 
-	DECLARE_FILE(avatarCell_bsml)
-	DECLARE_FILE(avatarSelectionView_bsml)
+	DECLARE_FILE(cd_png)
 	DECLARE_FILE(settings_png)
 
 }

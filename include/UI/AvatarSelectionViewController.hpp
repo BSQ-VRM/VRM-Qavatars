@@ -1,22 +1,31 @@
 #pragma once
 
+#include <chatplex-sdk-bs/shared/CP_SDK_BS/UI/ViewController.hpp>
+
 #include "main.hpp"
 #include "HMUI/ViewController.hpp"
-#include "bsml/shared/macros.hpp"
 #include "bsml/shared/BSML.hpp"
 #include "bsml/shared/BSML/Components/CustomListTableData.hpp"
-#include "UI/components/AvatarListTableData.hpp"
-#include "UI/components/AvatarListTableCell.hpp"
+#include "components/AvatarListItem.hpp"
+#include "components/AvatarListCell.hpp"
 
-DECLARE_CLASS_CODEGEN(VRMQavatars::UI::ViewControllers, AvatarSelectionViewController, HMUI::ViewController,
-    DECLARE_INSTANCE_FIELD(BSML::CustomListTableData*, avatarListTableData);
-    DECLARE_INSTANCE_FIELD(VRMQavatars::UI::Components::AvatarListTableData*, avatarList);
+namespace VRMQavatars::UI::ViewControllers {
+    class AvatarSelectionViewController : public CP_SDK_BS::UI::ViewController {
+        CP_SDK_IL2CPP_INHERIT("VRMQavatars.UI.ViewControllers", AvatarSelectionViewController, CP_SDK_BS::UI::ViewController);
+        CP_SDK_IL2CPP_DECLARE_CTOR_CHILD(AvatarSelectionViewController);
+        CP_SDK_IL2CPP_DECLARE_DTOR_MONOBEHAVIOUR_CHILD(AvatarSelectionViewController);
+        SDK_UI_VIEW_CONTROLLER_INSTANCE();
+    public:
+        void DidActivate();
 
-    DECLARE_SIMPLE_DTOR();
-    DECLARE_OVERRIDE_METHOD(void, DidActivate, GET_FIND_METHOD(&HMUI::ViewController::DidActivate), bool firstActivation, bool addedToHeirarchy, bool screenSystemDisabling);
-    DECLARE_INSTANCE_METHOD(void, Refresh);
-    DECLARE_INSTANCE_METHOD(void, Calibrate);
-    DECLARE_INSTANCE_METHOD(void, PostParse);
-    DECLARE_INSTANCE_METHOD(void, OnSelectAvatar, VRMQavatars::UI::Components::AvatarListTableCell* cell);
-    DECLARE_INSTANCE_METHOD(int, GetSelectedCellIdx);
-)
+        void Refresh();
+
+        void OnListSelect(const Components::AvatarListItem::Ptr& p_ListItem);
+
+        std::shared_ptr<CP_SDK::XUI::XUIVVList> avatarList;
+
+        //CP_SDK::Utils::MonoPtr<Modals::IndividualConfigModal> calibrateModal;
+    };
+}
+
+CP_SDK_IL2CPP_INHERIT_HELPERS(VRMQavatars::UI::ViewControllers::AvatarSelectionViewController);
