@@ -40,6 +40,7 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUISlider> legSwivelSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> armSwivelSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> bodyStiffnessSlider;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> groundOffsetSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> shoulderRotationWeightSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> wristTwistFixSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> shoulderTwistFixSlider;

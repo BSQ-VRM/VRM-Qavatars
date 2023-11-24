@@ -3,6 +3,7 @@
 #include <UnityEngine/Camera.hpp>
 #include <UnityEngine/SceneManagement/SceneManager.hpp>
 
+#include "GroundOffsetManager.hpp"
 #include "custom-types/shared/coroutine.hpp"
 #include "custom-types/shared/register.hpp"
 
@@ -194,6 +195,8 @@ custom_types::Helpers::Coroutine Setup() {
     }
 
     VRMQavatars::VMC::VMCClient::InitClient();
+
+    VRMQavatars::GroundOffsetManager::Init();
 
     co_return;
 }

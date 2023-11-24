@@ -11,6 +11,7 @@
 #include "config/ConfigManager.hpp"
 
 #include "conditional-dependencies/shared/main.hpp"
+#include "customTypes/GroundOffsetObject.hpp"
 #include "VMC/VMCClient.hpp"
 
 DEFINE_TYPE(VRMQavatars, TargetManager);
@@ -29,6 +30,8 @@ void VRMQavatars::TargetManager::Initialize()
     vrik->AutoDetectReferences();
 
     vrik->set_enabled(false);
+
+    get_gameObject()->AddComponent<GroundOffsetObject*>();
 }
 void VRMQavatars::TargetManager::Update()
 {
@@ -96,9 +99,6 @@ void VRMQavatars::TargetManager::Update()
     VMC::VMCClient::SendHeadsetPos(headPos, headRot);
     VMC::VMCClient::SendControllerPos(leftHandPos, leftHandRot, 0);
     VMC::VMCClient::SendControllerPos(rightHandPos, rightHandRot, 1);
-
-    auto ikConfig = Config::ConfigManager::GetIKSettings();
-    get_transform()->set_position({0.0f, ikConfig.groundOffset, 0.0f});
 
     leftHandTarget->get_transform()->set_position(leftHandPos);
     leftHandTarget->get_transform()->set_rotation(leftHandRot);

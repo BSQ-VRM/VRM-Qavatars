@@ -612,6 +612,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                 auto settings = Config::ConfigManager::GetVMCSettings();
                                 settings.enableSender = val;
                                 Config::ConfigManager::SetVMCSettings(settings);
+                                VMC::VMCClient::InitClient();
                             })
                             ->AsShared(),
 
@@ -623,6 +624,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                 auto settings = Config::ConfigManager::GetVMCSettings();
                                 settings.destIP = to_utf8(str);
                                 Config::ConfigManager::SetVMCSettings(settings);
+                                VMC::VMCClient::InitClient();
                             })
                             ->AsShared(),
 
@@ -695,7 +697,21 @@ namespace VRMQavatars::UI::ViewControllers {
                             Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::UpdateVRIK();
                         }))
-                        ->AsShared()
+                    ->AsShared(),
+                CP_SDK::XUI::XUIText::Make(u"Ground Y Offset"),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetIncrements(100.0f)
+                    ->SetMinValue(-2.0f)
+                    ->SetMaxValue(2.0f)
+                    ->SetValue(Config::ConfigManager::GetIKSettings().groundOffset)
+                    ->Bind(&groundOffsetSlider)
+                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val) {
+                        auto settings = Config::ConfigManager::GetIKSettings();
+                        settings.groundOffset = val;
+                        Config::ConfigManager::SetIKSettings(settings);
+                        AvatarManager::UpdateVRIK();
+                    }))
+                    ->AsShared()
                 }),
                 CP_SDK::XUI::XUIVLayout::Make(
                 {
@@ -751,6 +767,7 @@ namespace VRMQavatars::UI::ViewControllers {
         legSwivelSlider->SetValue(Config::ConfigManager::GetIKSettings().legSwivel);
         armSwivelSlider->SetValue(Config::ConfigManager::GetIKSettings().armSwivel);
         bodyStiffnessSlider->SetValue(Config::ConfigManager::GetIKSettings().bodyStiffness);
+        groundOffsetSlider->SetValue(Config::ConfigManager::GetIKSettings().groundOffset);
         shoulderRotationWeightSlider->SetValue(Config::ConfigManager::GetIKSettings().shoulderRotationWeight);
         wristTwistFixSlider->SetValue(Config::ConfigManager::GetIKSettings().wristTwistFixAmount);
         shoulderTwistFixSlider->SetValue(Config::ConfigManager::GetIKSettings().shoulderTwistFixAmount);
