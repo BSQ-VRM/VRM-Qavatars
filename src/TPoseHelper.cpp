@@ -2,38 +2,34 @@
 
 #include "UnityEngine/HumanPoseHandler.hpp"
 
-#include "sombrero/shared/FastQuaternion.hpp"
-
-#include "assets.hpp"
 #include "json.hpp"
-#include "main.hpp"
 
 namespace VRMQavatars
 {
-    UnityEngine::HumanPose TPoseHelper::LoadPose()
+    std::vector<TransData> TPoseHelper::originalPositions;
+
+    void TPoseHelper::SavePose(UnityEngine::Transform* root)
     {
-        std::string_view pose = IncludedAssets::tpose_json;
-        auto parsed = nlohmann::json::parse(pose);
+        originalPositions.clear();
+        originalPositions.push_back({root, root->get_position(), root->get_localEulerAngles(), root->get_localScale()});
 
-        auto jsonPose = parsed["clip"];
-        auto bodyPos = jsonPose["bodyPosition"];
-        auto bodyRot = jsonPose["bodyRotation"];
-        std::vector<float> muscles = jsonPose["muscles"];
-
-        const Sombrero::FastVector3 bodyPosVec = {bodyPos["x"], bodyPos["y"], bodyPos["z"]};
-        const Sombrero::FastQuaternion bodyPosRot = {bodyRot["x"], bodyRot["y"], bodyRot["z"], bodyRot["w"]};
-
-        const auto humanPose = UnityEngine::HumanPose(bodyPosVec, bodyPosRot, il2cpp_utils::vectorToArray(muscles));
-        return humanPose;
+        auto allTrans = root->GetComponentsInChildren<UnityEngine::Transform*>(true);
+        for(const auto trans : allTrans)
+        {
+            originalPositions.push_back({trans, trans->get_position(), trans->get_localEulerAngles(), trans->get_localScale()});
+        }
     }
 
-    void TPoseHelper::ApplyTpose(UnityEngine::Avatar* avatar, UnityEngine::Transform* root)
+    void TPoseHelper::LoadPose()
     {
-        auto humanPose = LoadPose();
-
-        const auto handler = UnityEngine::HumanPoseHandler::New_ctor(avatar, root);
-
-        static auto setHumanPose = il2cpp_utils::resolve_icall<void, UnityEngine::HumanPoseHandler*, ByRef<UnityEngine::Vector3>, ByRef<UnityEngine::Quaternion>, ByRef<ArrayW<float>>>("UnityEngine.HumanPoseHandler::SetHumanPose");
-        setHumanPose(handler, humanPose.bodyPosition, humanPose.bodyRotation, humanPose.muscles);
+        for(const auto transData : originalPositions)
+        {
+            if(auto trans = transData.trans)
+            {
+                trans.ptr()->set_position(transData.position);
+                trans.ptr()->set_localEulerAngles(transData.eulerRotation);
+                trans.ptr()->set_localScale(transData.localScale);
+            }
+        }
     }
 }

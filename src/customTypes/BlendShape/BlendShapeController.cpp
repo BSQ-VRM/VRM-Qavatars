@@ -40,21 +40,22 @@ namespace VRMQavatars::BlendShape
     {
         while(true)
         {
-            const float minTime = 1.5f;
+            constexpr float minTime = 1.5f;
             auto config = Config::ConfigManager::GetBlendShapeSettings();
-            float toWait = UnityEngine::Time::get_time() + minTime + (UnityEngine::Random::get_value() * config.waitTime);
+            const float toWait = UnityEngine::Time::get_time() + minTime + (UnityEngine::Random::get_value() * config.waitTime);
             while(UnityEngine::Time::get_time() < toWait)
             {
                 co_yield nullptr;
             }
+            config = Config::ConfigManager::GetBlendShapeSettings();
             if(config.autoBlink)
             {
                 float blinkValue = 0.0f;
 
-                float closeSpeed = 9.0f;
-                float openSpeed = 9.0f;
+                constexpr float closeSpeed = 9.0f;
+                constexpr float openSpeed = 9.0f;
 
-                float closeDuration = 0.15f;
+                constexpr float closeDuration = 0.15f;
                 //Animate closing
                 while(true)
                 {
@@ -126,7 +127,7 @@ namespace VRMQavatars::BlendShape
             }
         }
 
-        auto blendShapeMaster = AvatarManager::currentContext->blendShapeMaster;
+        const auto blendShapeMaster = AvatarManager::currentContext->blendShapeMaster;
         for (auto blendShape : blendShapeMaster->groups)
         {
             blendShapeMappings[blendShape.preset] = blendShape;
@@ -155,7 +156,7 @@ namespace VRMQavatars::BlendShape
         GlobalNamespace::OVRInput::Controller::RTouch
     };
 
-    inline bool IsButtonDown(const int& buttonIdx, int controller) {
+    inline bool IsButtonDown(const int& buttonIdx, const int controller) {
         if(buttonIdx <= 0) return false;
         const auto button = buttons[buttonIdx];
         if(controller == 2)
@@ -163,7 +164,7 @@ namespace VRMQavatars::BlendShape
         return GlobalNamespace::OVRInput::Get(button, controllers[controller]);
     }
 
-    bool SkipBlendShape(AssetLib::Structure::VRM::BlendShapePreset preset, BlendshapeSettings settings)
+    auto SkipBlendShape(const AssetLib::Structure::VRM::BlendShapePreset preset, const BlendshapeSettings& settings) -> bool
     {
         if(settings.autoBlink)
         {

@@ -12,13 +12,13 @@ namespace VRMQavatars
     class gLTFImageReader 
     {
         public:
-        static UnityEngine::Texture2D* ReadImage(nlohmann::json bufferView, uint32_t jsonLength, std::ifstream& binFile)
+        static UnityEngine::Texture2D* ReadImage(nlohmann::json bufferView, const uint32_t jsonLength, std::ifstream& binFile)
         {
-            uint32_t size = bufferView["byteLength"].get<uint32_t>();
-            uint32_t start = bufferView["byteOffset"].get<uint32_t>();
+            const uint32_t size = bufferView["byteLength"].get<uint32_t>();
+            const uint32_t start = bufferView["byteOffset"].get<uint32_t>();
             std::string thing;
             thing.resize(size);
-            binFile.seekg((28 + jsonLength) + start);
+            binFile.seekg(28 + jsonLength + start);
             binFile.read(thing.data(), size);
 
             auto ret = ArrayW<uint8_t>(thing.size());
@@ -33,8 +33,11 @@ namespace VRMQavatars
             return texture;
         }
 
-        static UnityEngine::Texture2D* ReadImageIndex(uint32_t jsonLength, std::ifstream& binFile, int imageIndex)
+        static UnityEngine::Texture2D* ReadImageIndex(const uint32_t jsonLength, std::ifstream& binFile, const int imageIndex)
         {
+            //WHY DO PEOPLE DO THIS OH MY GOD IT IS NOT THAT HARD TO INCLUDE A THUMBNAIL AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+            if(imageIndex == -1) return nullptr;
+
             std::string jsonStr;
             jsonStr.resize(jsonLength);
             binFile.seekg(20); // Skip the rest of the JSON header to the start of the string
@@ -48,17 +51,18 @@ namespace VRMQavatars
             auto img = images[imageIndex];
             auto bufferView = bufferViews[img["bufferView"].get<uint32_t>()];
 
-            uint32_t size = bufferView["byteLength"].get<uint32_t>();
-            uint32_t start = bufferView["byteOffset"].get<uint32_t>();
+            const uint32_t size = bufferView["byteLength"].get<uint32_t>();
+            const uint32_t start = bufferView["byteOffset"].get<uint32_t>();
             std::string thing;
             thing.resize(size);
-            binFile.seekg((28 + jsonLength) + start);
+            binFile.seekg(28 + jsonLength + start);
             binFile.read(thing.data(), size);
 
+            const auto data = thing.data();
             auto ret = ArrayW<uint8_t>(thing.size());
             for (size_t i = 0; i < thing.size(); i++)
             {
-                ret[i] = thing.data()[i];
+                ret[i] = data[i];
             }
 
             UnityEngine::Texture2D* texture = UnityEngine::Texture2D::New_ctor(0, 0, UnityEngine::TextureFormat::RGBA32, false, false);
@@ -67,4 +71,4 @@ namespace VRMQavatars
             return texture;
         }
     };
-};
+}

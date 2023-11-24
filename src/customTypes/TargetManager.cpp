@@ -1,6 +1,7 @@
 #include "customTypes/TargetManager.hpp"
 #include "customTypes/WristTwistFix.hpp"
 #include "HandController.hpp"
+#include "TPoseHelper.hpp"
 
 #include "UnityEngine/Camera.hpp"
 #include "UnityEngine/Resources.hpp"
@@ -109,9 +110,14 @@ void VRMQavatars::TargetManager::Update()
 
 void VRMQavatars::TargetManager::Calibrate(const std::optional<float> scale)
 {
+    vrik->set_enabled(false);
+
     get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
     get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
     get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
+
+    TPoseHelper::LoadPose();
+
     const float calibScale = scale.has_value() ? scale.value() : GetCalibrateScale();
 
     auto& avaConfig = Config::ConfigManager::GetAvatarConfig();

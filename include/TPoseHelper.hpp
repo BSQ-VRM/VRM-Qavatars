@@ -6,10 +6,19 @@
 
 namespace VRMQavatars
 {
+    struct TransData
+    {
+        SafePtrUnity<UnityEngine::Transform> trans;
+        UnityEngine::Vector3 position;
+        UnityEngine::Vector3 eulerRotation;
+        UnityEngine::Vector3 localScale;
+    };
     class TPoseHelper
     {
-        UnityEngine::HumanPose LoadPose();
     public:
-        void ApplyTpose(UnityEngine::Avatar* avatar, UnityEngine::Transform* root);
+        static void SavePose(UnityEngine::Transform* root);
+        static void LoadPose();
+    private:
+        static std::vector<TransData> originalPositions;
     };
 }

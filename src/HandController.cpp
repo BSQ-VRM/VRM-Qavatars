@@ -159,11 +159,19 @@ void VRMQavatars::HandController::ApplyHandPose(UnityEngine::Animator* animator,
 
 	for (int j = 0; j < num; j++)
 	{
-		animator->GetBoneTransform(fingerBones[j])->set_localEulerAngles(angles[j]);
+		auto trans = animator->GetBoneTransform(fingerBones[j]);
+		if(trans != nullptr)
+		{
+			trans->set_localEulerAngles(angles[j]);
+		}
 	}
 
 	for (int j = 0; j < num; j++)
 	{
-		animator->GetBoneTransform(fingerBones[j + num])->set_localEulerAngles(angles[j + num]);
+		auto trans = animator->GetBoneTransform(fingerBones[j + num]);
+		if(trans != nullptr)
+		{
+			trans->set_localEulerAngles(angles[j + num]);
+		}
 	}
 }

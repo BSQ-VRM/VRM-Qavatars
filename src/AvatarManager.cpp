@@ -2,6 +2,7 @@
 
 #include <HandController.hpp>
 
+#include "TPoseHelper.hpp"
 #include "config/ConfigManager.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
 
@@ -34,6 +35,8 @@ namespace VRMQavatars {
 
         SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
         SetFingerPose(Config::ConfigManager::GetFingerPosingSettings().grabPose);
+
+        TPoseHelper::SavePose(root->get_transform());
 
         OnLoad();
     }

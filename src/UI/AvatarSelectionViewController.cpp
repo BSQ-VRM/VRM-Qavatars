@@ -3,6 +3,7 @@
 #include <string_view>
 #include <UnityEngine/WaitForEndOfFrame.hpp>
 
+#include "TPoseHelper.hpp"
 #include "AssetLib/modelImporter.hpp"
 #include "AssetLib/mappings/gLTFImageReader.hpp"
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/Templates.hpp"
@@ -33,7 +34,6 @@ namespace VRMQavatars::UI::ViewControllers {
         VRMDescriptor descriptor;
 
         //Load in binary to parse out VRM data
-
         std::ifstream binFile(vrm_path + std::string("/") + path, std::ios::binary);
 
         binFile.seekg(12); //Skip past the 12 byte header, to the json header
@@ -47,6 +47,7 @@ namespace VRMQavatars::UI::ViewControllers {
 
         auto doc = nlohmann::json::parse(jsonStr);
         auto exts = doc["extensions"];
+
         if(exts.contains("VRM"))
         {
             VRMC_VRM_0_0::Vrm vrm;
@@ -95,12 +96,12 @@ namespace VRMQavatars::UI::ViewControllers {
             auto& globcon = Config::ConfigManager::GetGlobalConfig();
             if(globcon.hasSelected.GetValue())
             {
-                auto pred = [&globcon](const std::shared_ptr<CP_SDK::UI::Data::IListItem>& ptr) { return reinterpret_cast<Components::AvatarListItem*>(ptr.get())->descriptor.filePath == globcon.selectedFileName.GetValue(); };
+                auto pred = [&globcon](const std::shared_ptr<CP_SDK::UI::Data::IListItem>& ptr) { return reinterpret_cast<const Components::AvatarListItem*>(ptr.get())->descriptor.filePath == globcon.selectedFileName.GetValue(); };
                 const auto it = std::find_if(std::begin(avatarSet),
                                              std::end(avatarSet),
                                              pred);
                 const auto itemPos = std::distance(std::begin(avatarSet), it);
-                const auto item = reinterpret_cast<Components::AvatarListItem*>(avatarSet[itemPos].get());
+                const auto item = *reinterpret_cast<const std::shared_ptr<Components::AvatarListItem>*>(&avatarSet[itemPos]);
                 getLogger().info("selected %s %s", item->descriptor.name.c_str(), globcon.selectedFileName.GetValue().c_str());
                 avatarList->SetSelectedListItem(item->shared_from_this(), false);
             }
@@ -114,7 +115,6 @@ namespace VRMQavatars::UI::ViewControllers {
         if (item)
         {
             const auto path = item->descriptor.filePath;
-            getLogger().info("%s", (std::string(vrm_path) + "/" + path).c_str());
             if(fileexists(std::string(vrm_path) + "/" + path))
             {
                 const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
@@ -131,7 +131,16 @@ namespace VRMQavatars::UI::ViewControllers {
         float time = 0.0f;
         const auto rootGameObject = AvatarManager::currentContext->rootGameObject->get_transform();
         const auto targetManager = rootGameObject->GetComponent<TargetManager*>();
+
         targetManager->vrik->set_enabled(false);
+        targetManager->get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
+        targetManager->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
+        targetManager->get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
+
+        targetManager->vrik->solver->Reset();
+        targetManager->vrik->solver->FixTransforms();
+
+        TPoseHelper::LoadPose();
 
         while(time < 4.0f)
         {
@@ -189,7 +198,6 @@ namespace VRMQavatars::UI::ViewControllers {
         })
         ->SetSpacing(1.0f)
         ->BuildUI(get_transform());
-
         Refresh();
     }
 }
