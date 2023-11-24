@@ -122,6 +122,17 @@ namespace VRMQavatars::UI::ViewControllers {
             }
             globcon.hasSelected.SetValue(true);
             globcon.selectedFileName.SetValue(path);
+
+            auto& avacon = Config::ConfigManager::GetAvatarConfig();
+            if(!avacon.HasAgreedToTerms.GetValue())
+            {
+                agreementModal->SetInfo(item->descriptor);
+                ShowModal(agreementModal.Ptr());
+            }
+            if(avacon.HasCalibrated.GetValue())
+            {
+                AvatarManager::CalibrateScale(avacon.CalibratedScale.GetValue());
+            }
         }
     }
 
@@ -163,15 +174,21 @@ namespace VRMQavatars::UI::ViewControllers {
         co_return;
     }
 
+    void AvatarSelectionViewController::Calibrate()
+    {
+        this->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(StartCalibration()));
+    }
+
     void AvatarSelectionViewController::DidActivate()
     {
+        agreementModal = CreateModal<Modals::AvatarSelectionModal>();
         CP_SDK::XUI::Templates::FullRectLayoutMainView({
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUISecondaryButton::Make(u"Refresh")
                     ->OnClick({this, &AvatarSelectionViewController::Refresh})
                     ->AsShared(),
                 CP_SDK::XUI::XUIPrimaryButton::Make(u"Recalibrate")
-                    ->OnClick([this]{ this->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(StartCalibration())); })
+                    ->OnClick({this, &AvatarSelectionViewController::Calibrate})
                     ->AsShared(),
             })
             ->SetSpacing(8.0f)

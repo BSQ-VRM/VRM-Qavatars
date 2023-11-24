@@ -186,7 +186,10 @@ custom_types::Helpers::Coroutine Setup() {
             VRMQavatars::AvatarManager::SetContext(ctx);
 
             auto& avaConfig = VRMQavatars::Config::ConfigManager::GetAvatarConfig();
-            VRMQavatars::AvatarManager::CalibrateScale(avaConfig.CalibratedScale.GetValue());
+            if(avaConfig.HasCalibrated.GetValue())
+            {
+                VRMQavatars::AvatarManager::CalibrateScale(avaConfig.CalibratedScale.GetValue());
+            }
         }
     }
 

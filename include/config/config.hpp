@@ -117,6 +117,7 @@ DECLARE_JSON_CLASS(IKSettings,
     VALUE_DEFAULT(float, shoulderRotationWeight, 1.0f);
     VALUE_DEFAULT(float, wristTwistFixAmount, 0.3f);
     VALUE_DEFAULT(float, shoulderTwistFixAmount, 0.3f);
+    VALUE_DEFAULT(float, groundOffset, 0.0f);
 )
 
 DECLARE_JSON_CLASS(OffsetSettings,

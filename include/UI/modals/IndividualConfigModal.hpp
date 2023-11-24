@@ -1,4 +1,6 @@
 #pragma once
+#include <chatplex-sdk-bs/shared/CP_SDK/XUI/XUI.hpp>
+
 #include "chatplex-sdk-bs/shared/CP_SDK/UI/IModal.hpp"
 
 namespace VRMQavatars::UI::Modals {
@@ -12,11 +14,14 @@ namespace VRMQavatars::UI::Modals {
         void Impl_OnShow();
         void Impl_OnClose();
 
-        public:
-            void Init();
-
+        std::shared_ptr<CP_SDK::XUI::XUIToggle> offsetToggle;
+        std::shared_ptr<CP_SDK::XUI::XUIToggle> fingerToggle;
+        std::shared_ptr<CP_SDK::XUI::XUIToggle> ikToggle;
+        std::shared_ptr<CP_SDK::XUI::XUIToggle> locoToggle;
+        std::shared_ptr<CP_SDK::XUI::XUIToggle> lightToggle;
+        std::shared_ptr<CP_SDK::XUI::XUIToggle> triggerToggle;
     };
 
-}   ///< namespace CP_SDK::UI::Modals
+}
 
 CP_SDK_IL2CPP_INHERIT_HELPERS(VRMQavatars::UI::Modals::IndividualConfigModal);

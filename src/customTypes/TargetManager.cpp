@@ -97,6 +97,9 @@ void VRMQavatars::TargetManager::Update()
     VMC::VMCClient::SendControllerPos(leftHandPos, leftHandRot, 0);
     VMC::VMCClient::SendControllerPos(rightHandPos, rightHandRot, 1);
 
+    auto ikConfig = Config::ConfigManager::GetIKSettings();
+    get_transform()->set_position({0.0f, ikConfig.groundOffset, 0.0f});
+
     leftHandTarget->get_transform()->set_position(leftHandPos);
     leftHandTarget->get_transform()->set_rotation(leftHandRot);
     

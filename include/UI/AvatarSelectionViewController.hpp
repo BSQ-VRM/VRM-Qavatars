@@ -8,6 +8,7 @@
 #include "bsml/shared/BSML/Components/CustomListTableData.hpp"
 #include "components/AvatarListItem.hpp"
 #include "components/AvatarListCell.hpp"
+#include "modals/AvatarSelectionModal.hpp"
 
 namespace VRMQavatars::UI::ViewControllers {
     class AvatarSelectionViewController : public CP_SDK_BS::UI::ViewController {
@@ -22,9 +23,11 @@ namespace VRMQavatars::UI::ViewControllers {
 
         void OnListSelect(const Components::AvatarListItem::Ptr& p_ListItem);
 
+        void Calibrate();
+
         std::shared_ptr<CP_SDK::XUI::XUIVVList> avatarList;
 
-        //CP_SDK::Utils::MonoPtr<Modals::IndividualConfigModal> calibrateModal;
+        CP_SDK::Utils::MonoPtr<Modals::AvatarSelectionModal> agreementModal;
     };
 }
 
