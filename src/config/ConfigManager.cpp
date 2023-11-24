@@ -243,4 +243,16 @@ namespace VRMQavatars::Config
         getGlobalConfig().Blendshapes.SetValue(settings);
         getGlobalConfig().Save();
     }
+
+    //VMC
+    VMCSettings ConfigManager::GetVMCSettings()
+    {
+        return getGlobalConfig().VMC.GetValue();
+    }
+
+    void ConfigManager::SetVMCSettings(const VMCSettings& settings)
+    {
+        getGlobalConfig().VMC.SetValue(settings);
+        getGlobalConfig().Save();
+    }
 }

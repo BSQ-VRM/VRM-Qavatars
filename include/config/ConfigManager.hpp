@@ -62,5 +62,11 @@ namespace VRMQavatars::Config
         static BlendshapeSettings GetBlendShapeSettings();
 
         static void SetBlendShapeSettings(const BlendshapeSettings& settings);
+
+        //VMC
+
+        static VMCSettings GetVMCSettings();
+
+        static void SetVMCSettings(const VMCSettings& settings);
     };
 };

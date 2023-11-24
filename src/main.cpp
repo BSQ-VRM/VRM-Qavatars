@@ -47,6 +47,7 @@
 #include "config/ConfigManager.hpp"
 
 #include "questui/shared/ArrayUtil.hpp"
+#include "VMC/VMCClient.hpp"
 
 static ModInfo modInfo;
 
@@ -188,6 +189,9 @@ custom_types::Helpers::Coroutine Setup() {
             VRMQavatars::AvatarManager::CalibrateScale(avaConfig.CalibratedScale.GetValue());
         }
     }
+
+    VRMQavatars::VMC::VMCClient::InitClient();
+
     co_return;
 }
  

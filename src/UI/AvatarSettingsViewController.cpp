@@ -15,6 +15,7 @@
 #include "config/ConfigManager.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
 #include "UI/components/AvatarListCell.hpp"
+#include "VMC/VMCClient.hpp"
 
 namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSettingsViewController);
@@ -594,21 +595,56 @@ namespace VRMQavatars::UI::ViewControllers {
     std::shared_ptr<CP_SDK::XUI::XUITabControl> AvatarSettingsViewController::BuildVMCTab()
     {
         return CP_SDK::XUI::XUITabControl::Make({
-                {
+                //TODO: Implement Receiver
+                /*{
                     u"Reveiver",
                     CP_SDK::XUI::XUIVLayout::Make({
                     })
-                },
+                },*/
                 {
                     u"Sender",
                     CP_SDK::XUI::XUIVLayout::Make({
+                        CP_SDK::XUI::XUIText::Make(u"VMC Sender Enabled"),
+                        CP_SDK::XUI::XUIToggle::Make()
+                            ->SetValue(Config::ConfigManager::GetVMCSettings().enableSender)
+                            ->OnValueChanged([](bool val)
+                            {
+                                auto settings = Config::ConfigManager::GetVMCSettings();
+                                settings.enableSender = val;
+                                Config::ConfigManager::SetVMCSettings(settings);
+                            })
+                            ->AsShared(),
+
+                        CP_SDK::XUI::XUIText::Make(u"VMC Destination IP Adress"),
+                        CP_SDK::XUI::XUITextInput::Make(u"127.0.0.1")
+                            ->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().destIP))
+                            ->OnValueChanged([](const std::u16string_view str)
+                            {
+                                auto settings = Config::ConfigManager::GetVMCSettings();
+                                settings.destIP = to_utf8(str);
+                                Config::ConfigManager::SetVMCSettings(settings);
+                            })
+                            ->AsShared(),
+
+                        CP_SDK::XUI::XUIText::Make(u"VMC Destination Port"),
+                        CP_SDK::XUI::XUITextInput::Make(u"39540")
+                            ->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().destPort))
+                            ->OnValueChanged([](const std::u16string_view str)
+                            {
+                                auto settings = Config::ConfigManager::GetVMCSettings();
+                                settings.destPort = to_utf8(str);
+                                Config::ConfigManager::SetVMCSettings(settings);
+                                VMC::VMCClient::InitClient();
+                            })
+                            ->AsShared()
                     })
                 },
-                {
+                //TODO: Implement FBT
+                /*{
                     u"FBT",
                     CP_SDK::XUI::XUIVLayout::Make({
                     })
-                }
+                }*/
             });
     }
 

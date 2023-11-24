@@ -127,6 +127,12 @@ DECLARE_JSON_CLASS(FingerPoseSettings,
     VALUE_DEFAULT(std::string, grabPose, "-34,-66,-80,0,-34,-66,-65,0,-37,-73,-43,0,-46,-48,-30,0,-77,-47,-20,19");
 )
 
+DECLARE_JSON_CLASS(VMCSettings,
+    VALUE_DEFAULT(bool, enableSender, false);
+    VALUE_DEFAULT(std::string, destIP, "127.0.0.1");
+    VALUE_DEFAULT(std::string, destPort, "39540");
+)
+
 //Access Global through ConfigManager::GetGlobal
 //Access Avatar through ConfigManager::GetAvatar
 //(MANDATORY) Access individual Config items through ConfigManager::GetXXX
@@ -142,6 +148,8 @@ DECLARE_CONFIG(GlobalConfig,
     CONFIG_VALUE(Blendshapes, BlendshapeSettings, "Blendshapes", {});
 
     //Global
+
+    CONFIG_VALUE(VMC, VMCSettings, "VMC", {})
 
     CONFIG_VALUE(selectedFileName, std::string, "selectedFileName", "");
     CONFIG_VALUE(hasSelected, bool, "hasSelected", false);

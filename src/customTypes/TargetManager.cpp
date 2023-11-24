@@ -11,6 +11,7 @@
 #include "config/ConfigManager.hpp"
 
 #include "conditional-dependencies/shared/main.hpp"
+#include "VMC/VMCClient.hpp"
 
 DEFINE_TYPE(VRMQavatars, TargetManager);
 
@@ -91,6 +92,10 @@ void VRMQavatars::TargetManager::Update()
         headPos = UnityEngine::Vector3(headPose.Position.x, headPose.Position.y, -headPose.Position.z);
         headRot = UnityEngine::Quaternion(-headPose.Orientation.x, -headPose.Orientation.y, headPose.Orientation.z, headPose.Orientation.w);
     }
+
+    VMC::VMCClient::SendHeadsetPos(headPos, headRot);
+    VMC::VMCClient::SendControllerPos(leftHandPos, leftHandRot, 0);
+    VMC::VMCClient::SendControllerPos(rightHandPos, rightHandRot, 1);
 
     leftHandTarget->get_transform()->set_position(leftHandPos);
     leftHandTarget->get_transform()->set_rotation(leftHandRot);
