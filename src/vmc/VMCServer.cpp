@@ -1,6 +1,7 @@
 #include "VMC/VMCServer.hpp"
 
 #include "config/ConfigManager.hpp"
+#include "VMC/util.hpp"
 
 namespace VRMQavatars::VMC
 {
@@ -24,9 +25,9 @@ namespace VRMQavatars::VMC
 
             OSCPP::Server::ArgStream args(msg.args());
 
-            //getLogger().info("packet address %s", msg.address());
+            /*getLogger().info("packet address %s", msg.address());
 
-            /*if(msg == "/VMC/Ext/T")
+            if(msg == "/VMC/Ext/T")
             {
                 getLogger().info("time! %f", args.float32());
             }
@@ -73,12 +74,12 @@ namespace VRMQavatars::VMC
 
             if(msg == "/VMC/Ext/Tra/Pos")
             {
-                std::string name = args.string();
-                UnityEngine::Vector3 pos = {args.float32(), args.float32(), args.float32()};
-                UnityEngine::Quaternion rot = {args.float32(), args.float32(), args.float32(), args.float32()};
+                const std::string name = args.string();
+                const UnityEngine::Vector3 pos = {args.float32(), args.float32(), args.float32()};
+                const UnityEngine::Quaternion rot = {args.float32(), args.float32(), args.float32(), args.float32()};
 
                 availableTrackers.push_back({name, pos, rot});
-                const auto euler = rot.get_eulerAngles();
+                //const auto euler = rot.get_eulerAngles();
                 //getLogger().info("Tracker Pos! %s {%f %f %f} {%f %f %f}", name.c_str(), pos.x, pos.y, pos.z, euler.x, euler.y, euler.z);
             }
         }
@@ -86,38 +87,47 @@ namespace VRMQavatars::VMC
 
     void VMCServer::InitServer()
     {
+        //getLogger().info("x1");
         if(socket)
         {
             socket.shutdown();
         }
         const auto config = Config::ConfigManager::GetVMCSettings();
-        if(config.enableSender)
+        //getLogger().info("x2 %s", config.recvPort.c_str());
+        if(config.enableReceiver)
         {
-            socket = kissnet::udp_socket(kissnet::endpoint("0.0.0.0", 39539));
+            //getLogger().info("x3 %d", IntUtil::to_int(config.recvPort.c_str()));
+            socket = kissnet::udp_socket(kissnet::endpoint("0.0.0.0", IntUtil::to_int(config.recvPort.c_str())));
+            //getLogger().info("x4");
             socket.bind();
+            //getLogger().info("x5");
             socket.listen();
+            //getLogger().info("x6");
         }
     }
 
     void VMCServer::Receive()
     {
-        //getLogger().info("available %zu", socket.bytes_available());
-        //if(socket.bytes_available() > 0)
-        //{
-            kissnet::buffer<8192> buff;
-            auto [received_bytes, status] = socket.recv(buff);
-            //getLogger().info("received bytes: %zu status: %d", received_bytes, status.value);
+        const auto config = Config::ConfigManager::GetVMCSettings();
+        if(config.enableReceiver)
+        {
+            if(socket.get_status() == kissnet::socket_status::valid)
+            {
+                if(socket.bytes_available() > 0)
+                {
+                    kissnet::buffer<8192> buff;
+                    auto [received_bytes, status] = socket.recv(buff);
 
-            const auto from = socket.get_recv_endpoint();
-            //getLogger().info("Receieved! From: %s", from.address.c_str());
-            if(received_bytes > 0)
-            {
-                handlePacket(OSCPP::Server::Packet(buff.data(), received_bytes));
+                    const auto from = socket.get_recv_endpoint();
+                    if(received_bytes > 0)
+                    {
+                        handlePacket(OSCPP::Server::Packet(buff.data(), received_bytes));
+                    }
+                    else
+                    {
+                    }
+                }
             }
-            else
-            {
-                //getLogger().info("no bytes available");
-            }
-        //}
+        }
     }
 }

@@ -116,6 +116,7 @@ void VRMQavatars::TargetManager::Update()
         if(tracker.name == "human://WAIST")
         {
             vmcTracker->get_transform()->set_rotation(tracker.rot);
+            vmcTracker->get_transform()->set_position({0,0,0});
         }
     }
 

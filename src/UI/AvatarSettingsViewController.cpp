@@ -597,12 +597,12 @@ namespace VRMQavatars::UI::ViewControllers {
     {
         return CP_SDK::XUI::XUITabControl::Make({
                 {
-                    u"Reveiver",
+                    u"Receiver",
                     CP_SDK::XUI::XUIVLayout::Make({
                         CP_SDK::XUI::XUIText::Make(u"(Experimental)")
                             ->SetFontSize(6)
                             ->AsShared(),
-                        CP_SDK::XUI::XUIText::Make(u"VMC Reveiver Enabled"),
+                        CP_SDK::XUI::XUIText::Make(u"VMC Receiver Enabled"),
                         CP_SDK::XUI::XUIToggle::Make()
                             ->SetValue(Config::ConfigManager::GetVMCSettings().enableReceiver)
                             ->OnValueChanged([](bool val)
@@ -614,7 +614,7 @@ namespace VRMQavatars::UI::ViewControllers {
                             })
                             ->AsShared(),
 
-                        CP_SDK::XUI::XUIText::Make(u"VMC Reveiving Port"),
+                        CP_SDK::XUI::XUIText::Make(u"VMC Receiver Port"),
                         CP_SDK::XUI::XUITextInput::Make(u"39539")
                             ->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().recvPort))
                             ->OnValueChanged([](const std::u16string_view str)

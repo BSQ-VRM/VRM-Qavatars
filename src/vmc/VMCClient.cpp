@@ -4,39 +4,10 @@
 #include <UnityEngine/Vector3.hpp>
 
 #include "config/ConfigManager.hpp"
+#include "VMC/util.hpp"
 
 namespace VRMQavatars::VMC
 {
-    //Safe int conversion function, returns -1 on empty, skips non numerical chars
-    int to_int(char const *s)
-    {
-        if ( s == NULL || *s == '\0' )
-            return -1;
-
-        bool negate = (s[0] == '-');
-        if ( *s == '+' || *s == '-' )
-            ++s;
-
-        if ( *s == '\0')
-            return -1;
-
-        if ( *s == ' ')
-            return -1;
-
-        int result = 0;
-        while(*s)
-        {
-            if ( *s < '0' || *s > '9' )
-            {
-                ++s;
-                continue;
-            }
-            result = result * 10  - (*s - '0');  //assume negative number
-            ++s;
-        }
-        return negate ? result : -result; //-result is positive!
-    }
-
     size_t makePacket(void* buffer, const size_t size, const std::string& command, const std::string& name, const UnityEngine::Vector3 pos, const UnityEngine::Quaternion rot)
     {
         OSCPP::Client::Packet packet(buffer, size);
@@ -72,7 +43,7 @@ namespace VRMQavatars::VMC
         if(config.enableSender)
         {
             //getLogger().info("x4, %s, %d", config.destIP.c_str(), to_int(config.destPort.c_str()));
-            socket = kissnet::udp_socket(kissnet::endpoint(config.destIP, to_int(config.destPort.c_str())));
+            socket = kissnet::udp_socket(kissnet::endpoint(config.destIP, IntUtil::to_int(config.destPort.c_str())));
         }
     }
 
