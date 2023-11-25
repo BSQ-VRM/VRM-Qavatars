@@ -1,4 +1,7 @@
 #include "customTypes/TargetManager.hpp"
+
+#include <UnityEngine/PrimitiveType.hpp>
+
 #include "customTypes/WristTwistFix.hpp"
 #include "HandController.hpp"
 #include "TPoseHelper.hpp"
@@ -13,6 +16,7 @@
 #include "conditional-dependencies/shared/main.hpp"
 #include "customTypes/GroundOffsetObject.hpp"
 #include "VMC/VMCClient.hpp"
+#include "VMC/VMCServer.hpp"
 
 DEFINE_TYPE(VRMQavatars, TargetManager);
 
@@ -26,6 +30,10 @@ void VRMQavatars::TargetManager::Initialize()
 
     headTarget = UnityEngine::GameObject::New_ctor();
     headTarget->get_transform()->SetParent(get_transform(), false);
+
+    vmcTracker = UnityEngine::GameObject::CreatePrimitive(UnityEngine::PrimitiveType::Cube);
+    vmcTracker->get_transform()->SetParent(get_transform(), false);
+    vmcTracker->get_transform()->set_localScale({0.1f, 0.1f, 0.1f});
 
     vrik->AutoDetectReferences();
 
@@ -99,6 +107,17 @@ void VRMQavatars::TargetManager::Update()
     VMC::VMCClient::SendHeadsetPos(headPos, headRot);
     VMC::VMCClient::SendControllerPos(leftHandPos, leftHandRot, 0);
     VMC::VMCClient::SendControllerPos(rightHandPos, rightHandRot, 1);
+
+    VMC::VMCServer::Receive();
+
+    for(int i = 0; i < VMC::VMCServer::availableTrackers.size(); i++)
+    {
+        auto tracker = VMC::VMCServer::availableTrackers[i];
+        if(tracker.name == "human://WAIST")
+        {
+            vmcTracker->get_transform()->set_rotation(tracker.rot);
+        }
+    }
 
     leftHandTarget->get_transform()->set_position(leftHandPos);
     leftHandTarget->get_transform()->set_rotation(leftHandRot);

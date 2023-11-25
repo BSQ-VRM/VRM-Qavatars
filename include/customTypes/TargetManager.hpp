@@ -38,6 +38,8 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_METHOD(float, GetAvatarHandDist);
     DECLARE_INSTANCE_METHOD(float, GetBase);
 
+    DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, vmcTracker);
+
     DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, leftHandTarget);
     DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, rightHandTarget);
     DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, headTarget);

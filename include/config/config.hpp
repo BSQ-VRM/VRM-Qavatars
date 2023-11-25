@@ -132,6 +132,9 @@ DECLARE_JSON_CLASS(VMCSettings,
     VALUE_DEFAULT(bool, enableSender, false);
     VALUE_DEFAULT(std::string, destIP, "127.0.0.1");
     VALUE_DEFAULT(std::string, destPort, "39540");
+
+    VALUE_DEFAULT(bool, enableReceiver, false);
+    VALUE_DEFAULT(std::string, recvPort, "39539");
 )
 
 //Access Global through ConfigManager::GetGlobal

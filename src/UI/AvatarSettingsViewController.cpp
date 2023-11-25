@@ -16,6 +16,7 @@
 #include "customTypes/BlendShape/BlendShapeController.hpp"
 #include "UI/components/AvatarListCell.hpp"
 #include "VMC/VMCClient.hpp"
+#include "VMC/VMCServer.hpp"
 
 namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSettingsViewController);
@@ -595,12 +596,37 @@ namespace VRMQavatars::UI::ViewControllers {
     std::shared_ptr<CP_SDK::XUI::XUITabControl> AvatarSettingsViewController::BuildVMCTab()
     {
         return CP_SDK::XUI::XUITabControl::Make({
-                //TODO: Implement Receiver
-                /*{
+                {
                     u"Reveiver",
                     CP_SDK::XUI::XUIVLayout::Make({
+                        CP_SDK::XUI::XUIText::Make(u"(Experimental)")
+                            ->SetFontSize(6)
+                            ->AsShared(),
+                        CP_SDK::XUI::XUIText::Make(u"VMC Reveiver Enabled"),
+                        CP_SDK::XUI::XUIToggle::Make()
+                            ->SetValue(Config::ConfigManager::GetVMCSettings().enableReceiver)
+                            ->OnValueChanged([](bool val)
+                            {
+                                auto settings = Config::ConfigManager::GetVMCSettings();
+                                settings.enableReceiver = val;
+                                Config::ConfigManager::SetVMCSettings(settings);
+                                VMC::VMCServer::InitServer();
+                            })
+                            ->AsShared(),
+
+                        CP_SDK::XUI::XUIText::Make(u"VMC Reveiving Port"),
+                        CP_SDK::XUI::XUITextInput::Make(u"39539")
+                            ->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().recvPort))
+                            ->OnValueChanged([](const std::u16string_view str)
+                            {
+                                auto settings = Config::ConfigManager::GetVMCSettings();
+                                settings.recvPort = to_utf8(str);
+                                Config::ConfigManager::SetVMCSettings(settings);
+                                VMC::VMCServer::InitServer();
+                            })
+                            ->AsShared()
                     })
-                },*/
+                },
                 {
                     u"Sender",
                     CP_SDK::XUI::XUIVLayout::Make({

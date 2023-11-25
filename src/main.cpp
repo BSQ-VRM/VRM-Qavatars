@@ -49,6 +49,7 @@
 
 #include "questui/shared/ArrayUtil.hpp"
 #include "VMC/VMCClient.hpp"
+#include "VMC/VMCServer.hpp"
 
 static ModInfo modInfo;
 
@@ -195,6 +196,7 @@ custom_types::Helpers::Coroutine Setup() {
     }
 
     VRMQavatars::VMC::VMCClient::InitClient();
+    VRMQavatars::VMC::VMCServer::InitServer();
 
     VRMQavatars::GroundOffsetManager::Init();
 
