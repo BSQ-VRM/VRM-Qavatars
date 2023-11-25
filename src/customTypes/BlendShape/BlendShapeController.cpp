@@ -48,7 +48,7 @@ namespace VRMQavatars::BlendShape
                 co_yield nullptr;
             }
             config = Config::ConfigManager::GetBlendShapeSettings();
-            if(config.autoBlink)
+            if(config.autoBlink && allowAutoBlink)
             {
                 float blinkValue = 0.0f;
 
@@ -60,7 +60,7 @@ namespace VRMQavatars::BlendShape
                 while(true)
                 {
                     blinkValue += UnityEngine::Time::get_deltaTime() * closeSpeed;
-                    if (blinkValue >= 1.0f)
+                    if (blinkValue >= 1.0f || !allowAutoBlink)
                     {
                         break;
                     }
@@ -78,7 +78,7 @@ namespace VRMQavatars::BlendShape
                 while(true)
                 {
                     blinkValue -= UnityEngine::Time::get_deltaTime() * openSpeed;
-                    if (blinkValue < 0.0f)
+                    if (blinkValue < 0.0f || !allowAutoBlink)
                     {
                         break;
                     }
@@ -262,6 +262,8 @@ namespace VRMQavatars::BlendShape
         const auto neutralPreset = reverseMappings[blendShapeConfig.neutralExpression];
 
         blendShapeTargetValues[neutralPreset] = any ? 0.0f : 1.0f;
+
+        allowAutoBlink = !any;
 
         //Lerp Values
 

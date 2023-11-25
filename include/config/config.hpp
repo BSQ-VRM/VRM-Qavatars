@@ -121,7 +121,7 @@ DECLARE_JSON_CLASS(IKSettings,
 )
 
 DECLARE_JSON_CLASS(OffsetSettings,
-    VALUE_DEFAULT(OffsetPoseConfig, handOffset, OffsetPoseConfig(-0.02f, 0.04f, -0.13f, 55.0f, 0.0f, 90.0f));
+    VALUE_DEFAULT(OffsetPoseConfig, handOffset, OffsetPoseConfig(-0.02f, 0.04f, -0.13f, -55.0f, 0.0f, 90.0f));
 )
 
 DECLARE_JSON_CLASS(FingerPoseSettings,

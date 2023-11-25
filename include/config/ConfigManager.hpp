@@ -13,6 +13,8 @@ namespace VRMQavatars::Config
 
         static bool InitAvatarConfig();
     public:
+        static void ResetAvatarConfig(bool save = false);
+
         static void SaveAvatarConfig();
 
         static AvatarConfig_t& GetAvatarConfig();

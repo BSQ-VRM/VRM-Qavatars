@@ -10,6 +10,28 @@ namespace VRMQavatars::Config
         return newPath;
     }
 
+    void ConfigManager::ResetAvatarConfig(bool save)
+    {
+        auto& cfg = getAvatarConfig();
+        cfg.Blendshapes.SetValue(cfg.Blendshapes.GetDefaultValue(), false);
+        cfg.Lighting.SetValue(cfg.Lighting.GetDefaultValue(), false);
+        cfg.Locomotion.SetValue(cfg.Locomotion.GetDefaultValue(), false);
+        cfg.Offsets.SetValue(cfg.Offsets.GetDefaultValue(), false);
+        cfg.CalibratedScale.SetValue(cfg.CalibratedScale.GetDefaultValue(), false);
+        cfg.ControllerTriggers.SetValue(cfg.ControllerTriggers.GetDefaultValue(), false);
+        cfg.FingerPoses.SetValue(cfg.FingerPoses.GetDefaultValue(), false);
+        cfg.HasCalibrated.SetValue(cfg.HasCalibrated.GetDefaultValue(), false);
+        cfg.IK.SetValue(cfg.IK.GetDefaultValue(), false);
+        cfg.OverrideBlendshapeSettings.SetValue(cfg.OverrideBlendshapeSettings.GetDefaultValue(), false);
+        cfg.OverrideLightingSettings.SetValue(cfg.OverrideLightingSettings.GetDefaultValue(), false);
+        cfg.OverrideLocoSettings.SetValue(cfg.OverrideLocoSettings.GetDefaultValue(), false);
+        cfg.OverrideOffsetSettings.SetValue(cfg.OverrideOffsetSettings.GetDefaultValue(), false);
+        cfg.HasAgreedToTerms.SetValue(cfg.HasAgreedToTerms.GetDefaultValue(), false);
+        cfg.OverrideControllerTriggerSettings.SetValue(cfg.OverrideControllerTriggerSettings.GetDefaultValue(), false);
+        cfg.OverrideFingerPoseSettings.SetValue(cfg.OverrideFingerPoseSettings.GetDefaultValue(), false);
+        cfg.OverrideIKSettings.SetValue(cfg.OverrideIKSettings.GetDefaultValue(), false);
+    }
+
     //Create a config file for the current avatar if one doesn't exist, if there is no avatar selected then return false
     bool ConfigManager::InitAvatarConfig()
     {
@@ -32,6 +54,7 @@ namespace VRMQavatars::Config
 
     AvatarConfig_t& ConfigManager::GetAvatarConfig()
     {
+        InitAvatarConfig();
         return getAvatarConfig();
     }
 

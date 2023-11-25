@@ -34,6 +34,7 @@ namespace VRMQavatars::BlendShape {
         std::map<AssetLib::Structure::VRM::BlendShapePreset, float> blendShapeTargetValues;
 
         bool init = false;
+        bool allowAutoBlink = true;
 
         UnityEngine::Transform* leftEye = nullptr;
         UnityEngine::Transform* rightEye = nullptr;

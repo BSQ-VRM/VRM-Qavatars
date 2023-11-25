@@ -20,7 +20,7 @@ namespace VRMQavatars
 
     bool approx(float v1, float v2)
     {
-        return std::abs(v1 - v2) < 0.09f;
+        return std::abs(v1 - v2) < 0.02f;
     }
 
     void GroundOffsetObject::Update()

@@ -15,6 +15,7 @@ namespace VRMQavatars::UI::Components {
         std::shared_ptr<CP_SDK::XUI::XUIText> NameText;
         std::shared_ptr<CP_SDK::XUI::XUIText> AuthorText;
         std::shared_ptr<CP_SDK::XUI::XUIText> FilenameText;
+        std::shared_ptr<CP_SDK::XUI::XUIImage> Image;
     private:
         void Build_Impl();
         float GetCellHeight_Impl();

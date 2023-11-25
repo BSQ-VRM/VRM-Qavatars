@@ -325,7 +325,7 @@ namespace VRMQavatars {
                 }
                 lightCount++;
             }
-            getLogger().info("updating tubies");
+
             for (auto light : lights)
             {
                 if(!light || !light.isHandleValid() || !light.isAlive()) continue;
@@ -357,7 +357,6 @@ namespace VRMQavatars {
 
                 normalizedColor = UnityEngine::Color::HSVToRGB(hue, sat, val); //Convert back to rgb
                 color.a = std::max(color.a, settings.beatmapLightingMinimumBrightness); //Set brightness to atleast the minimum brightness
-                getLogger().info("applied min brightness");
             }
 
             //Base Lighting
@@ -367,7 +366,6 @@ namespace VRMQavatars {
             //Platform lighting
             _platform->set_color(normalizedColor);
             _platform->set_intensity(color.a * settings.beatmapLightingBrightness);
-            getLogger().info("set light values");
         }
         if(settings.saberLighting)
         {

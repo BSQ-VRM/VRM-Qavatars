@@ -326,7 +326,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         })
                     })
                 },
-                {
+                /*{
                     u"Ingame Event Expressions",
                     CP_SDK::XUI::XUITabControl::Make({
                         {
@@ -369,7 +369,7 @@ namespace VRMQavatars::UI::ViewControllers {
                             ->AsShared()
                         }
                     })
-                },
+                },*/
                 {
                     u"Controller Expressions",
                     CP_SDK::XUI::XUITabControl::Make({
@@ -489,7 +489,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         }
                     })
                 },
-                {
+                /*{
                     u"Lip Sync",
                     CP_SDK::XUI::XUIVLayout::Make({
                         CP_SDK::XUI::XUIHLayout::Make({
@@ -539,7 +539,7 @@ namespace VRMQavatars::UI::ViewControllers {
                     })
                     ->SetSpacing(-5.0f)
                     ->AsShared()
-                }
+                }*/
             });
     }
 
@@ -777,9 +777,9 @@ namespace VRMQavatars::UI::ViewControllers {
     {
         int idx = finger;
         auto slider = CP_SDK::XUI::XUISlider::Make()
-            ->SetIncrements(180.0f)
-            ->SetMinValue(-90)
-            ->SetMaxValue(90)
+            ->SetIncrements(240.0f)
+            ->SetMinValue(-120)
+            ->SetMaxValue(120)
             ->SetInteger(true)
             ->SetValue(GetValue(Config::ConfigManager::GetFingerPosingSettings().grabPose, idx))
             ->OnValueChanged(CP_SDK::Utils::Action<float>([this, idx](const float val)

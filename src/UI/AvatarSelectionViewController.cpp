@@ -114,6 +114,7 @@ namespace VRMQavatars::UI::ViewControllers {
         const auto item = *reinterpret_cast<const std::shared_ptr<Components::AvatarListItem>*>(&p_ListItem);
         if (item)
         {
+            Config::ConfigManager::ResetAvatarConfig(false);
             const auto path = item->descriptor.filePath;
             if(fileexists(std::string(vrm_path) + "/" + path))
             {

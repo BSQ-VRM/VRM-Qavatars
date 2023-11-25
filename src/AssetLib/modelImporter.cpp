@@ -363,6 +363,7 @@ void logTransform(UnityEngine::Transform* trans, int depth = 1)
         
 AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::string& filename, bool loadMaterials)
 {
+    getLogger().info("load 1");
     auto modelContext = new Structure::ModelContext();
 
     modelContext->fileName = filename;
@@ -371,7 +372,7 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
 
     const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_PopulateArmatureData | aiProcess_MakeLeftHanded);
     modelContext->originalScene = scene;
-    
+    getLogger().info("load 2");
     auto Root = UnityEngine::GameObject::New_ctor("ROOT");
     UnityEngine::GameObject::DontDestroyOnLoad(Root);
     Root->get_transform()->set_position(Sombrero::FastVector3(0.0f, 0.0f, 0.0f));
@@ -386,14 +387,14 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     IterateNode(scene->mRootNode, nullptr, modelContext);
     modelContext->rootNode->gameObject = Root;
     modelContext->rootNode->processed = true;
-
+    getLogger().info("load 3");
     //STEP TWO: Create gameobjects for each node
 
     CreateNodeTreeObject(modelContext->rootNode);
     logTransform(Root->get_transform());
 
     //STEP THREE: Load in armature
-
+    getLogger().info("load 4");
     Structure::Node* armatureNode = nullptr;
 
     //TODO: perform this how the assimp docs say to (i'm lazy)
@@ -409,7 +410,7 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     }
     getLogger().info("x1");
     modelContext->armature.value().rootBone = armatureNode;
-
+    getLogger().info("load 5");
     //STEP FOUR: Load in meshes
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
@@ -493,6 +494,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     {
         textures.push_back(VRMQavatars::gLTFImageReader::ReadImageIndex(jsonLength, binFile, i));
     }
+    getLogger().info("vrm 1");
 
     //Generate VRM Materials
 
@@ -500,6 +502,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     for (size_t i = 0; i < vrm.materialProperties.size(); i++)
     {
+        getLogger().info("vrm 2");
         auto [name, shader, renderQueue, floatProperties, vectorProperties, textureProperties, keywordMap, tagMap] = vrm.materialProperties[i];
         
         auto mat = UnityEngine::Material::New_ctor(mtoon);
@@ -541,7 +544,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
         materials.push_back(mat);
     }
-
+    getLogger().info("vrm 3");
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
         if(auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)
@@ -557,16 +560,16 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             renderer->set_sharedMaterials(matArray);
         }
     }
-
+    getLogger().info("vrm 4");
     //modelContext->rootGameObject->AddComponent<VRMQavatars::OVRLipSync::OVRLipSync*>();
 
     modelContext->blendShapeMaster = Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm);
-
+    getLogger().info("vrm 5");
     auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->nodes, modelContext->armature.value().rootBone->gameObject);
-
+    getLogger().info("vrm 6");
     auto anim = modelContext->rootGameObject->AddComponent<UnityEngine::Animator*>();
     anim->set_avatar(avatar);
-
+    getLogger().info("vrm 7");
     //Fix crossed legs
 
     auto LUleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
@@ -579,18 +582,25 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     SetXLocalRot(LLleg, 4.0f);
     SetXLocalRot(RLleg, 4.0f);
 
+    getLogger().info("vrm 8");
+
     modelContext->rootGameObject->AddComponent<VRMQavatars::BlendShape::BlendShapeController*>();
 
     auto vrik = modelContext->rootGameObject->AddComponent<RootMotion::FinalIK::VRIK*>();
+
+    getLogger().info("vrm 9");
 
     auto targetManager = modelContext->rootGameObject->AddComponent<VRMQavatars::TargetManager*>();
     targetManager->vrik = vrik;
     targetManager->Initialize();
 
     auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Neck);
+    getLogger().info("%s", static_cast<std::string>(headBone->get_name()).c_str());
+    getLogger().info("vrm 10");
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
+        getLogger().info("vrm 11");
         if(const auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)
         {
             auto gameObject = modelContext->nodes[i]->gameObject;
@@ -617,10 +627,11 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             gameObject->set_layer(3); //Third Person
         }
     }
+    getLogger().info("vrm 12");
 
     auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
     secondary->get_transform()->SetParent(modelContext->rootGameObject->get_transform());
-
+    getLogger().info("vrm 13");
     //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::LowLatencyLipSyncContext*>();
     //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::AnimMorphTarget*>();
 
@@ -642,6 +653,8 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             break;
         }
     }
+
+    getLogger().info("vrm 14");
     
     auto springs = vrm.secondaryAnimation.boneGroups;
     for (size_t i = 0; i < springs.size(); i++)
@@ -678,6 +691,8 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         }
 		springBone->rootBones = list2;
     }
+
+    getLogger().info("vrm 15");
     
     return modelContext;
 }

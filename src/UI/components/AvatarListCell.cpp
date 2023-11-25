@@ -35,6 +35,7 @@ namespace VRMQavatars::UI::Components {
         static auto sprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::cd_png);
         CP_SDK::XUI::XUIHLayout::Make({
             CP_SDK::XUI::XUIImage::Make()
+                ->Bind(&Image)
                 ->SetSprite(sprite)
                 ->OnReady([](CP_SDK::UI::Components::CImage* img)
                 {
