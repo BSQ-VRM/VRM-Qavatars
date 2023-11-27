@@ -10,26 +10,29 @@ namespace VRMQavatars::Config
         return newPath;
     }
 
-    void ConfigManager::ResetAvatarConfig(bool save)
+    void ConfigManager::ResetAvatarConfig(const bool save)
     {
-        auto& cfg = getAvatarConfig();
-        cfg.Blendshapes.SetValue(cfg.Blendshapes.GetDefaultValue(), false);
-        cfg.Lighting.SetValue(cfg.Lighting.GetDefaultValue(), false);
-        cfg.Locomotion.SetValue(cfg.Locomotion.GetDefaultValue(), false);
-        cfg.Offsets.SetValue(cfg.Offsets.GetDefaultValue(), false);
-        cfg.CalibratedScale.SetValue(cfg.CalibratedScale.GetDefaultValue(), false);
-        cfg.ControllerTriggers.SetValue(cfg.ControllerTriggers.GetDefaultValue(), false);
-        cfg.FingerPoses.SetValue(cfg.FingerPoses.GetDefaultValue(), false);
-        cfg.HasCalibrated.SetValue(cfg.HasCalibrated.GetDefaultValue(), false);
-        cfg.IK.SetValue(cfg.IK.GetDefaultValue(), false);
-        cfg.OverrideBlendshapeSettings.SetValue(cfg.OverrideBlendshapeSettings.GetDefaultValue(), false);
-        cfg.OverrideLightingSettings.SetValue(cfg.OverrideLightingSettings.GetDefaultValue(), false);
-        cfg.OverrideLocoSettings.SetValue(cfg.OverrideLocoSettings.GetDefaultValue(), false);
-        cfg.OverrideOffsetSettings.SetValue(cfg.OverrideOffsetSettings.GetDefaultValue(), false);
-        cfg.HasAgreedToTerms.SetValue(cfg.HasAgreedToTerms.GetDefaultValue(), false);
-        cfg.OverrideControllerTriggerSettings.SetValue(cfg.OverrideControllerTriggerSettings.GetDefaultValue(), false);
-        cfg.OverrideFingerPoseSettings.SetValue(cfg.OverrideFingerPoseSettings.GetDefaultValue(), false);
-        cfg.OverrideIKSettings.SetValue(cfg.OverrideIKSettings.GetDefaultValue(), false);
+        if(AvatarManager::currentContext != nullptr)
+        {
+            auto& cfg = getAvatarConfig();
+            cfg.Blendshapes.SetValue(cfg.Blendshapes.GetDefaultValue(), save);
+            cfg.Lighting.SetValue(cfg.Lighting.GetDefaultValue(), save);
+            cfg.Locomotion.SetValue(cfg.Locomotion.GetDefaultValue(), save);
+            cfg.Offsets.SetValue(cfg.Offsets.GetDefaultValue(), save);
+            cfg.CalibratedScale.SetValue(cfg.CalibratedScale.GetDefaultValue(), save);
+            cfg.ControllerTriggers.SetValue(cfg.ControllerTriggers.GetDefaultValue(), save);
+            cfg.FingerPoses.SetValue(cfg.FingerPoses.GetDefaultValue(), save);
+            cfg.HasCalibrated.SetValue(cfg.HasCalibrated.GetDefaultValue(), save);
+            cfg.IK.SetValue(cfg.IK.GetDefaultValue(), save);
+            cfg.OverrideBlendshapeSettings.SetValue(cfg.OverrideBlendshapeSettings.GetDefaultValue(), save);
+            cfg.OverrideLightingSettings.SetValue(cfg.OverrideLightingSettings.GetDefaultValue(), save);
+            cfg.OverrideLocoSettings.SetValue(cfg.OverrideLocoSettings.GetDefaultValue(), save);
+            cfg.OverrideOffsetSettings.SetValue(cfg.OverrideOffsetSettings.GetDefaultValue(), save);
+            cfg.HasAgreedToTerms.SetValue(cfg.HasAgreedToTerms.GetDefaultValue(), save);
+            cfg.OverrideControllerTriggerSettings.SetValue(cfg.OverrideControllerTriggerSettings.GetDefaultValue(), save);
+            cfg.OverrideFingerPoseSettings.SetValue(cfg.OverrideFingerPoseSettings.GetDefaultValue(), save);
+            cfg.OverrideIKSettings.SetValue(cfg.OverrideIKSettings.GetDefaultValue(), save);
+        }
     }
 
     //Create a config file for the current avatar if one doesn't exist, if there is no avatar selected then return false

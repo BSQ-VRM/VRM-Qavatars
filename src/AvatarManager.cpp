@@ -20,8 +20,14 @@ namespace VRMQavatars {
             UnityEngine::GameObject::Destroy(currentContext->rootGameObject);
             delete currentContext;
         }
-
         currentContext = context;
+
+        if(context == nullptr)
+        {
+            OnLoad();
+            return;
+        }
+
         const auto root = currentContext->rootGameObject;
 
         _vrik = root->GetComponent<RootMotion::FinalIK::VRIK*>();
@@ -47,15 +53,22 @@ namespace VRMQavatars {
         _targetManager->offset = pose;
     }
 
-    ArrayW<UnityEngine::Keyframe> GetStepFrames(const float val) {
-        auto array = ArrayW<UnityEngine::Keyframe>(3);
-        array[0].m_Time = 0.0f;
-        array[0].m_Value = 0.0f;
-        array[1].m_Time = 0.5f;
-        array[1].m_Value = val;
-        array[2].m_Time = 1.0f;
-        array[2].m_Value = 0.0f;
-        return array;
+    UnityEngine::Keyframe Frame(const float time, const float val)
+    {
+        UnityEngine::Keyframe frame;
+        frame.m_Time = time;
+        frame.m_Value = val;
+        return frame;
+    }
+
+    ArrayW<UnityEngine::Keyframe> StepHeightFrames(const float val) {
+
+        std::vector frames = {
+            Frame(0.0f, 0.0f),
+            Frame(0.5f, val),
+            Frame(1.0f, 0.0f)
+        };
+        return il2cpp_utils::vectorToArray(frames);
     }
 
     void AvatarManager::UpdateVRIK()
@@ -85,8 +98,8 @@ namespace VRMQavatars {
 
         _vrik->solver->locomotion->offset = locoSettings.stepOffset;
 
-        _vrik->solver->locomotion->stepHeight->set_keys(GetStepFrames(locoSettings.stepHeight));
-        _vrik->solver->locomotion->heelHeight->set_keys(GetStepFrames(locoSettings.stepHeight + 0.05f));
+        _vrik->solver->locomotion->stepHeight->set_keys(StepHeightFrames(locoSettings.stepHeight));
+        _vrik->solver->locomotion->heelHeight->set_keys(StepHeightFrames(locoSettings.stepHeight + 0.1f));
         _vrik->UpdateSolverExternal();
     }
 

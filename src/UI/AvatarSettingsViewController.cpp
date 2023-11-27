@@ -34,7 +34,7 @@ namespace VRMQavatars::UI::ViewControllers {
     void AvatarSettingsViewController::DidActivate()
     {
         configModal = CreateModal<Modals::IndividualConfigModal>();
-        CP_SDK::XUI::Templates::FullRectLayoutMainView({
+        CP_SDK::XUI::Templates::FullRectLayout({
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIIconButton::Make(QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::settings_png))
                     ->OnClick(CP_SDK::Utils::Action<>([this]
@@ -48,12 +48,10 @@ namespace VRMQavatars::UI::ViewControllers {
             }),
             CP_SDK::XUI::XUITabControl::Make(u"Settings Tab", {
                 { u"Calibration", BuildCalibrationTab() },
-                { u"Hands", BuildHandOffsetsTab() },
+                { u"Hands", CP_SDK::XUI::XUITabControl::Make({ { u"Offset", BuildHandOffsetsTab() }, { u"Finger Posing", BuildFingerPoseSettingsTab() } })},
                 { u"Face", BuildFaceTab() },
                 { u"VMC", BuildVMCTab() },
-                { u"Fingers", BuildFingerPoseSettingsTab() },
-                { u"IK", BuildIKSettingsTab() },
-                { u"Locomotion", BuildLocoSettingsTab() },
+                { u"VRIK", CP_SDK::XUI::XUITabControl::Make({ { u"IK", BuildIKSettingsTab() }, { u"Locomotion", BuildLocoSettingsTab() } })},
                 { u"Lighting", BuildLightingTab() },
             })
         })
@@ -339,11 +337,11 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"BlendShape"),
                                     CP_SDK::XUI::XUIText::Make(u"Duration")
                                 })
-                                    ->SetSpacing(15.0f)
-                                    ->AsShared(),
+                                ->SetSpacing(25.0f)
+                                ->AsShared(),
                                 CP_SDK::XUI::XUIHLayout::Make({
                                     CP_SDK::XUI::XUIText::Make(u"On Combo Reached"),
-                                    CP_SDK::XUI::XUIDropdown::Make(),
+                                    CP_SDK::XUI::XUIDropdown::Make()
                                     CP_SDK::XUI::XUIDropdown::Make(),
                                     CP_SDK::XUI::XUIDropdown::Make()
                                 }),
@@ -366,7 +364,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIDropdown::Make()
                                 })
                             })
-                            ->SetSpacing(-0.1f)
+                            ->SetSpacing(-0.3f)
                             ->AsShared()
                         }
                     })
@@ -599,8 +597,8 @@ namespace VRMQavatars::UI::ViewControllers {
                 {
                     u"Receiver",
                     CP_SDK::XUI::XUIVLayout::Make({
-                        CP_SDK::XUI::XUIText::Make(u"(Experimental)")
-                            ->SetFontSize(6)
+                        CP_SDK::XUI::XUIText::Make(u"If using SlimeVR for FBT, Sender must be enabled")
+                            ->SetFontSize(5)
                             ->AsShared(),
                         CP_SDK::XUI::XUIText::Make(u"VMC Receiver Enabled"),
                         CP_SDK::XUI::XUIToggle::Make()
@@ -667,12 +665,44 @@ namespace VRMQavatars::UI::ViewControllers {
                             ->AsShared()
                     })
                 },
-                //TODO: Implement FBT
-                /*{
-                    u"FBT",
+                {
+                    u"Full Body Tracking",
                     CP_SDK::XUI::XUIVLayout::Make({
+                        CP_SDK::XUI::XUIText::Make(u"(Very Experimental!)")
+                            ->SetFontSize(5)
+                            ->AsShared(),
+                        CP_SDK::XUI::XUIText::Make(u"Requires the receiever to be enabled along with the sender if using SlimeVR")
+                            ->SetFontSize(3)
+                            ->AsShared(),
+                        CP_SDK::XUI::XUIHLayout::Make(
+                        {
+                            CP_SDK::XUI::XUIText::Make(u"Right Knee Tracker"),
+                            CP_SDK::XUI::XUIDropdown::Make(),
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make(
+                        {
+                            CP_SDK::XUI::XUIText::Make(u"Left Knee Tracker"),
+                            CP_SDK::XUI::XUIDropdown::Make(),
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make(
+                        {
+                            CP_SDK::XUI::XUIText::Make(u"Right Foot Tracker"),
+                            CP_SDK::XUI::XUIDropdown::Make(),
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make(
+                        {
+                            CP_SDK::XUI::XUIText::Make(u"Left Foot Tracker"),
+                            CP_SDK::XUI::XUIDropdown::Make(),
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make(
+                        {
+                            CP_SDK::XUI::XUIText::Make(u"Waist Tracker"),
+                            CP_SDK::XUI::XUIDropdown::Make(),
+                        })
                     })
-                }*/
+                    ->SetSpacing(-0.35f)
+                    ->AsShared()
+                }
             });
     }
 
@@ -724,20 +754,6 @@ namespace VRMQavatars::UI::ViewControllers {
                             AvatarManager::UpdateVRIK();
                         }))
                     ->AsShared(),
-                CP_SDK::XUI::XUIText::Make(u"Ground Y Offset"),
-                CP_SDK::XUI::XUISlider::Make()
-                    ->SetIncrements(100.0f)
-                    ->SetMinValue(-2.0f)
-                    ->SetMaxValue(2.0f)
-                    ->SetValue(Config::ConfigManager::GetIKSettings().groundOffset)
-                    ->Bind(&groundOffsetSlider)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val) {
-                        auto settings = Config::ConfigManager::GetIKSettings();
-                        settings.groundOffset = val;
-                        Config::ConfigManager::SetIKSettings(settings);
-                        AvatarManager::UpdateVRIK();
-                    }))
-                    ->AsShared()
                 }),
                 CP_SDK::XUI::XUIVLayout::Make(
                 {
@@ -783,7 +799,22 @@ namespace VRMQavatars::UI::ViewControllers {
                             AvatarManager::UpdateVRIK();
                         }))
                         ->AsShared()
-                })
+                }),
+                CP_SDK::XUI::XUIVLayout::Make({
+                    CP_SDK::XUI::XUIText::Make(u"Ground Y Offset"),
+                    CP_SDK::XUI::XUISlider::Make()
+                        ->SetIncrements(100.0f)
+                        ->SetMinValue(-2.0f)
+                        ->SetMaxValue(2.0f)
+                        ->SetValue(Config::ConfigManager::GetIKSettings().groundOffset)
+                        ->Bind(&groundOffsetSlider)
+                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val) {
+                            auto settings = Config::ConfigManager::GetIKSettings();
+                            settings.groundOffset = val;
+                            Config::ConfigManager::SetIKSettings(settings);
+                            AvatarManager::UpdateVRIK();
+                        }))
+                        ->AsShared()})
             }
         );
     }
@@ -825,6 +856,21 @@ namespace VRMQavatars::UI::ViewControllers {
     {
         return CP_SDK::XUI::XUITabControl::Make({
                     {
+                        u"???",
+                        CP_SDK::XUI::XUIVLayout::Make({
+                            CP_SDK::XUI::XUIImage::Make()
+                                ->SetSprite(QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::human_hand_png))
+                                ->SetWidth(15)
+                                ->SetHeight(15)
+                                ->AsShared(),
+                            CP_SDK::XUI::XUIText::Make(u"Horizontal Angle can help make fingers \n more spread out or closer together")
+                                ->SetFontSize(3)
+                                ->AsShared()
+                        })
+                        ->SetSpacing(1)
+                        ->AsShared()
+                    },
+                    {
                         u"Little",
                         CP_SDK::XUI::XUIHLayout::Make({
                             CP_SDK::XUI::XUIVLayout::Make({
@@ -836,7 +882,9 @@ namespace VRMQavatars::UI::ViewControllers {
 
                                 CP_SDK::XUI::XUIText::Make(u"Little Proximal"),
                                 BuildFingerSlider(2)
-                            }),
+                            })
+                            ->SetSpacing(-0.1f)
+                            ->AsShared(),
                             CP_SDK::XUI::XUIVLayout::Make({
                                 CP_SDK::XUI::XUIText::Make(u"Little Proximal Horizontal Angle"),
                                 BuildFingerSlider(3)
@@ -855,7 +903,9 @@ namespace VRMQavatars::UI::ViewControllers {
 
                                 CP_SDK::XUI::XUIText::Make(u"Ring Proximal"),
                                 BuildFingerSlider(6)
-                            }),
+                            })
+                            ->SetSpacing(-0.1f)
+                            ->AsShared(),
                             CP_SDK::XUI::XUIVLayout::Make({
                                 CP_SDK::XUI::XUIText::Make(u"Ring Proximal Horizontal Angle"),
                                 BuildFingerSlider(7)
@@ -874,7 +924,9 @@ namespace VRMQavatars::UI::ViewControllers {
 
                                 CP_SDK::XUI::XUIText::Make(u"Middle Proximal"),
                                 BuildFingerSlider(10)
-                            }),
+                            })
+                            ->SetSpacing(-0.1f)
+                            ->AsShared(),
                             CP_SDK::XUI::XUIVLayout::Make({
                                 CP_SDK::XUI::XUIText::Make(u"Middle Proximal Horizontal Angle"),
                                 BuildFingerSlider(11)
@@ -893,7 +945,9 @@ namespace VRMQavatars::UI::ViewControllers {
 
                                 CP_SDK::XUI::XUIText::Make(u"Index Proximal"),
                                  BuildFingerSlider(14)
-                            }),
+                            })
+                            ->SetSpacing(-0.1f)
+                            ->AsShared(),
                             CP_SDK::XUI::XUIVLayout::Make({
                                 CP_SDK::XUI::XUIText::Make(u"Index Proximal Horizontal Angle"),
                                 BuildFingerSlider(15)
@@ -912,7 +966,9 @@ namespace VRMQavatars::UI::ViewControllers {
 
                                 CP_SDK::XUI::XUIText::Make(u"Thumb Proximal"),
                                 BuildFingerSlider(18)
-                            }),
+                            })
+                            ->SetSpacing(-0.1f)
+                            ->AsShared(),
                             CP_SDK::XUI::XUIVLayout::Make({
                                 CP_SDK::XUI::XUIText::Make(u"Thumb Proximal Horizontal Angle"),
                                 BuildFingerSlider(19)

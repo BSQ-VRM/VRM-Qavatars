@@ -3,6 +3,7 @@
 #include <string_view>
 #include <UnityEngine/WaitForEndOfFrame.hpp>
 
+#include "assets.hpp"
 #include "TPoseHelper.hpp"
 #include "AssetLib/modelImporter.hpp"
 #include "AssetLib/mappings/gLTFImageReader.hpp"
@@ -82,12 +83,31 @@ namespace VRMQavatars::UI::ViewControllers {
         return descriptor;
     }
 
+    VRMDescriptor GetNoneDescriptor()
+    {
+        VRMDescriptor descriptor;
+        descriptor.name = "None";
+        descriptor.author = "No avatar";
+
+        UnityEngine::Texture2D* texture = UnityEngine::Texture2D::New_ctor(0, 0, UnityEngine::TextureFormat::RGBA32, false, false);
+        UnityEngine::ImageConversion::LoadImage(texture, IncludedAssets::none_png, false);
+
+        descriptor.thumbnail = texture;
+
+        descriptor.filePath = "";
+
+        return descriptor;
+    }
+
     void AvatarSelectionViewController::Refresh()
     {
         std::vector<std::string> vrms = {};
         if(GetFilesInFolderPath("vrm", vrm_path, vrms))
         {
             std::vector<Components::AvatarListItem::Ptr> avatarSet;
+
+            avatarSet.push_back(std::make_shared<Components::AvatarListItem>(GetNoneDescriptor()));
+
             for(auto& vrm : vrms)
             {
                 avatarSet.push_back(std::make_shared<Components::AvatarListItem>(LoadVRMDescriptor(vrm)));
@@ -116,6 +136,13 @@ namespace VRMQavatars::UI::ViewControllers {
         {
             Config::ConfigManager::ResetAvatarConfig(false);
             const auto path = item->descriptor.filePath;
+            if(path == "")
+            {
+                AvatarManager::SetContext(nullptr);
+                globcon.hasSelected.SetValue(false);
+                globcon.selectedFileName.SetValue(path);
+                return;
+            }
             if(fileexists(std::string(vrm_path) + "/" + path))
             {
                 const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
@@ -177,12 +204,14 @@ namespace VRMQavatars::UI::ViewControllers {
 
     void AvatarSelectionViewController::Calibrate()
     {
+        if(AvatarManager::currentContext == nullptr) return;
         this->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(StartCalibration()));
     }
 
     void AvatarSelectionViewController::DidActivate()
     {
         agreementModal = CreateModal<Modals::AvatarSelectionModal>();
+
         CP_SDK::XUI::Templates::FullRectLayoutMainView({
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUISecondaryButton::Make(u"Refresh")
@@ -190,6 +219,8 @@ namespace VRMQavatars::UI::ViewControllers {
                     ->AsShared(),
                 CP_SDK::XUI::XUIPrimaryButton::Make(u"Recalibrate")
                     ->OnClick({this, &AvatarSelectionViewController::Calibrate})
+                    ->SetInteractable(Config::ConfigManager::GetGlobalConfig().hasSelected.GetValue())
+                    ->Bind(&RecalibrateButton)
                     ->AsShared(),
             })
             ->SetSpacing(8.0f)
@@ -216,6 +247,12 @@ namespace VRMQavatars::UI::ViewControllers {
         })
         ->SetSpacing(1.0f)
         ->BuildUI(get_transform());
+
         Refresh();
+
+        AvatarManager::OnLoad += [this]()
+        {
+            RecalibrateButton->SetInteractable(AvatarManager::currentContext != nullptr);
+        };
     }
 }

@@ -25,6 +25,8 @@ namespace VRMQavatars::UI::ViewControllers {
 
         void Calibrate();
 
+        std::shared_ptr<CP_SDK::XUI::XUIPrimaryButton> RecalibrateButton;
+
         std::shared_ptr<CP_SDK::XUI::XUIVVList> avatarList;
 
         CP_SDK::Utils::MonoPtr<Modals::AvatarSelectionModal> agreementModal;

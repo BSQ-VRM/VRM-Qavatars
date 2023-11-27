@@ -8,8 +8,13 @@
 
 #include "UnityEngine/Camera.hpp"
 #include "UnityEngine/Resources.hpp"
+
 #include "GlobalNamespace/Saber.hpp"
 #include "GlobalNamespace/SaberType.hpp"
+#include "GlobalNamespace/OVRPlugin.hpp"
+
+#include "RootMotion/FinalIK/Finger.hpp"
+#include "RootMotion/FinalIK/FingerRig.hpp"
 
 #include "config/ConfigManager.hpp"
 
@@ -113,16 +118,57 @@ void VRMQavatars::TargetManager::Update()
     for(int i = 0; i < VMC::VMCServer::availableTrackers.size(); i++)
     {
         auto tracker = VMC::VMCServer::availableTrackers[i];
-        if(tracker.name == "human://WAIST")
+        if(tracker.name == "human://RIGHT_KNEE")
         {
             vmcTracker->get_transform()->set_rotation(tracker.rot);
-            vmcTracker->get_transform()->set_position({0,0,0});
+            vmcTracker->get_transform()->set_position(tracker.pos);
         }
     }
 
+    std::vector<UnityEngine::HumanBodyBones> leftConversion = {
+        UnityEngine::HumanBodyBones::LeftHand, // Wrist
+        UnityEngine::HumanBodyBones::Spine, //Ignore, Forearm
+        UnityEngine::HumanBodyBones::Spine, //Ignore, Thumb trapezium
+        UnityEngine::HumanBodyBones::LeftThumbProximal, // Thumb metacarpal
+        UnityEngine::HumanBodyBones::LeftThumbIntermediate, //Thumb Proximal
+        UnityEngine::HumanBodyBones::LeftThumbDistal, //Thumb Distal
+        UnityEngine::HumanBodyBones::LeftIndexProximal, //Index Proximal
+        UnityEngine::HumanBodyBones::LeftIndexIntermediate, //Index Intermediate
+        UnityEngine::HumanBodyBones::LeftIndexDistal, //Index Distal
+        UnityEngine::HumanBodyBones::LeftMiddleProximal, //Middle proximal
+        UnityEngine::HumanBodyBones::LeftMiddleIntermediate, //Middle Intermediate
+        UnityEngine::HumanBodyBones::LeftMiddleDistal, //Middle Distal
+        UnityEngine::HumanBodyBones::LeftRingProximal, //Ring Proximal
+        UnityEngine::HumanBodyBones::LeftRingIntermediate, //Ring Intermediate
+        UnityEngine::HumanBodyBones::LeftRingDistal, //Ring Distal
+        UnityEngine::HumanBodyBones::Spine, //Ignore, Pinky Metacarpal
+        UnityEngine::HumanBodyBones::LeftLittleProximal, //Pinky proximal
+        UnityEngine::HumanBodyBones::LeftLittleIntermediate, //Pinky Intermediate
+        UnityEngine::HumanBodyBones::LeftLittleDistal, //Pinky Distal
+    };
+
+    /*GlobalNamespace::OVRPlugin::Skeleton leftSkelly;
+    if(GlobalNamespace::OVRPlugin::GetSkeleton(GlobalNamespace::OVRPlugin::SkeletonType::HandLeft, &leftSkelly))
+    {
+        getLogger().info("SkeletonAvailable?");
+        for (auto bone : leftSkelly.Bones)
+        {
+            getLogger().info("bone: %d", static_cast<int>(bone.Id));
+            auto id = bone.Id;
+            auto pos = bone.Pose.Position;
+            auto rot = bone.Pose.Orientation;
+            if(id != 0 && id != 1 && id != 2 && id != 15 && id < 19)
+            {
+                auto boneTrans = vrik->animator->GetBoneTransform(leftConversion[id]);
+                boneTrans->get_transform()->set_localPosition({pos.x, pos.y, pos.z});
+                boneTrans->get_transform()->set_localRotation({rot.x, rot.y, rot.z, rot.w});
+            }
+        }
+    }*/
+
     leftHandTarget->get_transform()->set_position(leftHandPos);
     leftHandTarget->get_transform()->set_rotation(leftHandRot);
-    
+
     leftHandTarget->get_transform()->Rotate(UnityEngine::Vector3(offset.rotX, offset.rotY, offset.rotZ));
     leftHandTarget->get_transform()->Translate(UnityEngine::Vector3(offset.posX, offset.posY, offset.posZ));
 

@@ -76,11 +76,11 @@ namespace VRMQavatars::VMC
             {
                 const std::string name = args.string();
                 const UnityEngine::Vector3 pos = {args.float32(), args.float32(), args.float32()};
-                const UnityEngine::Quaternion rot = {args.float32(), args.float32(), args.float32(), args.float32()};
+                UnityEngine::Quaternion rot = {args.float32(), args.float32(), args.float32(), args.float32()};
 
                 availableTrackers.push_back({name, pos, rot});
-                //const auto euler = rot.get_eulerAngles();
-                //getLogger().info("Tracker Pos! %s {%f %f %f} {%f %f %f}", name.c_str(), pos.x, pos.y, pos.z, euler.x, euler.y, euler.z);
+                const auto euler = rot.get_eulerAngles();
+                getLogger().info("Tracker Pos! %s {%f %f %f} {%f %f %f}", name.c_str(), pos.x, pos.y, pos.z, euler.x, euler.y, euler.z);
             }
         }
     }
