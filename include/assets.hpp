@@ -47,6 +47,5 @@ namespace IncludedAssets {
 	DECLARE_FILE(human_hand_png)
 	DECLARE_FILE(none_png)
 	DECLARE_FILE(settings_png)
-	DECLARE_FILE(tpose_json)
 
 }

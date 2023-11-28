@@ -1,6 +1,6 @@
 #include "LightManager.hpp"
 
-#include "sceneEventManager.hpp"
+#include "SceneEventManager.hpp"
 
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Light.hpp"

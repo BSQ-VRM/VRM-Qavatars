@@ -101,29 +101,39 @@ namespace VRMQavatars::UI::ViewControllers {
 
     void AvatarSelectionViewController::Refresh()
     {
+        getLogger().info("refresh1");
         std::vector<std::string> vrms = {};
         if(GetFilesInFolderPath("vrm", vrm_path, vrms))
         {
+            getLogger().info("refresh2");
             std::vector<Components::AvatarListItem::Ptr> avatarSet;
 
             avatarSet.push_back(std::make_shared<Components::AvatarListItem>(GetNoneDescriptor()));
-
+            getLogger().info("refresh3");
             for(auto& vrm : vrms)
             {
+                getLogger().info("refresh4");
                 avatarSet.push_back(std::make_shared<Components::AvatarListItem>(LoadVRMDescriptor(vrm)));
             }
+            getLogger().info("refresh5");
             avatarList->SetListItems(avatarSet);
             auto& globcon = Config::ConfigManager::GetGlobalConfig();
+            getLogger().info("refresh6");
             if(globcon.hasSelected.GetValue())
             {
+                getLogger().info("refresh7");
                 auto pred = [&globcon](const std::shared_ptr<CP_SDK::UI::Data::IListItem>& ptr) { return reinterpret_cast<const Components::AvatarListItem*>(ptr.get())->descriptor.filePath == globcon.selectedFileName.GetValue(); };
+                getLogger().info("refresh8");
                 const auto it = std::find_if(std::begin(avatarSet),
                                              std::end(avatarSet),
                                              pred);
+                getLogger().info("refresh9");
                 const auto itemPos = std::distance(std::begin(avatarSet), it);
+                getLogger().info("refresh10");
                 const auto item = *reinterpret_cast<const std::shared_ptr<Components::AvatarListItem>*>(&avatarSet[itemPos]);
                 getLogger().info("selected %s %s", item->descriptor.name.c_str(), globcon.selectedFileName.GetValue().c_str());
                 avatarList->SetSelectedListItem(item->shared_from_this(), false);
+                getLogger().info("refresh11");
             }
         }
     }

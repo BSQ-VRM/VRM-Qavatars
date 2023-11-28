@@ -113,9 +113,10 @@ namespace VRMQavatars::BlendShape
             float dist = std::abs(rend->get_bounds().get_center().y - yPos);
             minimumHeadDist = std::min(minimumHeadDist, dist);
         }
+
         for (int i = 0; i < renderers.size(); i++)
         {
-            auto rend = renderers[i];
+            const auto rend = renderers[i];
             if(rend->get_sharedMesh()->get_blendShapeCount() > (static_cast<float>(maximumBlendShapeCount) * 0.8f))
             {
                 const float dist = std::abs(rend->get_bounds().get_center().y - yPos);
@@ -164,9 +165,9 @@ namespace VRMQavatars::BlendShape
         return GlobalNamespace::OVRInput::Get(button, controllers[controller]);
     }
 
-    auto SkipBlendShape(const AssetLib::Structure::VRM::BlendShapePreset preset, const BlendshapeSettings& settings) -> bool
+    bool SkipBlendShape(const AssetLib::Structure::VRM::BlendShapePreset preset, const BlendshapeSettings& settings, bool allow)
     {
-        if(settings.autoBlink)
+        if(settings.autoBlink && allow)
         {
             return preset == AssetLib::Structure::VRM::Blink;
         }
@@ -269,7 +270,7 @@ namespace VRMQavatars::BlendShape
 
         for (auto const& [key, val] : blendShapeTargetValues)
         {
-            if(SkipBlendShape(key, blendShapeConfig) && !any) continue;
+            if(SkipBlendShape(key, blendShapeConfig, allowAutoBlink) && !any) continue;
             blendShapeValues[key] = UnityEngine::Mathf::Lerp(blendShapeValues[key], val, UnityEngine::Time::get_deltaTime() * 10.0f);
         }
 
@@ -297,6 +298,7 @@ namespace VRMQavatars::BlendShape
         {
             eyeVec = Sombrero::FastVector3::zero();
         }
+
         if(leftEye != nullptr && rightEye != nullptr)
         {
             auto leftAngle = UnityEngine::Quaternion::Lerp(leftEye->get_localRotation(), UnityEngine::Quaternion::Euler(eyeVec), UnityEngine::Time::get_deltaTime() * 15.0f);
@@ -317,7 +319,10 @@ namespace VRMQavatars::BlendShape
         for (int i = 0; i < binds.size(); i++)
         {
             const auto bind = binds[i];
-            headRenderer->SetBlendShapeWeight(bind.index, value);
+            if(headRenderer->get_sharedMesh()->get_blendShapeCount() > bind.index && headRenderer != nullptr)
+            {
+                headRenderer->SetBlendShapeWeight(bind.index, value);
+            }
         }
     }
 };

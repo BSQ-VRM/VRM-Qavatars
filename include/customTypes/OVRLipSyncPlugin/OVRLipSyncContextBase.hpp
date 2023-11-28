@@ -7,7 +7,7 @@
 namespace VRMQavatars::OVRLipSync {
     class OVRLipSyncContextBase : public UnityEngine::MonoBehaviour
     {
-        CP_SDK_IL2CPP_INHERIT("VRMQavatars.OVRLipSync", OVRLipSyncContextBase, UnityEngine::MonoBehaviour);
+        CP_SDK_IL2CPP_INHERIT("VRMQavatars.OVRLipSyn    c", OVRLipSyncContextBase, UnityEngine::MonoBehaviour);
         CP_SDK_IL2CPP_DECLARE_CTOR(OVRLipSyncContextBase);
         CP_SDK_IL2CPP_DECLARE_DTOR_MONOBEHAVIOUR(OVRLipSyncContextBase);
     public:
@@ -16,7 +16,7 @@ namespace VRMQavatars::OVRLipSync {
         DECLARE_INSTANCE_METHOD(void, OnDestroy);
 
         DECLARE_INSTANCE_FIELD(UnityEngine::AudioSource*, audioSource);
-    public:
+
         void set_smoothing(int value);
         int get_smoothing();
 
@@ -28,7 +28,6 @@ namespace VRMQavatars::OVRLipSync {
         bool enableAcceleration = true;
         ovrLipSyncFrame frame = ovrLipSyncFrame();
         ovrLipSyncContextProvider provider = ovrLipSyncContextProvider_Enhanced;
-    private:
         int _smoothing = 0;
     };
 }

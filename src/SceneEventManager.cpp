@@ -1,4 +1,4 @@
-#include "sceneEventManager.hpp"
+#include "SceneEventManager.hpp"
 
 #include <custom-types/shared/delegate.hpp>
 #include <UnityEngine/SceneManagement/SceneManager.hpp>

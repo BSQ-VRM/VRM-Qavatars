@@ -59,6 +59,12 @@ DECLARE_JSON_CLASS(VectorThree,
     VALUE_DEFAULT(float, y, {});
     VALUE_DEFAULT(float, z, {});
     VectorThree() = default;
+    VectorThree(float _x, float _y, float _z)
+    {
+        x = _x;
+        y = _y;
+        z = _z;
+    }
     VectorThree(const UnityEngine::Vector3& from)
     {
         x = from.x;
@@ -68,6 +74,26 @@ DECLARE_JSON_CLASS(VectorThree,
     operator UnityEngine::Vector3()
     {
         return UnityEngine::Vector3(x, y, z);
+    }
+)
+
+DECLARE_JSON_CLASS(VectorTwo,
+    VALUE_DEFAULT(float, x, {});
+    VALUE_DEFAULT(float, y, {});
+    VectorTwo() = default;
+    VectorTwo(const UnityEngine::Vector2& from)
+    {
+        x = from.x;
+        y = from.y;
+    }
+    VectorTwo(float _x, float _y)
+    {
+        x = _x;
+        y = _y;
+    }
+    operator UnityEngine::Vector2()
+    {
+        return UnityEngine::Vector2(x, y);
     }
 )
 
@@ -137,6 +163,16 @@ DECLARE_JSON_CLASS(VMCSettings,
     VALUE_DEFAULT(std::string, recvPort, "39539");
 )
 
+DECLARE_JSON_CLASS(MirrorSettings,
+    VALUE_DEFAULT(bool, enabled, true);
+    VALUE_DEFAULT(VectorThree, position, VectorThree(0, 1.5f, 2));
+    VALUE_DEFAULT(VectorThree, rotation, VectorThree(15.0f, 180, 0));
+    VALUE_DEFAULT(VectorTwo, size, VectorTwo(32.5f, 54.0f));
+    VALUE_DEFAULT(int, layer, 0);
+    VALUE_DEFAULT(int, boneTracking, 0);
+    VALUE_DEFAULT(int, scene, 0);
+)
+
 //Access Global through ConfigManager::GetGlobal
 //Access Avatar through ConfigManager::GetAvatar
 //(MANDATORY) Access individual Config items through ConfigManager::GetXXX
@@ -153,7 +189,8 @@ DECLARE_CONFIG(GlobalConfig,
 
     //Global
 
-    CONFIG_VALUE(VMC, VMCSettings, "VMC", {})
+    CONFIG_VALUE(VMC, VMCSettings, "VMC", {});
+    CONFIG_VALUE(Mirror, MirrorSettings, "Mirror", {});
 
     CONFIG_VALUE(selectedFileName, std::string, "selectedFileName", "");
     CONFIG_VALUE(hasSelected, bool, "hasSelected", false);

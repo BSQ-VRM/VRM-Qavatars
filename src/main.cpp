@@ -43,7 +43,7 @@
 #include "..\include\UI\components\AvatarListCell.hpp"
 
 #include "LightManager.hpp"
-#include "sceneEventManager.hpp"
+#include "SceneEventManager.hpp"
 
 #include "config/ConfigManager.hpp"
 
@@ -177,20 +177,24 @@ custom_types::Helpers::Coroutine Setup() {
         x->set_material(GetBGMat("UINoGlow"));
         x->set_color({1.0f, 1.0f, 1.0f, 1.0f});
     }
-    auto& globcon = VRMQavatars::Config::ConfigManager::GetGlobalConfig();
-    if(globcon.hasSelected.GetValue())
-    {
-        const auto path = globcon.selectedFileName.GetValue();
-        getLogger().info("%s", (std::string(vrm_path) + "/" + path).c_str());
-        if(fileexists(std::string(vrm_path) + "/" + path))
-        {
-            const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
-            VRMQavatars::AvatarManager::SetContext(ctx);
 
-            auto& avaConfig = VRMQavatars::Config::ConfigManager::GetAvatarConfig();
-            if(avaConfig.HasCalibrated.GetValue())
+    if(VRMQavatars::AvatarManager::currentContext == nullptr)
+    {
+        auto& globcon = VRMQavatars::Config::ConfigManager::GetGlobalConfig();
+        if(globcon.hasSelected.GetValue())
+        {
+            const auto path = globcon.selectedFileName.GetValue();
+            getLogger().info("%s", (std::string(vrm_path) + "/" + path).c_str());
+            if(fileexists(std::string(vrm_path) + "/" + path))
             {
-                VRMQavatars::AvatarManager::CalibrateScale(avaConfig.CalibratedScale.GetValue());
+                const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
+                VRMQavatars::AvatarManager::SetContext(ctx);
+
+                auto& avaConfig = VRMQavatars::Config::ConfigManager::GetAvatarConfig();
+                if(avaConfig.HasCalibrated.GetValue())
+                {
+                    VRMQavatars::AvatarManager::CalibrateScale(avaConfig.CalibratedScale.GetValue());
+                }
             }
         }
     }

@@ -5,7 +5,7 @@
 #include <UnityEngine/GameObject.hpp>
 #include <UnityEngine/WaitForSeconds.hpp>
 
-#include "sceneEventManager.hpp"
+#include "SceneEventManager.hpp"
 #include "customTypes/GroundOffsetObject.hpp"
 
 namespace VRMQavatars

@@ -173,6 +173,7 @@ namespace VRM::Mappings
                 if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::UpperChest) humanName = names[53];
                 if(bone.node+1 >= bones.size() || bones[bone.node+1]->gameObject == nullptr) continue;
                 StringW boneName = bones[bone.node+1]->gameObject->get_name();
+                getLogger().info("%s, %s", static_cast<std::string>(boneName).c_str(), static_cast<std::string>(humanName).c_str());
                 humanBones[i] = CustomHumanBone(boneName, humanName, UnityEngine::HumanLimit(convertVector(bone.min), convertVector(bone.max), convertVector(bone.center), bone.axisLength, bone.useDefaultValues ? 0 : 1));
             }
             auto allObjs = root->GetComponentsInChildren<UnityEngine::Transform*>(true);

@@ -12,7 +12,7 @@ namespace VRMQavatars::Config
 
     void ConfigManager::ResetAvatarConfig(const bool save)
     {
-        if(AvatarManager::currentContext != nullptr)
+        if(InitAvatarConfig())
         {
             auto& cfg = getAvatarConfig();
             cfg.Blendshapes.SetValue(cfg.Blendshapes.GetDefaultValue(), save);
@@ -279,6 +279,18 @@ namespace VRMQavatars::Config
     void ConfigManager::SetVMCSettings(const VMCSettings& settings)
     {
         getGlobalConfig().VMC.SetValue(settings);
+        getGlobalConfig().Save();
+    }
+
+    //Mirror
+    static MirrorSettings GetMirrorSettings()
+    {
+        return getGlobalConfig().Mirror.GetValue();
+    }
+
+    static void SetMirrorSettings(const MirrorSettings& settings)
+    {
+        getGlobalConfig().Mirror.SetValue(settings);
         getGlobalConfig().Save();
     }
 }

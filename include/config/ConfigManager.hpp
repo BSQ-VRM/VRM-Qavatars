@@ -70,5 +70,11 @@ namespace VRMQavatars::Config
         static VMCSettings GetVMCSettings();
 
         static void SetVMCSettings(const VMCSettings& settings);
+
+        //Mirror
+
+        static MirrorSettings GetMirrorSettings();
+
+        static void SetMirrorSettings(const MirrorSettings& settings);
     };
 };
