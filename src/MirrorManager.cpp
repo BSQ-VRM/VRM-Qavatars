@@ -89,7 +89,7 @@ namespace VRMQavatars
         return tpmask;
     }
 
-    UnityEngine::GameObject* MirrorManager::CreateMirror(const UnityEngine::Vector3 position, const UnityEngine::Vector3 rotation, const UnityEngine::Vector2 size, int layer)
+    UnityEngine::GameObject* MirrorManager::CreateMirror(const UnityEngine::Vector3 position, const UnityEngine::Vector3 rotation, const UnityEngine::Vector2 size, const int layer, float fov)
     {
         int mask = GetMask(layer);
 
@@ -102,7 +102,7 @@ namespace VRMQavatars
 
         //Screen
 
-        const auto screen = BSML::FloatingScreen::CreateFloatingScreen(UnityEngine::Vector2(size) + 0.1f, true, position, UnityEngine::Quaternion::Euler(rotation), 0.0f, true);
+        const auto screen = BSML::FloatingScreen::CreateFloatingScreen(UnityEngine::Vector2(size) * 1.05f, true, position, UnityEngine::Quaternion::Euler(rotation), 0.0f, true);
         UnityEngine::GameObject::DontDestroyOnLoad(screen->get_gameObject());
 
         rootObject->get_transform()->SetParent(screen->get_transform(), false);
@@ -134,18 +134,15 @@ namespace VRMQavatars
         camcomp->set_targetDisplay(0);
         camcomp->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
         camcomp->set_tag("Untagged");
+        camcomp->set_fieldOfView(fov);
 
         camcomp->set_targetTexture(renderTex);
         getLogger().info("m6");
 
         camcomp->set_cullingMask(mask);
 
-        getLogger().info("m7");
-
         newCamera->get_transform()->set_localPosition({0.0f, 0.0f, -1.0f});
         newCamera->get_transform()->set_localRotation(UnityEngine::Quaternion::Euler(0.0f, 0.0f, 0.0f));
-
-        getLogger().info("m8");
 
         //Quad
 
@@ -181,7 +178,7 @@ namespace VRMQavatars
     {
         auto conf = Config::ConfigManager::GetMirrorSettings();
 
-        const auto obj = CreateMirror(conf.position, conf.rotation, conf.size, conf.layer);
+        const auto obj = CreateMirror(conf.position, conf.rotation, conf.size, conf.layer, conf.fov);
         mainMirror = obj;
         mirrorCamera = obj->GetComponentInChildren<UnityEngine::Camera*>();
         mirrorRenderer = obj->GetComponentInChildren<UnityEngine::MeshRenderer*>();
@@ -206,7 +203,7 @@ namespace VRMQavatars
         screen->set_active(conf.enabled);
 
         const auto screenComp = screen->GetComponent<BSML::FloatingScreen*>();
-        screenComp->set_ScreenSize(UnityEngine::Vector2(conf.size) + 0.1f);
+        screenComp->set_ScreenSize(UnityEngine::Vector2(conf.size) * 1.05f);
         screenComp->set_ScreenPosition(conf.position);
         screenComp->set_ScreenRotation(UnityEngine::Quaternion::Euler(conf.rotation));
 

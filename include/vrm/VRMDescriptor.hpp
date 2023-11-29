@@ -10,6 +10,7 @@ namespace VRMQavatars
         std::string name;
         std::string author;
         UnityEngine::Texture2D* thumbnail;
+        bool valid = true;
 
         //TODO: Replace with union?
         std::optional<VRMC_VRM_0_0::Vrm> vrm0;

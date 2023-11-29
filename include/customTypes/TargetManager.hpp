@@ -26,6 +26,7 @@
 #include "GlobalNamespace/OVRPlugin_Node.hpp"
 #include "GlobalNamespace/OVRPlugin_Step.hpp"
 #include "GlobalNamespace/OVRPose.hpp"
+#include "GlobalNamespace/SaberManager.hpp"
 
 #include "utils/structs/OffsetPose.hpp"
 
@@ -53,6 +54,5 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
 
     float GetCalibrateScale(std::optional<float> baseScale = std::nullopt);
 
-    SafePtrUnity<UnityEngine::Transform> leftSaber;
-    SafePtrUnity<UnityEngine::Transform> rightSaber;
+    SafePtrUnity<GlobalNamespace::SaberManager> saberManager;
 )

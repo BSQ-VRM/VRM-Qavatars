@@ -8,6 +8,7 @@
 
 #include "UnityEngine/SceneManagement/SceneManager.hpp"
 #include "UnityEngine/Camera.hpp"
+#include "UnityEngine/QualitySettings.hpp"
 
 #include "AssetLib/shaders/shaderLoader.hpp"
 #include "AssetLib/shaders/ShaderSO.hpp"
@@ -88,6 +89,24 @@ custom_types::Helpers::Coroutine Setup() {
     VRMQavatars::GroundOffsetManager::Init();
 
     VRMQavatars::MirrorManager::CreateMainMirror();
+
+    static auto shadows = il2cpp_utils::resolve_icall<void, int>("UnityEngine.QualitySettings::set_shadows");
+    shadows(2); //all
+
+    static auto shadowResolution = il2cpp_utils::resolve_icall<void, int>("UnityEngine.QualitySettings::set_shadowResolution");
+    shadowResolution(3); //very high
+
+    static auto shadowCascades = il2cpp_utils::resolve_icall<void, int>("UnityEngine.QualitySettings::set_shadowCascades");
+    shadowCascades(4);
+
+    auto mat = data->shadowMaterial;
+
+    auto ground = UnityEngine::GameObject::Find("BasicMenuGround");
+
+    auto renderer = ground->GetComponent<UnityEngine::MeshRenderer*>();
+    auto oldMat = renderer->get_material();
+
+    renderer->set_materials({oldMat, mat});
 
     co_return;
 }

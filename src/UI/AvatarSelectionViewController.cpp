@@ -31,58 +31,6 @@ namespace VRMQavatars::UI::ViewControllers {
         return std::all_of(s.begin(), s.end(), isspace);
     }
 
-    VRMDescriptor LoadVRMDescriptor(const std::string& path) {
-        VRMDescriptor descriptor;
-
-        //Load in binary to parse out VRM data
-        std::ifstream binFile(vrm_path + std::string("/") + path, std::ios::binary);
-
-        binFile.seekg(12); //Skip past the 12 byte header, to the json header
-        uint32_t jsonLength;
-        binFile.read(reinterpret_cast<char*>(&jsonLength), sizeof(uint32_t)); //Read the length of the json file from it's header
-
-        std::string jsonStr;
-        jsonStr.resize(jsonLength);
-        binFile.seekg(20); // Skip the rest of the JSON header to the start of the string
-        binFile.read(jsonStr.data(), jsonLength); // Read out the json string
-
-        auto doc = nlohmann::json::parse(jsonStr);
-        auto exts = doc["extensions"];
-
-        if(exts.contains("VRM"))
-        {
-            VRMC_VRM_0_0::Vrm vrm;
-            from_json(exts["VRM"], vrm);
-            descriptor.vrm0 = vrm;
-        }
-        if(exts.contains("VRMC_vrm"))
-        {
-            VRMC_VRM_1_0::Vrm vrm;
-            from_json(exts["VRMC_vrm"], vrm);
-            descriptor.vrm1 = vrm;
-        }
-
-        descriptor.thumbnail = gLTFImageReader::ReadImageIndex(jsonLength, binFile, descriptor.vrm0.has_value() ? descriptor.vrm0.value().meta.texture : descriptor.vrm1.value().meta.thumbnailImage);
-
-        descriptor.filePath = path;
-
-        if(descriptor.vrm0.has_value())
-        {
-            descriptor.name = descriptor.vrm0.value().meta.title;
-            descriptor.name = is_whitespace(descriptor.name) ? path : descriptor.name;
-            descriptor.author = descriptor.vrm0.value().meta.author;
-        }
-
-        if(descriptor.vrm1.has_value())
-        {
-            descriptor.name = descriptor.vrm1.value().meta.name;
-            descriptor.name = is_whitespace(descriptor.name) ? path : descriptor.name;
-            descriptor.author = descriptor.vrm1.value().meta.authors[0]; //TODO: join with comma
-        }
-
-        return descriptor;
-    }
-
     VRMDescriptor GetNoneDescriptor()
     {
         VRMDescriptor descriptor;
@@ -99,41 +47,98 @@ namespace VRMQavatars::UI::ViewControllers {
         return descriptor;
     }
 
+    VRMDescriptor LoadVRMDescriptor(const std::string& path) {
+        VRMDescriptor descriptor;
+        getLogger().info("load1");
+
+        //Load in binary to parse out VRM data
+        std::ifstream binFile(vrm_path + std::string("/") + path, std::ios::binary);
+        getLogger().info("load2 %s", (vrm_path + std::string("/") + path).c_str());
+        binFile.seekg(12); //Skip past the 12 byte header, to the json header
+        uint32_t jsonLength;
+        binFile.read(reinterpret_cast<char*>(&jsonLength), sizeof(uint32_t)); //Read the length of the json file from it's header
+        getLogger().info("load3");
+        std::string jsonStr;
+        jsonStr.resize(jsonLength);
+        binFile.seekg(20); // Skip the rest of the JSON header to the start of the string
+        binFile.read(jsonStr.data(), jsonLength); // Read out the json string
+        getLogger().info("load4");
+        if(jsonLength < 10)
+        {
+            getLogger().info("SHITFUCK");
+            descriptor = GetNoneDescriptor();
+            descriptor.filePath = path;
+            descriptor.name = "Failed to load Avatar!";
+            descriptor.author = "):";
+            descriptor.valid = false;
+            return descriptor;
+        }
+        auto doc = nlohmann::json::parse(jsonStr);
+        getLogger().info("load4.5");
+        auto exts = doc["extensions"];
+        getLogger().info("load5");
+        if(exts.contains("VRM"))
+        {
+            getLogger().info("load6");
+            VRMC_VRM_0_0::Vrm vrm;
+            from_json(exts["VRM"], vrm);
+            descriptor.vrm0 = vrm;
+        }
+        getLogger().info("load7");
+        if(exts.contains("VRMC_vrm"))
+        {
+            getLogger().info("load8");
+            VRMC_VRM_1_0::Vrm vrm;
+            from_json(exts["VRMC_vrm"], vrm);
+            descriptor.vrm1 = vrm;
+        }
+        getLogger().info("load9");
+        descriptor.thumbnail = gLTFImageReader::ReadImageIndex(jsonLength, binFile, descriptor.vrm0.has_value() ? descriptor.vrm0.value().meta.texture : descriptor.vrm1.value().meta.thumbnailImage);
+        getLogger().info("load10");
+        descriptor.filePath = path;
+        getLogger().info("load11");
+        if(descriptor.vrm0.has_value())
+        {
+            getLogger().info("load12");
+            descriptor.name = descriptor.vrm0.value().meta.title;
+            descriptor.name = is_whitespace(descriptor.name) ? path : descriptor.name;
+            descriptor.author = descriptor.vrm0.value().meta.author;
+        }
+        getLogger().info("load13");
+        if(descriptor.vrm1.has_value())
+        {
+            getLogger().info("load14");
+            descriptor.name = descriptor.vrm1.value().meta.name;
+            descriptor.name = is_whitespace(descriptor.name) ? path : descriptor.name;
+            descriptor.author = descriptor.vrm1.value().meta.authors[0]; //TODO: join with comma
+        }
+        getLogger().info("load15");
+        return descriptor;
+    }
+
     void AvatarSelectionViewController::Refresh()
     {
-        getLogger().info("refresh1");
         std::vector<std::string> vrms = {};
         if(GetFilesInFolderPath("vrm", vrm_path, vrms))
         {
-            getLogger().info("refresh2");
             std::vector<Components::AvatarListItem::Ptr> avatarSet;
 
             avatarSet.push_back(std::make_shared<Components::AvatarListItem>(GetNoneDescriptor()));
-            getLogger().info("refresh3");
             for(auto& vrm : vrms)
             {
-                getLogger().info("refresh4");
                 avatarSet.push_back(std::make_shared<Components::AvatarListItem>(LoadVRMDescriptor(vrm)));
             }
-            getLogger().info("refresh5");
             avatarList->SetListItems(avatarSet);
             auto& globcon = Config::ConfigManager::GetGlobalConfig();
-            getLogger().info("refresh6");
             if(globcon.hasSelected.GetValue())
             {
-                getLogger().info("refresh7");
                 auto pred = [&globcon](const std::shared_ptr<CP_SDK::UI::Data::IListItem>& ptr) { return reinterpret_cast<const Components::AvatarListItem*>(ptr.get())->descriptor.filePath == globcon.selectedFileName.GetValue(); };
-                getLogger().info("refresh8");
                 const auto it = std::find_if(std::begin(avatarSet),
                                              std::end(avatarSet),
                                              pred);
-                getLogger().info("refresh9");
                 const auto itemPos = std::distance(std::begin(avatarSet), it);
-                getLogger().info("refresh10");
                 const auto item = *reinterpret_cast<const std::shared_ptr<Components::AvatarListItem>*>(&avatarSet[itemPos]);
-                getLogger().info("selected %s %s", item->descriptor.name.c_str(), globcon.selectedFileName.GetValue().c_str());
                 avatarList->SetSelectedListItem(item->shared_from_this(), false);
-                getLogger().info("refresh11");
             }
         }
     }
@@ -146,6 +151,7 @@ namespace VRMQavatars::UI::ViewControllers {
         {
             Config::ConfigManager::ResetAvatarConfig(false);
             const auto path = item->descriptor.filePath;
+            if(!item->descriptor.valid) return;
             if(path == "")
             {
                 AvatarManager::SetContext(nullptr);
