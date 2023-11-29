@@ -106,7 +106,9 @@ custom_types::Helpers::Coroutine Setup() {
     auto renderer = ground->GetComponent<UnityEngine::MeshRenderer*>();
     auto oldMat = renderer->get_material();
 
-    renderer->set_materials({oldMat, mat});
+    renderer->set_receiveShadows(true);
+
+    renderer->set_materials({mat});
 
     co_return;
 }

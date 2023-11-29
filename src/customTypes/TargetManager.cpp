@@ -70,11 +70,11 @@ void VRMQavatars::TargetManager::Update()
         }
         if(saberManager)
         {
-            leftHandPos = saberManager->leftSaber->get_transform()->get_position();
-            leftHandRot = saberManager->leftSaber->get_transform()->get_rotation();
+            leftHandPos = saberManager->leftSaber->get_transform()->get_parent()->get_position();
+            leftHandRot = saberManager->leftSaber->get_transform()->get_parent()->get_rotation();
 
-            rightHandPos = saberManager->rightSaber->get_transform()->get_position();
-            rightHandRot = saberManager->rightSaber->get_transform()->get_rotation();
+            rightHandPos = saberManager->rightSaber->get_transform()->get_parent()->get_position();
+            rightHandRot = saberManager->rightSaber->get_transform()->get_parent()->get_rotation();
         }
     }
     else
