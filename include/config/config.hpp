@@ -171,6 +171,7 @@ DECLARE_JSON_CLASS(MirrorSettings,
     VALUE_DEFAULT(int, layer, 0);
     VALUE_DEFAULT(int, boneTracking, 0);
     VALUE_DEFAULT(int, scene, 0);
+    VALUE_DEFAULT(float, fov, 60);
 )
 
 //Access Global through ConfigManager::GetGlobal

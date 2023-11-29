@@ -16,5 +16,9 @@
       "name": "shaders.sbund",
       "destination": "/sdcard/ModData/shaders.sbund"
     }
-  ]
+  ],
+  "copyExtensions": [{
+    "extension": "vrm",
+    "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/VRMQavatars/Avatars"
+  }]
 }

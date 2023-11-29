@@ -83,7 +83,7 @@ namespace VRMQavatars::OVRLipSync
         static auto buildHumanoid = il2cpp_utils::resolve_icall<void, int&, int&>("UnityEngine.AudioSettings::GetDSPBufferSize");
         buildHumanoid(num, num2);
         getLogger().info("OvrLipSync Awake: Queried SampleRate: %d BufferSize: %d", outputSampleRate, num);
-        sInitialized = ovrLipSyncDll_Initialize(outputSampleRate, num);
+        sInitialized = ovrLipSyncDll_Initialize(1024, num);
         return sInitialized;
     }
 
@@ -102,13 +102,13 @@ namespace VRMQavatars::OVRLipSync
         auto audioDataType = (stereo ? ovrLipSyncAudioDataType_F32_Stereo : ovrLipSyncAudioDataType_F32_Mono);
         auto num = static_cast<uint>(stereo ? (bufferSize / 2) : bufferSize);
 
-        //float* testBuffer = new float[bufferSize];
-        //memcpy(audioBuffer, testBuffer, sizeof(float)*bufferSize);
+        static float* testBuffer = new float[bufferSize];
+        memcpy(audioBuffer, testBuffer, sizeof(float)*bufferSize);
 
-        auto gcHandle = System::Runtime::InteropServices::GCHandle::Alloc(static_cast<Array<float>*>(ArrayW<float>(audioBuffer)), System::Runtime::InteropServices::GCHandleType::Pinned);
-        auto result = ovrLipSyncDll_ProcessFrameEx(context, gcHandle.AddrOfPinnedObject(), num, audioDataType, &frame);
-        gcHandle.Free();
-        //delete[] testBuffer;
+        //auto gcHandle = System::Runtime::InteropServices::GCHandle::Alloc(static_cast<Array<float>*>(ArrayW<float>(audioBuffer)), System::Runtime::InteropServices::GCHandleType::Pinned);
+        const auto result = ovrLipSyncDll_ProcessFrameEx(context, static_cast<Array<float>*>(ArrayW<float>(testBuffer)), num, audioDataType, &frame);
+        //gcHandle.Free();
+        delete[] testBuffer;
         return result;
     }
 

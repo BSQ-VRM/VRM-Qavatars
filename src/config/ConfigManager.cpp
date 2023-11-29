@@ -283,12 +283,12 @@ namespace VRMQavatars::Config
     }
 
     //Mirror
-    static MirrorSettings GetMirrorSettings()
+    MirrorSettings ConfigManager::GetMirrorSettings()
     {
         return getGlobalConfig().Mirror.GetValue();
     }
 
-    static void SetMirrorSettings(const MirrorSettings& settings)
+    void ConfigManager::SetMirrorSettings(const MirrorSettings& settings)
     {
         getGlobalConfig().Mirror.SetValue(settings);
         getGlobalConfig().Save();

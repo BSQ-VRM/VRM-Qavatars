@@ -43,6 +43,7 @@ struct IncludedAsset {
 
 namespace IncludedAssets {
 
+	DECLARE_FILE(VMC_png)
 	DECLARE_FILE(cd_png)
 	DECLARE_FILE(human_hand_png)
 	DECLARE_FILE(none_png)

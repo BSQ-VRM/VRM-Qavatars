@@ -11,6 +11,7 @@
 #include <string_view>
 #include <questui/shared/BeatSaberUI.hpp>
 
+#include "MirrorManager.hpp"
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/Templates.hpp"
 #include "config/ConfigManager.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
@@ -1115,29 +1116,98 @@ namespace VRMQavatars::UI::ViewControllers {
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Enabled"),
                 CP_SDK::XUI::XUIToggle::Make()
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().enabled)
+                    ->OnValueChanged([](const bool val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.enabled = val;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
+                    })
+                    ->AsShared()
             }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Size"),
                 CP_SDK::XUI::XUIText::Make(u"X"),
-                CP_SDK::XUI::XUISlider::Make(),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().size.x)
+                    ->SetMinValue(1.0f)
+                    ->SetMaxValue(100.0f)
+                    ->OnValueChanged([](const float val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.size.x = val;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
+                    })
+                    ->AsShared(),
                 CP_SDK::XUI::XUIText::Make(u"Y"),
                 CP_SDK::XUI::XUISlider::Make()
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().size.y)
+                    ->SetMinValue(1.0f)
+                    ->SetMaxValue(100.0f)
+                    ->OnValueChanged([](const float val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.size.y = val;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
+                    })
+                    ->AsShared()
             }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Field Of View"),
                 CP_SDK::XUI::XUISlider::Make()
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().fov)
+                    ->SetMinValue(20.f)
+                    ->SetMaxValue(120.0f)
+                    ->OnValueChanged([](const float val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.fov = val;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
+                    })
+                    ->AsShared()
             }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Displayed Layer"),
                 CP_SDK::XUI::XUIDropdown::Make(layerOptions)
+                    ->SetValue(layerOptions[Config::ConfigManager::GetMirrorSettings().layer])
+                    ->OnValueChanged([](const int idx, std::u16string_view val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.layer = idx;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
+                    })
+                    ->AsShared()
             }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Tracked Bone"),
                 CP_SDK::XUI::XUIDropdown::Make(trackOptions)
+                    ->SetValue(trackOptions[Config::ConfigManager::GetMirrorSettings().boneTracking])
+                    ->OnValueChanged([](const int idx, std::u16string_view val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.boneTracking = idx;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
+                    })
+                    ->AsShared()
             }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Scene"),
                 CP_SDK::XUI::XUIDropdown::Make(sceneOptions)
+                    ->SetValue(sceneOptions[Config::ConfigManager::GetMirrorSettings().scene])
+                    ->OnValueChanged([](const int idx, std::u16string_view val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.scene = idx;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
+                    })
+                    ->AsShared()
             })
         })
         ->SetSpacing(-0.2f)

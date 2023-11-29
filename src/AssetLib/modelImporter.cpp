@@ -556,7 +556,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         }
     }
 
-    //modelContext->rootGameObject->AddComponent<VRMQavatars::OVRLipSync::OVRLipSync*>();
+    modelContext->rootGameObject->AddComponent<VRMQavatars::OVRLipSync::OVRLipSync*>();
 
     modelContext->blendShapeMaster = Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm);
     auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->nodes, modelContext->armature.value().rootBone->gameObject);
@@ -617,8 +617,9 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
     secondary->get_transform()->SetParent(modelContext->rootGameObject->get_transform());
-    //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::LowLatencyLipSyncContext*>();
-    //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::AnimMorphTarget*>();
+
+    modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::LowLatencyLipSyncContext*>();
+    modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::AnimMorphTarget*>();
 
     auto colliders = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>();
     for (auto colliderGroup : vrm.secondaryAnimation.colliderGroups)

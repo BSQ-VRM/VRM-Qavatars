@@ -8,6 +8,5 @@
 
 DECLARE_CLASS_CODEGEN(VRMData, ShaderSO, UnityEngine::ScriptableObject,
     DECLARE_INSTANCE_FIELD(UnityEngine::Shader*, mToonShader);
-    DECLARE_INSTANCE_FIELD(UnityEngine::Shader*, unlitShader);
-    DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, mirror);
+    DECLARE_INSTANCE_FIELD(UnityEngine::Shader*, mirrorShader);
 )

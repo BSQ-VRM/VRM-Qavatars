@@ -5,7 +5,6 @@
 
 #include "main.hpp"
 
-//Scene manager is bad ik
 namespace VRMQavatars
 {
     CP_SDK::Utils::Event<> SceneEventManager::OnGameEnter;
