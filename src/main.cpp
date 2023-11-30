@@ -22,6 +22,7 @@
 #include "MirrorManager.hpp"
 
 #include "config/ConfigManager.hpp"
+#include "customTypes/DynamicShadowProjector/Projector.hpp"
 
 #include "VMC/VMCClient.hpp"
 #include "VMC/VMCServer.hpp"
@@ -89,6 +90,19 @@ custom_types::Helpers::Coroutine Setup() {
     VRMQavatars::GroundOffsetManager::Init();
 
     VRMQavatars::MirrorManager::CreateMainMirror();
+
+    auto projector = UnityEngine::GameObject::New_ctor("Projector")->AddComponent<VRMQavatars::Projector*>();
+    projector->get_transform()->set_position({0,1,0});
+    projector->get_transform()->set_position({90,0,0});
+    projector->set_nearClipPlane(0.1f);
+    projector->set_farClipPlane(100.0f);
+    projector->set_fieldOfView(60.0f);
+    projector->set_fieldOfView(60.0f);
+    projector->set_aspectRatio(1.0f);
+    projector->set_orthographic(true);
+    projector->set_orthographicSize(1);
+    projector->set_material(data->shadowMaterial);
+    projector->set_ignoreLayers(0);
 
     co_return;
 }
