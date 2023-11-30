@@ -76,5 +76,11 @@ namespace VRMQavatars::Config
         static MirrorSettings GetMirrorSettings();
 
         static void SetMirrorSettings(const MirrorSettings& settings);
+
+        //Mirror
+
+        static WindSettings GetWindSettings();
+
+        static void SetWindSettings(const WindSettings& settings);
     };
 };

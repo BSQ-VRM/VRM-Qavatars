@@ -206,12 +206,6 @@ namespace VRMQavatars {
             setType(_light.ptr(), UnityEngine::LightType::Directional);
 
             UnityEngine::GameObject::DontDestroyOnLoad(_light.ptr()->get_gameObject());
-
-            static auto setShadows = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, UnityEngine::LightShadows>("UnityEngine.Light::set_shadows");
-            setShadows(_light.ptr(), UnityEngine::LightShadows::Hard);
-
-            static auto setResolution = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, int>("UnityEngine.Light::set_shadowCustomResolution");
-            setResolution(_light.ptr(), 10000);
         }
 
         //Beatmap Light

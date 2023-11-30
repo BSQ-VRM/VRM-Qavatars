@@ -174,6 +174,12 @@ DECLARE_JSON_CLASS(MirrorSettings,
     VALUE_DEFAULT(float, fov, 60);
 )
 
+DECLARE_JSON_CLASS(WindSettings,
+    VALUE_DEFAULT(bool, enabled, true);
+    VALUE_DEFAULT(float, windStrength, 1.0f);
+    VALUE_DEFAULT(float, timeFactor, 1.0f);
+)
+
 //Access Global through ConfigManager::GetGlobal
 //Access Avatar through ConfigManager::GetAvatar
 //(MANDATORY) Access individual Config items through ConfigManager::GetXXX
@@ -192,6 +198,7 @@ DECLARE_CONFIG(GlobalConfig,
 
     CONFIG_VALUE(VMC, VMCSettings, "VMC", {});
     CONFIG_VALUE(Mirror, MirrorSettings, "Mirror", {});
+    CONFIG_VALUE(WindSettings, WindSettings, "Wind", {});
 
     CONFIG_VALUE(selectedFileName, std::string, "selectedFileName", "");
     CONFIG_VALUE(hasSelected, bool, "hasSelected", false);

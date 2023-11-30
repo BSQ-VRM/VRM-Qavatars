@@ -293,4 +293,16 @@ namespace VRMQavatars::Config
         getGlobalConfig().Mirror.SetValue(settings);
         getGlobalConfig().Save();
     }
+
+    //Mirror
+    WindSettings ConfigManager::GetWindSettings()
+    {
+        return getGlobalConfig().WindSettings.GetValue();
+    }
+
+    void ConfigManager::SetWindSettings(const WindSettings& settings)
+    {
+        getGlobalConfig().WindSettings.SetValue(settings);
+        getGlobalConfig().Save();
+    }
 }

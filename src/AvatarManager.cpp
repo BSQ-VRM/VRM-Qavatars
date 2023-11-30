@@ -4,6 +4,7 @@
 
 #include "TPoseHelper.hpp"
 #include "config/ConfigManager.hpp"
+#include "customTypes/VRMWind.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
 
 namespace VRMQavatars {
@@ -43,6 +44,16 @@ namespace VRMQavatars {
         SetFingerPose(Config::ConfigManager::GetFingerPosingSettings().grabPose);
 
         TPoseHelper::SavePose(root->get_transform());
+
+        auto windSettings = Config::ConfigManager::GetWindSettings();
+        auto wind = root->AddComponent<VRMWind*>();
+        wind->enableWind = windSettings.enabled;
+        if(!windSettings.enabled)
+        {
+            wind->DisableWind();
+        }
+        wind->strengthFactor = windSettings.windStrength;
+        wind->timeFactor = windSettings.timeFactor;
 
         OnLoad();
     }

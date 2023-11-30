@@ -14,6 +14,7 @@
 #include "MirrorManager.hpp"
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/Templates.hpp"
 #include "config/ConfigManager.hpp"
+#include "customTypes/VRMWind.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
 #include "UI/components/AvatarListCell.hpp"
 #include "VMC/VMCClient.hpp"
@@ -56,6 +57,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 { u"VRIK", CP_SDK::XUI::XUITabControl::Make({ { u"IK", BuildIKSettingsTab() }, { u"Locomotion", BuildLocoSettingsTab() } })},
                 { u"Mirror", BuildMirrorTab() },
                 { u"Lighting", BuildLightingTab() },
+                { u"Wind", BuildWindTab() },
             })
         })
         ->SetSpacing(1.0f)
@@ -1108,6 +1110,7 @@ namespace VRMQavatars::UI::ViewControllers {
         };
 
         const std::vector<std::u16string> sceneOptions = {
+            u"Both",
             u"Menu",
             u"Game"
         };
@@ -1132,7 +1135,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUISlider::Make()
                     ->SetValue(Config::ConfigManager::GetMirrorSettings().size.x)
                     ->SetMinValue(1.0f)
-                    ->SetMaxValue(100.0f)
+                    ->SetMaxValue(150.0f)
                     ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
@@ -1145,7 +1148,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUISlider::Make()
                     ->SetValue(Config::ConfigManager::GetMirrorSettings().size.y)
                     ->SetMinValue(1.0f)
-                    ->SetMaxValue(100.0f)
+                    ->SetMaxValue(150.0f)
                     ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
@@ -1159,7 +1162,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUIText::Make(u"Field Of View"),
                 CP_SDK::XUI::XUISlider::Make()
                     ->SetValue(Config::ConfigManager::GetMirrorSettings().fov)
-                    ->SetMinValue(20.f)
+                    ->SetMinValue(10.f)
                     ->SetMaxValue(120.0f)
                     ->OnValueChanged([](const float val)
                     {
@@ -1172,7 +1175,8 @@ namespace VRMQavatars::UI::ViewControllers {
             }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Displayed Layer"),
-                CP_SDK::XUI::XUIDropdown::Make(layerOptions)
+                CP_SDK::XUI::XUIDropdown::Make()
+                    ->SetOptions(layerOptions)
                     ->SetValue(layerOptions[Config::ConfigManager::GetMirrorSettings().layer])
                     ->OnValueChanged([](const int idx, std::u16string_view val)
                     {
@@ -1185,27 +1189,27 @@ namespace VRMQavatars::UI::ViewControllers {
             }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Tracked Bone"),
-                CP_SDK::XUI::XUIDropdown::Make(trackOptions)
+                CP_SDK::XUI::XUIDropdown::Make()
+                    ->SetOptions(trackOptions)
                     ->SetValue(trackOptions[Config::ConfigManager::GetMirrorSettings().boneTracking])
                     ->OnValueChanged([](const int idx, std::u16string_view val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.boneTracking = idx;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
                     })
                     ->AsShared()
             }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Scene"),
-                CP_SDK::XUI::XUIDropdown::Make(sceneOptions)
+                CP_SDK::XUI::XUIDropdown::Make()
+                    ->SetOptions(sceneOptions)
                     ->SetValue(sceneOptions[Config::ConfigManager::GetMirrorSettings().scene])
                     ->OnValueChanged([](const int idx, std::u16string_view val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.scene = idx;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
                     })
                     ->AsShared()
             })
@@ -1392,4 +1396,62 @@ namespace VRMQavatars::UI::ViewControllers {
         saberLightingToggle->SetValue(Config::ConfigManager::GetLightingSettings().saberLighting);
     }
 
+    std::shared_ptr<CP_SDK::XUI::XUIVLayout> AvatarSettingsViewController::BuildWindTab()
+    {
+        return CP_SDK::XUI::XUIVLayout::Make({
+            CP_SDK::XUI::XUIText::Make(u"Enable Wind"),
+            CP_SDK::XUI::XUIToggle::Make()
+                ->SetValue(Config::ConfigManager::GetWindSettings().enabled)
+                ->OnValueChanged([](bool val)
+                {
+                    auto settings = Config::ConfigManager::GetWindSettings();
+                    settings.enabled = val;
+                    Config::ConfigManager::SetWindSettings(settings);
+                    if(AvatarManager::currentContext != nullptr)
+                    {
+                        const auto wind = AvatarManager::currentContext->rootGameObject->GetComponent<VRMWind*>();
+                        wind->enableWind = val;
+                        if(!val)
+                        {
+                            wind->DisableWind();
+                        }
+                    }
+                })
+                ->AsShared(),
+            CP_SDK::XUI::XUIText::Make(u"Strength Force"),
+            CP_SDK::XUI::XUISlider::Make()
+                ->SetMinValue(0.1f)
+                ->SetMaxValue(7.5f)
+                ->SetValue(Config::ConfigManager::GetWindSettings().windStrength)
+                ->OnValueChanged([](float val)
+                {
+                    auto settings = Config::ConfigManager::GetWindSettings();
+                    settings.windStrength = val;
+                    Config::ConfigManager::SetWindSettings(settings);
+                    if(AvatarManager::currentContext != nullptr)
+                    {
+                        const auto wind = AvatarManager::currentContext->rootGameObject->GetComponent<VRMWind*>();
+                        wind->strengthFactor = val;
+                    }
+                })
+                ->AsShared(),
+            CP_SDK::XUI::XUIText::Make(u"Time Factor"),
+            CP_SDK::XUI::XUISlider::Make()
+                ->SetMinValue(0.1f)
+                ->SetMaxValue(7.5f)
+                ->SetValue(Config::ConfigManager::GetWindSettings().timeFactor)
+                ->OnValueChanged([](float val)
+                {
+                    auto settings = Config::ConfigManager::GetWindSettings();
+                    settings.timeFactor = val;
+                    Config::ConfigManager::SetWindSettings(settings);
+                    if(AvatarManager::currentContext != nullptr)
+                    {
+                        const auto wind = AvatarManager::currentContext->rootGameObject->GetComponent<VRMWind*>();
+                        wind->timeFactor = val;
+                    }
+                })
+                ->AsShared(),
+        });
+    }
 }

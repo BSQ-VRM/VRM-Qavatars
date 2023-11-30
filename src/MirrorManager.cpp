@@ -16,6 +16,7 @@
 #include <UnityEngine/PrimitiveType.hpp>
 
 #include "config/ConfigManager.hpp"
+#include "customTypes/Mirror.hpp"
 
 namespace VRMQavatars
 {
@@ -171,6 +172,8 @@ namespace VRMQavatars
             x->set_color({1.0f, 1.0f, 1.0f, 1.0f});
         }
 
+        rootObject->AddComponent<Mirror*>();
+
         return rootObject;
     }
 
@@ -219,5 +222,7 @@ namespace VRMQavatars
         mirrorCamera->set_cullingMask(mask);
 
         mirrorCamera->set_fieldOfView(conf.fov);
+
+        mainMirror->GetComponent<Mirror*>()->Update();
     }
 }

@@ -31,6 +31,7 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildLocoSettingsTab();
         std::shared_ptr<CP_SDK::XUI::XUIVLayout> BuildMirrorTab();
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildLightingTab();
+        std::shared_ptr<CP_SDK::XUI::XUIVLayout> BuildWindTab();
 
         std::shared_ptr<CP_SDK::XUI::XUISlider> fixedSlider;
 
