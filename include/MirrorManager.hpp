@@ -10,9 +10,9 @@ namespace VRMQavatars
     class MirrorManager
     {
     public:
-        static void UpdateMirror();
+        static void UpdateMirror(bool changedSize);
         static void CreateMainMirror();
-        static UnityEngine::GameObject* CreateMirror(Sombrero::FastVector3 position, Sombrero::FastVector3 rotation, Sombrero::FastVector2 size, int layer, float fov);
+        static UnityEngine::GameObject* CreateMirror(Sombrero::FastVector3 position, Sombrero::FastVector3 rotation, Sombrero::FastVector2 size, float aspect, int layer, float fov);
     private:
         static SafePtrUnity<UnityEngine::GameObject> mainMirror;
         static SafePtrUnity<UnityEngine::Camera> mirrorCamera;

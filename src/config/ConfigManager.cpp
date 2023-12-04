@@ -1,5 +1,7 @@
 #include "config/ConfigManager.hpp"
 
+#include "utils/FileUtils.hpp"
+
 namespace VRMQavatars::Config
 {
     std::string ConfigManager::TransformVRMPath(const std::string& path)
@@ -15,18 +17,18 @@ namespace VRMQavatars::Config
         if(InitAvatarConfig())
         {
             auto& cfg = getAvatarConfig();
-            cfg.Blendshapes.SetValue(cfg.Blendshapes.GetDefaultValue(), save);
+            cfg.Blendshape.SetValue(cfg.Blendshape.GetDefaultValue(), save);
             cfg.Lighting.SetValue(cfg.Lighting.GetDefaultValue(), save);
             cfg.Locomotion.SetValue(cfg.Locomotion.GetDefaultValue(), save);
-            cfg.Offsets.SetValue(cfg.Offsets.GetDefaultValue(), save);
+            cfg.Offset.SetValue(cfg.Offset.GetDefaultValue(), save);
             cfg.CalibratedScale.SetValue(cfg.CalibratedScale.GetDefaultValue(), save);
-            cfg.ControllerTriggers.SetValue(cfg.ControllerTriggers.GetDefaultValue(), save);
-            cfg.FingerPoses.SetValue(cfg.FingerPoses.GetDefaultValue(), save);
+            cfg.ControllerTrigger.SetValue(cfg.ControllerTrigger.GetDefaultValue(), save);
+            cfg.FingerPose.SetValue(cfg.FingerPose.GetDefaultValue(), save);
             cfg.HasCalibrated.SetValue(cfg.HasCalibrated.GetDefaultValue(), save);
             cfg.IK.SetValue(cfg.IK.GetDefaultValue(), save);
             cfg.OverrideBlendshapeSettings.SetValue(cfg.OverrideBlendshapeSettings.GetDefaultValue(), save);
             cfg.OverrideLightingSettings.SetValue(cfg.OverrideLightingSettings.GetDefaultValue(), save);
-            cfg.OverrideLocoSettings.SetValue(cfg.OverrideLocoSettings.GetDefaultValue(), save);
+            cfg.OverrideLocomotionSettings.SetValue(cfg.OverrideLocomotionSettings.GetDefaultValue(), save);
             cfg.OverrideOffsetSettings.SetValue(cfg.OverrideOffsetSettings.GetDefaultValue(), save);
             cfg.HasAgreedToTerms.SetValue(cfg.HasAgreedToTerms.GetDefaultValue(), save);
             cfg.OverrideControllerTriggerSettings.SetValue(cfg.OverrideControllerTriggerSettings.GetDefaultValue(), save);
@@ -79,234 +81,32 @@ namespace VRMQavatars::Config
     //Start getters/setters here
 
     //IK
-    IKSettings ConfigManager::GetIKSettings()
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideIKSettings.GetValue())
-            {
-                return getAvatarConfig().IK.GetValue();
-            }
-        }
-        return getGlobalConfig().IK.GetValue();
-    }
-
-    void ConfigManager::SetIKSettings(const IKSettings& settings)
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideIKSettings.GetValue())
-            {
-                getAvatarConfig().IK.SetValue(settings);
-                getAvatarConfig().Save();
-                return;
-            }
-        }
-        getGlobalConfig().IK.SetValue(settings);
-        getGlobalConfig().Save();
-    }
+    MANAGER_ITEM_CPP_AVATAR(IK)
 
     //Offsets
-    OffsetSettings ConfigManager::GetOffsetSettings()
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideOffsetSettings.GetValue())
-            {
-                return getAvatarConfig().Offsets.GetValue();
-            }
-        }
-        return getGlobalConfig().Offsets.GetValue();
-    }
-
-    void ConfigManager::SetOffsetSettings(const OffsetSettings& settings)
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideOffsetSettings.GetValue())
-            {
-                getAvatarConfig().Offsets.SetValue(settings);
-                getAvatarConfig().Save();
-                return;
-            }
-        }
-        getGlobalConfig().Offsets.SetValue(settings);
-        getGlobalConfig().Save();
-    }
+    MANAGER_ITEM_CPP_AVATAR(Offset)
 
     //Finger Posing
-    FingerPoseSettings ConfigManager::GetFingerPosingSettings()
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideFingerPoseSettings.GetValue())
-            {
-                return getAvatarConfig().FingerPoses.GetValue();
-            }
-        }
-        return getGlobalConfig().FingerPoses.GetValue();
-    }
-
-    void ConfigManager::SetFingerPosingSettings(const FingerPoseSettings& settings)
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideFingerPoseSettings.GetValue())
-            {
-                getAvatarConfig().FingerPoses.SetValue(settings);
-                getAvatarConfig().Save();
-                return;
-            }
-        }
-        getGlobalConfig().FingerPoses.SetValue(settings);
-        getGlobalConfig().Save();
-    }
+    MANAGER_ITEM_CPP_AVATAR(FingerPose)
 
     //Lighting
-    LightingSettings ConfigManager::GetLightingSettings()
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideLightingSettings.GetValue())
-            {
-                return getAvatarConfig().Lighting.GetValue();
-            }
-        }
-        return getGlobalConfig().Lighting.GetValue();
-    }
-
-    void ConfigManager::SetLightingSettings(const LightingSettings& settings)
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideLightingSettings.GetValue())
-            {
-                getAvatarConfig().Lighting.SetValue(settings);
-                getAvatarConfig().Save();
-                return;
-            }
-        }
-        getGlobalConfig().Lighting.SetValue(settings);
-        getGlobalConfig().Save();
-    }
+    MANAGER_ITEM_CPP_AVATAR(Lighting)
 
     //Locomotion
-    LocomotionSettings ConfigManager::GetLocomotionSettings()
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideLightingSettings.GetValue())
-            {
-                return getAvatarConfig().Locomotion.GetValue();
-            }
-        }
-        return getGlobalConfig().Locomotion.GetValue();
-    }
-
-    void ConfigManager::SetLocomotionSettings(const LocomotionSettings& settings)
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideLightingSettings.GetValue())
-            {
-                getAvatarConfig().Locomotion.SetValue(settings);
-                getAvatarConfig().Save();
-                return;
-            }
-        }
-        getGlobalConfig().Locomotion.SetValue(settings);
-        getGlobalConfig().Save();
-    }
+    MANAGER_ITEM_CPP_AVATAR(Locomotion)
 
     //Controller Triggers
-    ControllerTriggerSettings ConfigManager::GetControllerTriggerSettings()
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideControllerTriggerSettings.GetValue())
-            {
-                return getAvatarConfig().ControllerTriggers.GetValue();
-            }
-        }
-        return getGlobalConfig().ControllerTriggers.GetValue();
-    }
-
-    void ConfigManager::SetControllerTriggerSettings(const ControllerTriggerSettings& settings)
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideControllerTriggerSettings.GetValue())
-            {
-                getAvatarConfig().ControllerTriggers.SetValue(settings);
-                getAvatarConfig().Save();
-                return;
-            }
-        }
-        getGlobalConfig().ControllerTriggers.SetValue(settings);
-        getGlobalConfig().Save();
-    }
+    MANAGER_ITEM_CPP_AVATAR(ControllerTrigger)
 
     //BlendShapes
-    BlendshapeSettings ConfigManager::GetBlendShapeSettings()
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideBlendshapeSettings.GetValue())
-            {
-                return getAvatarConfig().Blendshapes.GetValue();
-            }
-        }
-        return getGlobalConfig().Blendshapes.GetValue();
-    }
-
-    void ConfigManager::SetBlendShapeSettings(const BlendshapeSettings& settings)
-    {
-        if(InitAvatarConfig())
-        {
-            if(getAvatarConfig().OverrideBlendshapeSettings.GetValue())
-            {
-                getAvatarConfig().Blendshapes.SetValue(settings);
-                getAvatarConfig().Save();
-                return;
-            }
-        }
-        getGlobalConfig().Blendshapes.SetValue(settings);
-        getGlobalConfig().Save();
-    }
+    MANAGER_ITEM_CPP_AVATAR(Blendshape)
 
     //VMC
-    VMCSettings ConfigManager::GetVMCSettings()
-    {
-        return getGlobalConfig().VMC.GetValue();
-    }
-
-    void ConfigManager::SetVMCSettings(const VMCSettings& settings)
-    {
-        getGlobalConfig().VMC.SetValue(settings);
-        getGlobalConfig().Save();
-    }
+    MANAGER_ITEM_CPP_GLOBAL(VMC)
 
     //Mirror
-    MirrorSettings ConfigManager::GetMirrorSettings()
-    {
-        return getGlobalConfig().Mirror.GetValue();
-    }
-
-    void ConfigManager::SetMirrorSettings(const MirrorSettings& settings)
-    {
-        getGlobalConfig().Mirror.SetValue(settings);
-        getGlobalConfig().Save();
-    }
+    MANAGER_ITEM_CPP_GLOBAL(Mirror)
 
     //Mirror
-    WindSettings ConfigManager::GetWindSettings()
-    {
-        return getGlobalConfig().WindSettings.GetValue();
-    }
-
-    void ConfigManager::SetWindSettings(const WindSettings& settings)
-    {
-        getGlobalConfig().WindSettings.SetValue(settings);
-        getGlobalConfig().Save();
-    }
+    MANAGER_ITEM_CPP_GLOBAL(Wind)
 }

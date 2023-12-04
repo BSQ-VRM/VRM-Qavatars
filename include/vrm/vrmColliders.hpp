@@ -1,6 +1,6 @@
 #pragma once
 
-#include "UnityEngine/Vector3.hpp"
+#include "sombrero/shared/FastVector3.hpp"
 #include "UnityEngine/Transform.hpp"
 
 struct SphereCollider

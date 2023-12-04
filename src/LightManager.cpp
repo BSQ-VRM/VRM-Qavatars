@@ -48,57 +48,46 @@ namespace VRMQavatars {
     custom_types::Helpers::Coroutine LightManager::Grab()
     {
         co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(0.15f));
-        getLogger().info("adding tubies");
         lights.clear();
 
         //Find Front Lights First
         auto frontLight = UnityEngine::GameObject::Find("Environment/FrontLights");
         if (frontLight != nullptr)
         {
-            getLogger().info("h1");
             //Exists
             auto frontLights = frontLight->GetComponentsInChildren<GlobalNamespace::TubeBloomPrePassLight*>();
-            getLogger().info("h2");
             //add lights
             for (auto front_light : frontLights)
             {
-                getLogger().info("h3");
                 lights.push_back(front_light);
             }
         }
         else
         {
-            getLogger().info("h4");
             //Frontlight doesn't exist
 
             //Find Left Laser
             auto leftLaser = UnityEngine::GameObject::Find("Environment/LeftLaser");
             if (leftLaser != nullptr)
             {
-                getLogger().info("h5");
                 auto leftLaserLights = leftLaser->GetComponentsInChildren<GlobalNamespace::TubeBloomPrePassLight*>();
                 //add lights
-                getLogger().info("h6");
                 for (auto laser_light : leftLaserLights)
                 {
                     lights.push_back(laser_light);
                 }
             }
-            getLogger().info("h7");
             //Find Right Laser
             auto rightLaser = UnityEngine::GameObject::Find("Environment/RightLaser");
             if (rightLaser != nullptr)
             {
-                getLogger().info("h8");
                 auto rightLaserLights = rightLaser->GetComponentsInChildren<GlobalNamespace::TubeBloomPrePassLight*>();
                 //add lights
-                getLogger().info("h9");
                 for (auto laser_light : rightLaserLights)
                 {
                     lights.push_back(laser_light);
                 }
             }
-            getLogger().info("h10");
         }
 
         //Now to add rotating lights :)
@@ -160,14 +149,12 @@ namespace VRMQavatars {
 
         SceneEventManager::OnGameEnter += CP_SDK::Utils::Action<>([]
         {
-            getLogger().info("hi game");
             inGame = true;
             UpdateLightValues();
         });
 
         SceneEventManager::OnMenuEnter += CP_SDK::Utils::Action<>([]
         {
-            getLogger().info("hi menu");
             inGame = false;
             UpdateLightValues();
         });

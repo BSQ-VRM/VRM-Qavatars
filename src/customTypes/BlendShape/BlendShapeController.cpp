@@ -41,13 +41,13 @@ namespace VRMQavatars::BlendShape
         while(true)
         {
             constexpr float minTime = 1.5f;
-            auto config = Config::ConfigManager::GetBlendShapeSettings();
+            auto config = Config::ConfigManager::GetBlendshapeSettings();
             const float toWait = UnityEngine::Time::get_time() + minTime + (UnityEngine::Random::get_value() * config.waitTime);
             while(UnityEngine::Time::get_time() < toWait)
             {
                 co_yield nullptr;
             }
-            config = Config::ConfigManager::GetBlendShapeSettings();
+            config = Config::ConfigManager::GetBlendshapeSettings();
             if(config.autoBlink && allowAutoBlink)
             {
                 float blinkValue = 0.0f;
@@ -179,7 +179,7 @@ namespace VRMQavatars::BlendShape
         if(!init) return;
         bool any = false; //Used to determine if we should lerp to neutral preset
         auto triggerConfig = Config::ConfigManager::GetControllerTriggerSettings();
-        auto blendShapeConfig = Config::ConfigManager::GetBlendShapeSettings();
+        auto blendShapeConfig = Config::ConfigManager::GetBlendshapeSettings();
 
         //Reset All to 0
         for (auto const& [key, val] : blendShapeTargetValues)

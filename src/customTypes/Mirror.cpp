@@ -26,8 +26,10 @@ namespace VRMQavatars
         {
             camera = GetComponentInChildren<UnityEngine::Camera*>()->get_transform();
         }
+
         const auto mirrorSettings = Config::ConfigManager::GetMirrorSettings();
-        if(lastTrack != mirrorSettings.boneTracking)
+
+        if(lastTrack != mirrorSettings.boneTracking || !target)
         {
             if(mirrorSettings.boneTracking != 0)
             {
@@ -43,20 +45,24 @@ namespace VRMQavatars
             }
             lastTrack = mirrorSettings.boneTracking;
         }
-        if(target != nullptr)
+
+        if(target)
         {
-            camera->set_position(target->get_position() + (target->get_forward() * 5.0f));
-            camera->LookAt(target->get_position());
+            //Head bone is placed more at the neck
+            const auto newPosition = target->get_position() + (target->get_up()*0.1f);
+            camera->set_position(newPosition + (target->get_forward() * mirrorSettings.distance));
+            camera->LookAt(newPosition);
         }
         else
         {
             camera->set_localPosition({0,0,-1});
-            camera->set_localRotation({0,180,0});
+            camera->set_localRotation({0,0,0});
         }
+
         const bool shouldShowMenu = SceneEventManager::inMenu && (mirrorSettings.scene == 1);
         const bool shouldShowGame = SceneEventManager::inGame && (mirrorSettings.scene == 2);
         const bool shouldShow = shouldShowMenu || shouldShowGame || mirrorSettings.scene == 0;
-        get_transform()->get_parent()->get_gameObject()->SetActive(shouldShow);
+        get_transform()->get_parent()->get_gameObject()->SetActive(shouldShow && mirrorSettings.enabled);
     }
     void Mirror::Start()
     {

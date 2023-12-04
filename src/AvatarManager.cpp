@@ -41,7 +41,7 @@ namespace VRMQavatars {
         UpdateVRIK();
 
         SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
-        SetFingerPose(Config::ConfigManager::GetFingerPosingSettings().grabPose);
+        SetFingerPose(Config::ConfigManager::GetFingerPoseSettings().grabPose);
 
         TPoseHelper::SavePose(root->get_transform());
 

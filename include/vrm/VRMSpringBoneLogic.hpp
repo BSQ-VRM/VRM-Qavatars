@@ -33,8 +33,8 @@ namespace VRMQavatars
             radius(0)
         {
             trans = transform;
-            const Sombrero::FastVector3 vector = trans->TransformPoint(localChildPosition);
-            currentTail = ((center != nullptr) ? center->InverseTransformPoint(vector) : vector);
+            Sombrero::FastVector3 vector = trans->TransformPoint(localChildPosition);
+            currentTail = center != nullptr ? center->InverseTransformPoint(vector) : vector;
             prevTail = currentTail;
             localRotation = transform->get_localRotation();
             boneAxis = localChildPosition.get_normalized();

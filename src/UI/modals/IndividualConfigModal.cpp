@@ -85,7 +85,7 @@ namespace VRMQavatars::UI::Modals {
                             ->Bind(&locoToggle)
                             ->OnValueChanged(CP_SDK::Utils::Action<bool>([this](const bool val)
                             {
-                                Config::ConfigManager::GetAvatarConfig().OverrideLocoSettings.SetValue(val);
+                                Config::ConfigManager::GetAvatarConfig().OverrideLocomotionSettings.SetValue(val);
                                 VController->GetComponent<ViewControllers::AvatarSettingsViewController*>()->UpdateHandOffsetsTab();
                             }))
                             ->AsShared()

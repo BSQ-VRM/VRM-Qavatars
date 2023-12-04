@@ -19,7 +19,7 @@ namespace VRMQavatars
 
     public:
         UnityEngine::Transform* camera;
-        UnityEngine::Transform* target;
+        SafePtrUnity<UnityEngine::Transform> target;
         int lastTrack;
     };
 }

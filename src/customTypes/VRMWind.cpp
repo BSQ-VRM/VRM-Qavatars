@@ -33,35 +33,24 @@ namespace VRMQavatars
         {
             return;
         }
-        getLogger().info("wind 1");
+
         UpdateWindGenerateCount();
-        getLogger().info("wind 2");
         UpdateWindItems();
-        getLogger().info("wind 3");
 
         Sombrero::FastVector3 windForce = {0,0,0};
         for (int i = 0; i < _windItems.size(); i++)
         {
-            getLogger().info("wind 4");
             const auto x = (_windItems[i]->Orientation * _windItems[i]->CurrentFactor());;
             windForce += x;
         }
-        getLogger().info("wind 5");
 
         for (int i = 0; i < _springBones.size(); i++)
         {
-            getLogger().info("wind 6");
             const auto bone = _springBones[i];
-            getLogger().info("wind 7 %d %zu %zu %zu", i, _springBones.size(), _originalGravityFactors.size(), _originalGravityDirections.size());
-            getLogger().info("wind 7.1 %f", _originalGravityFactors[i]);
-            getLogger().info("wind 7.2 {%f %f %f}",  _originalGravityDirections[i].x,  _originalGravityDirections[i].y,  _originalGravityDirections[i].z);
-            getLogger().info("wind 7.3 {%f %f %f}",  windForce.x,  windForce.y,  windForce.z);
             Sombrero::FastVector3 forceSum = _originalGravityFactors[i] * _originalGravityDirections[i] + windForce;
-            getLogger().info("wind 8");
             bone->gravityDir = forceSum.get_normalized();
             bone->gravityPower = forceSum.get_magnitude();
         }
-        getLogger().info("wind 9");
     }
 
     void VRMWind::UpdateWindItems()

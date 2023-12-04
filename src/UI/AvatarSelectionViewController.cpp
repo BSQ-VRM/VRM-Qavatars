@@ -12,7 +12,7 @@
 #include "UI/components/AvatarListCell.hpp"
 #include "UI/components/AvatarListItem.hpp"
 
-#include "UnityEngine/HumanPoseHandler.hpp"
+#include "utils/FileUtils.hpp"
 
 namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSelectionViewController);

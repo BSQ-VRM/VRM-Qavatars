@@ -72,6 +72,12 @@ DECLARE_JSON_CLASS(VectorThree,
         y = _y;
         z = _z;
     }
+    VectorThree(const Sombrero::FastVector3& from)
+    {
+        x = from.x;
+        y = from.y;
+        z = from.z;
+    }
     VectorThree(const UnityEngine::Vector3& from)
     {
         x = from.x;
@@ -82,25 +88,9 @@ DECLARE_JSON_CLASS(VectorThree,
     {
         return UnityEngine::Vector3(x, y, z);
     }
-)
-
-DECLARE_JSON_CLASS(VectorTwo,
-    VALUE_DEFAULT(float, x, {});
-    VALUE_DEFAULT(float, y, {});
-    VectorTwo() = default;
-    VectorTwo(const UnityEngine::Vector2& from)
+    operator Sombrero::FastVector3()
     {
-        x = from.x;
-        y = from.y;
-    }
-    VectorTwo(float _x, float _y)
-    {
-        x = _x;
-        y = _y;
-    }
-    operator UnityEngine::Vector2()
-    {
-        return UnityEngine::Vector2(x, y);
+        return Sombrero::FastVector3(x, y, z);
     }
 )
 
@@ -175,8 +165,10 @@ DECLARE_JSON_CLASS(MirrorSettings,
     VALUE_DEFAULT(float, aspect, 1.0f);
     VALUE_DEFAULT(int, layer, 0);
     VALUE_DEFAULT(int, boneTracking, 0);
+    VALUE_DEFAULT(float, distance, 5.0f);
     VALUE_DEFAULT(int, scene, 0);
     VALUE_DEFAULT(float, fov, 60);
+    VALUE_DEFAULT(float, nearClip, 1.0f);
     VALUE_DEFAULT(Color2, borderColor, Color2(1.0f, 1.0f, 1.0f, 1.0f));
     VALUE_DEFAULT(bool, showHandle, true);
 )
@@ -193,42 +185,42 @@ DECLARE_JSON_CLASS(WindSettings,
 
 //Global Specific + Config Items
 DECLARE_CONFIG(GlobalConfig,
-    CONFIG_VALUE(Offsets, OffsetSettings, "Offsets", {});
-    CONFIG_VALUE(FingerPoses, FingerPoseSettings, "Finger Poses", {});
+    CONFIG_VALUE(Offset, OffsetSettings, "Offset", {});
+    CONFIG_VALUE(FingerPose, FingerPoseSettings, "Finger Pose", {});
     CONFIG_VALUE(IK, IKSettings, "IK", {});
     CONFIG_VALUE(Locomotion, LocomotionSettings, "Locomotion", {});
     CONFIG_VALUE(Lighting, LightingSettings, "Lighting", {});
-    CONFIG_VALUE(ControllerTriggers, ControllerTriggerSettings, "Controller Triggers", {});
-    CONFIG_VALUE(Blendshapes, BlendshapeSettings, "Blendshapes", {});
+    CONFIG_VALUE(ControllerTrigger, ControllerTriggerSettings, "Controller Triggers", {});
+    CONFIG_VALUE(Blendshape, BlendshapeSettings, "Blendshapes", {});
 
     //Global
 
     CONFIG_VALUE(VMC, VMCSettings, "VMC", {});
     CONFIG_VALUE(Mirror, MirrorSettings, "Mirror", {});
-    CONFIG_VALUE(WindSettings, WindSettings, "Wind", {});
+    CONFIG_VALUE(Wind, WindSettings, "Wind", {});
 
     CONFIG_VALUE(selectedFileName, std::string, "selectedFileName", "");
     CONFIG_VALUE(hasSelected, bool, "hasSelected", false);
 
-    CONFIG_VALUE(CalibrationType, std::string, "Calibration Type", "Match Armspans");
+    CONFIG_VALUE(CalibrationType, int, "Calibration Type", 1);
     CONFIG_VALUE(FixedScale, float, "Fixed Scale", 1.0f);
 )
 
 //Avatar Specific + Config Items
 DECLARE_CONFIG(AvatarConfig,
-    CONFIG_VALUE(Offsets, OffsetSettings, "Offsets", {});
-    CONFIG_VALUE(FingerPoses, FingerPoseSettings, "Finger Poses", {});
+    CONFIG_VALUE(Offset, OffsetSettings, "Offset", {});
+    CONFIG_VALUE(FingerPose, FingerPoseSettings, "Finger Pose", {});
     CONFIG_VALUE(IK, IKSettings, "IK", {});
     CONFIG_VALUE(Locomotion, LocomotionSettings, "Locomotion", {});
     CONFIG_VALUE(Lighting, LightingSettings, "Lighting", {});
-    CONFIG_VALUE(ControllerTriggers, ControllerTriggerSettings, "Controller Triggers", {});
-    CONFIG_VALUE(Blendshapes, BlendshapeSettings, "Blendshapes", {});
+    CONFIG_VALUE(ControllerTrigger, ControllerTriggerSettings, "Controller Triggers", {});
+    CONFIG_VALUE(Blendshape, BlendshapeSettings, "Blendshapes", {});
 
     //Individual
     CONFIG_VALUE(OverrideOffsetSettings, bool, "OverrideOffsetSettings", false);
     CONFIG_VALUE(OverrideFingerPoseSettings, bool, "OverrideFingerPoseSettings", false);
     CONFIG_VALUE(OverrideIKSettings, bool, "OverrideIKSettings", true);
-    CONFIG_VALUE(OverrideLocoSettings, bool, "OverrideLocoSettings", true);
+    CONFIG_VALUE(OverrideLocomotionSettings, bool, "OverrideLocoSettings", true);
     CONFIG_VALUE(OverrideLightingSettings, bool, "OverrideLightingSettings", false);
     CONFIG_VALUE(OverrideControllerTriggerSettings, bool, "OverrideControllerTriggerSettings", true);
     CONFIG_VALUE(OverrideBlendshapeSettings, bool, "OverrideBlendshapeSettings", true);

@@ -7,13 +7,9 @@
 #include "TPoseHelper.hpp"
 
 #include "UnityEngine/Camera.hpp"
-#include "UnityEngine/Resources.hpp"
 
-#include "GlobalNamespace/Saber.hpp"
-#include "GlobalNamespace/SaberType.hpp"
 #include "GlobalNamespace/OVRPlugin.hpp"
 
-#include "RootMotion/FinalIK/Finger.hpp"
 #include "RootMotion/FinalIK/FingerRig.hpp"
 
 #include "config/ConfigManager.hpp"
@@ -22,6 +18,8 @@
 #include "customTypes/GroundOffsetObject.hpp"
 #include "VMC/VMCClient.hpp"
 #include "VMC/VMCServer.hpp"
+
+#include "sombrero/shared/FastQuaternion.hpp"
 
 DEFINE_TYPE(VRMQavatars, TargetManager);
 
@@ -48,13 +46,13 @@ void VRMQavatars::TargetManager::Update()
         return;
 
     Sombrero::FastVector3 leftHandPos;
-    UnityEngine::Quaternion leftHandRot;
+    Sombrero::FastQuaternion leftHandRot;
 
     Sombrero::FastVector3 rightHandPos;
-    UnityEngine::Quaternion rightHandRot;
+    Sombrero::FastQuaternion rightHandRot;
 
     Sombrero::FastVector3 headPos;
-    UnityEngine::Quaternion headRot;
+    Sombrero::FastQuaternion headRot;
 
     const static auto replay = CondDeps::Find<bool>("replay", "IsInReplay");
     if(replay.has_value() && replay.value()())
@@ -143,7 +141,7 @@ void VRMQavatars::TargetManager::Calibrate(const std::optional<float> scale)
 
     get_transform()->set_localScale(UnityEngine::Vector3(calibScale, calibScale, calibScale));
 
-    HandController::ApplyHandPose(vrik->animator, Config::ConfigManager::GetFingerPosingSettings().grabPose);
+    HandController::ApplyHandPose(vrik->animator, Config::ConfigManager::GetFingerPoseSettings().grabPose);
 
     vrik->solver->spine->headTarget = headTarget->get_transform();
     vrik->solver->leftArm->target = leftHandTarget->get_transform();
@@ -186,11 +184,11 @@ float VRMQavatars::TargetManager::GetAvatarHandDist()
 float VRMQavatars::TargetManager::GetBase()
 {
     const auto type = Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue();
-    if(type == "Match Armspans")
+    if(type == 0)
     {
         return GetAvatarHandDist();
     }
-    if(type == "Match Heights")
+    if(type == 1)
     {
         return GetAvatarHandHeight();
     }
@@ -201,7 +199,7 @@ float VRMQavatars::TargetManager::GetBase()
 float VRMQavatars::TargetManager::GetCalibrateScale(const std::optional<float> baseScale)
 {
     const auto type = Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue();
-    if(type == "Match Armspans")
+    if(type == 0)
     {
         const auto leftHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandLeft);
         const auto rightHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandRight);
@@ -215,7 +213,7 @@ float VRMQavatars::TargetManager::GetCalibrateScale(const std::optional<float> b
 
         return scale * 0.85f;
     }
-    if(type == "Match Heights")
+    if(type == 1)
     {
         const auto leftHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandLeft);
         const auto rightHandPos = GetPosition(GlobalNamespace::OVRPlugin::Node::HandRight);

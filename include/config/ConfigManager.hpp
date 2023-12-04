@@ -1,10 +1,64 @@
 #pragma once
 
-#include <utility>
-
 #include "AvatarManager.hpp"
 #include "config/config.hpp"
-#include "utils/FileUtils.hpp"
+
+#define MANAGER_ITEM(type) \
+    static type ## Settings Get ## type ## Settings(); \
+    static void Set ## type ## Settings(const type ## Settings& settings); \
+    static void Reset ## type ## Settings(); \
+
+#define MANAGER_ITEM_CPP_AVATAR(type) \
+    type ## Settings ConfigManager::Get ## type ## Settings() \
+    { \
+        if(InitAvatarConfig()) \
+        { \
+            if(getAvatarConfig().Override ## type ## Settings.GetValue()) \
+            { \
+                return getAvatarConfig(). type .GetValue(); \
+            } \
+        } \
+        return getGlobalConfig(). type .GetValue(); \
+    } \
+    void ConfigManager::Set ## type ## Settings(const type ## Settings& settings) \
+    { \
+        if(InitAvatarConfig()) \
+        { \
+            if(getAvatarConfig().Override ## type ## Settings.GetValue()) \
+            { \
+                getAvatarConfig(). type .SetValue(settings); \
+                return; \
+            } \
+        } \
+        getGlobalConfig(). type .SetValue(settings); \
+    } \
+    void ConfigManager::Reset ## type ## Settings() \
+    { \
+        if(InitAvatarConfig()) \
+        { \
+            if(getAvatarConfig().Override ## type ## Settings.GetValue()) \
+            { \
+                getAvatarConfig(). type .SetValue(getAvatarConfig(). type .GetDefaultValue()); \
+                return; \
+            } \
+        } \
+        getGlobalConfig(). type .SetValue(getGlobalConfig(). type .GetDefaultValue()); \
+    } \
+
+#define MANAGER_ITEM_CPP_GLOBAL(type) \
+    type ## Settings ConfigManager::Get ## type ## Settings() \
+    { \
+        return getGlobalConfig(). type .GetValue(); \
+    } \
+    void ConfigManager::Set ## type ## Settings(const type ## Settings& settings) \
+    { \
+        getGlobalConfig(). type .SetValue(settings); \
+    } \
+    void ConfigManager::Reset ## type ## Settings() \
+    { \
+        getGlobalConfig(). type .SetValue(getGlobalConfig(). type .GetDefaultValue()); \
+    } \
+
 namespace VRMQavatars::Config
 {
     class ConfigManager
@@ -25,62 +79,42 @@ namespace VRMQavatars::Config
 
         //IK
 
-        static IKSettings GetIKSettings();
-
-        static void SetIKSettings(const IKSettings& settings);
+        MANAGER_ITEM(IK)
 
         //Offsets
 
-        static OffsetSettings GetOffsetSettings();
-
-        static void SetOffsetSettings(const OffsetSettings& settings);
+        MANAGER_ITEM(Offset)
 
         //Finger Posing
 
-        static FingerPoseSettings GetFingerPosingSettings();
-
-        static void SetFingerPosingSettings(const FingerPoseSettings& settings);
+        MANAGER_ITEM(FingerPose)
 
         //Lighting
 
-        static LightingSettings GetLightingSettings();
-
-        static void SetLightingSettings(const LightingSettings& settings);
+        MANAGER_ITEM(Lighting)
 
         //Locomotion
 
-        static LocomotionSettings GetLocomotionSettings();
-
-        static void SetLocomotionSettings(const LocomotionSettings& settings);
+        MANAGER_ITEM(Locomotion)
 
         //Controller Triggers
 
-        static ControllerTriggerSettings GetControllerTriggerSettings();
-
-        static void SetControllerTriggerSettings(const ControllerTriggerSettings& settings);
+        MANAGER_ITEM(ControllerTrigger)
 
         //BlendShapes
 
-        static BlendshapeSettings GetBlendShapeSettings();
-
-        static void SetBlendShapeSettings(const BlendshapeSettings& settings);
+        MANAGER_ITEM(Blendshape)
 
         //VMC
 
-        static VMCSettings GetVMCSettings();
-
-        static void SetVMCSettings(const VMCSettings& settings);
+        MANAGER_ITEM(VMC)
 
         //Mirror
 
-        static MirrorSettings GetMirrorSettings();
-
-        static void SetMirrorSettings(const MirrorSettings& settings);
+        MANAGER_ITEM(Mirror)
 
         //Mirror
 
-        static WindSettings GetWindSettings();
-
-        static void SetWindSettings(const WindSettings& settings);
+        MANAGER_ITEM(Wind)
     };
 };

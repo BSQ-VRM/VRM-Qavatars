@@ -77,7 +77,6 @@ custom_types::Helpers::Coroutine Setup() {
             {
                 const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
                 VRMQavatars::AvatarManager::SetContext(ctx);
-
                 auto& avaConfig = VRMQavatars::Config::ConfigManager::GetAvatarConfig();
                 if(avaConfig.HasCalibrated.GetValue())
                 {

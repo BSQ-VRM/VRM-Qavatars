@@ -105,16 +105,21 @@ namespace VRMQavatars::UI::ViewControllers {
 
     std::shared_ptr<CP_SDK::XUI::XUIVLayout> AvatarSettingsViewController::BuildCalibrationTab()
     {
+        std::vector<std::u16string> calibOptions = { u"Match Armspans", u"Match Heights", u"Fixed" };
         return CP_SDK::XUI::XUIVLayout::Make(
             {
                 CP_SDK::XUI::XUIText::Make(u"Calibration Type"),
-                CP_SDK::XUI::XUIDropdown::Make({ u"Match Armspans", u"Match Heights", u"Fixed" })
-                    ->SetValue(to_utf16(Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue()))
-                    ->OnValueChanged([this](int idx, const std::u16string_view val)
+                CP_SDK::XUI::XUIDropdown::Make()
+                    ->SetOptions(calibOptions)
+                    ->OnValueChanged([this](const int idx, const std::u16string_view val)
                     {
                         fixedSlider->SetInteractable(val == u"Fixed");
-                        Config::ConfigManager::GetGlobalConfig().CalibrationType.SetValue(to_utf8(val));
+                        Config::ConfigManager::GetGlobalConfig().CalibrationType.SetValue(idx);
                         Config::ConfigManager::GetGlobalConfig().Save();
+                    })
+                    ->OnReady([calibOptions](CP_SDK::UI::Components::CDropdown* dropdown)
+                    {
+                        dropdown->SetValue(calibOptions[Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue()]);
                     })
                     ->AsShared(),
 
@@ -129,7 +134,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         Config::ConfigManager::GetGlobalConfig().Save();
                     })
                     ->SetIncrements(18.0f)
-                    ->SetInteractable(Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue() == "Fixed")
+                    ->SetInteractable(Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue() == 2)
                     ->Bind(&fixedSlider)
                 ->AsShared(),
 
@@ -328,9 +333,9 @@ namespace VRMQavatars::UI::ViewControllers {
                                 CP_SDK::XUI::XUIToggle::Make()
                                     ->Bind(&autoBlinkToggle)
                                     ->OnValueChanged([](const bool val) {
-                                        auto settings = Config::ConfigManager::GetBlendShapeSettings();
+                                        auto settings = Config::ConfigManager::GetBlendshapeSettings();
                                         settings.autoBlink = val;
-                                        Config::ConfigManager::SetBlendShapeSettings(settings);
+                                        Config::ConfigManager::SetBlendshapeSettings(settings);
                                     })
                                     ->AsShared(),
                                 CP_SDK::XUI::XUIText::Make(u"Blink Wait Time"),
@@ -338,9 +343,9 @@ namespace VRMQavatars::UI::ViewControllers {
                                     ->Bind(&autoBlinkWaitSlider)
                                     ->SetMaxValue(4.0f)
                                     ->OnValueChanged([](const float val) {
-                                        auto settings = Config::ConfigManager::GetBlendShapeSettings();
+                                        auto settings = Config::ConfigManager::GetBlendshapeSettings();
                                         settings.waitTime = val;
-                                        Config::ConfigManager::SetBlendShapeSettings(settings);
+                                        Config::ConfigManager::SetBlendshapeSettings(settings);
                                     })
                                     ->AsShared(),
                             })
@@ -351,18 +356,18 @@ namespace VRMQavatars::UI::ViewControllers {
                                 CP_SDK::XUI::XUIToggle::Make()
                                     ->Bind(&mockEyeMovementToggle)
                                     ->OnValueChanged([](const bool val) {
-                                        auto settings = Config::ConfigManager::GetBlendShapeSettings();
+                                        auto settings = Config::ConfigManager::GetBlendshapeSettings();
                                         settings.mockEyeMovement = val;
-                                        Config::ConfigManager::SetBlendShapeSettings(settings);
+                                        Config::ConfigManager::SetBlendshapeSettings(settings);
                                     })
                                     ->AsShared(),
                                 CP_SDK::XUI::XUIText::Make(u"Default Facial Expression"),
                                 CP_SDK::XUI::XUIDropdown::Make()
                                     ->Bind(&neutralExpressionDropdown)
                                     ->OnValueChanged([](int idx, const std::u16string_view val) {
-                                        auto settings = Config::ConfigManager::GetBlendShapeSettings();
+                                        auto settings = Config::ConfigManager::GetBlendshapeSettings();
                                         settings.neutralExpression = to_utf8(val);
-                                        Config::ConfigManager::SetBlendShapeSettings(settings);
+                                        Config::ConfigManager::SetBlendshapeSettings(settings);
                                     })
                                     ->AsShared(),
                             })
@@ -629,7 +634,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 options.push_back(to_utf16(val.name));
             }
         }
-        const auto config = Config::ConfigManager::GetBlendShapeSettings();
+        const auto config = Config::ConfigManager::GetBlendshapeSettings();
         autoBlinkToggle->SetValue(config.autoBlink);
         autoBlinkWaitSlider->SetValue(config.waitTime);
         mockEyeMovementToggle->SetValue(config.mockEyeMovement);
@@ -884,13 +889,13 @@ namespace VRMQavatars::UI::ViewControllers {
             ->SetMinValue(-120)
             ->SetMaxValue(120)
             ->SetInteger(true)
-            ->SetValue(GetValue(Config::ConfigManager::GetFingerPosingSettings().grabPose, idx))
+            ->SetValue(GetValue(Config::ConfigManager::GetFingerPoseSettings().grabPose, idx))
             ->OnValueChanged([idx](const float val)
             {
-                auto settings = Config::ConfigManager::GetFingerPosingSettings();
+                auto settings = Config::ConfigManager::GetFingerPoseSettings();
                 settings.grabPose = SetValue(settings.grabPose, idx, val);
-                Config::ConfigManager::SetFingerPosingSettings(settings);
-                AvatarManager::SetFingerPose(Config::ConfigManager::GetFingerPosingSettings().grabPose);
+                Config::ConfigManager::SetFingerPoseSettings(settings);
+                AvatarManager::SetFingerPose(Config::ConfigManager::GetFingerPoseSettings().grabPose);
             })
             ->AsShared();
         fingerSliders[idx] = slider;
@@ -1043,7 +1048,7 @@ namespace VRMQavatars::UI::ViewControllers {
         for (int i = 0; i < fingerSliders.size(); ++i)
         {
             const auto slider = fingerSliders[i];
-            slider->SetValue(GetValue(Config::ConfigManager::GetFingerPosingSettings().grabPose, i));
+            slider->SetValue(GetValue(Config::ConfigManager::GetFingerPoseSettings().grabPose, i));
         }
     }
 
@@ -1162,7 +1167,22 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.enabled = val;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
+                        MirrorManager::UpdateMirror(false);
+                    })
+                    ->AsShared(),
+                CP_SDK::XUI::XUIText::Make(u"Scene"),
+                CP_SDK::XUI::XUIDropdown::Make()
+                    ->SetOptions(sceneOptions)
+                    ->OnValueChanged([](const int idx, std::u16string_view val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.scene = idx;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror(false);
+                    })
+                    ->OnReady([sceneOptions](CP_SDK::UI::Components::CDropdown* dropdown)
+                    {
+                        dropdown->SetValue(sceneOptions[Config::ConfigManager::GetMirrorSettings().scene]);
                     })
                     ->AsShared()
             }),
@@ -1177,7 +1197,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.size = val;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
+                        MirrorManager::UpdateMirror(true);
                     })
                     ->AsShared(),
                 CP_SDK::XUI::XUIText::Make(u"Aspect"),
@@ -1190,12 +1210,10 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.aspect = val;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
+                        MirrorManager::UpdateMirror(true);
                     })
                     ->AsShared()
-            })
-            ->SetSpacing(1.0f)
-            ->AsShared(),
+            }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Field Of View"),
                 CP_SDK::XUI::XUISlider::Make()
@@ -1207,7 +1225,20 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.fov = val;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
+                        MirrorManager::UpdateMirror(false);
+                    })
+                    ->AsShared(),
+                CP_SDK::XUI::XUIText::Make(u"Near Clip"),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetMinValue(0.1f)
+                    ->SetMaxValue(3.0f)
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().nearClip)
+                    ->OnValueChanged([](const float val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.nearClip = val;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror(false);
                     })
                     ->AsShared()
             }),
@@ -1215,13 +1246,16 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUIText::Make(u"Displayed Layer"),
                 CP_SDK::XUI::XUIDropdown::Make()
                     ->SetOptions(layerOptions)
-                    ->SetValue(layerOptions[Config::ConfigManager::GetMirrorSettings().layer])
                     ->OnValueChanged([](const int idx, std::u16string_view val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.layer = idx;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
+                        MirrorManager::UpdateMirror(false);
+                    })
+                    ->OnReady([layerOptions](CP_SDK::UI::Components::CDropdown* dropdown)
+                    {
+                        dropdown->SetValue(layerOptions[Config::ConfigManager::GetMirrorSettings().layer]);
                     })
                     ->AsShared()
             }),
@@ -1229,29 +1263,31 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUIText::Make(u"Tracked Bone"),
                 CP_SDK::XUI::XUIDropdown::Make()
                     ->SetOptions(trackOptions)
-                    ->SetValue(trackOptions[Config::ConfigManager::GetMirrorSettings().boneTracking])
                     ->OnValueChanged([](const int idx, std::u16string_view val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.boneTracking = idx;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
+                        MirrorManager::UpdateMirror(false);
                     })
-                    ->AsShared()
-            }),
-            CP_SDK::XUI::XUIHLayout::Make({
-                CP_SDK::XUI::XUIText::Make(u"Scene"),
-                CP_SDK::XUI::XUIDropdown::Make()
-                    ->SetOptions(sceneOptions)
-                    ->SetValue(sceneOptions[Config::ConfigManager::GetMirrorSettings().scene])
-                    ->OnValueChanged([](const int idx, std::u16string_view val)
+                    ->OnReady([trackOptions](CP_SDK::UI::Components::CDropdown* dropdown)
+                    {
+                        dropdown->SetValue(trackOptions[Config::ConfigManager::GetMirrorSettings().boneTracking]);
+                    })
+                    ->AsShared(),
+                CP_SDK::XUI::XUIText::Make(u"Tracking Distance"),
+                CP_SDK::XUI::XUISlider::Make()
+                    ->SetMinValue(0.5f)
+                    ->SetMaxValue(15.0f)
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().distance)
+                    ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
-                        settings.scene = idx;
+                        settings.distance = val;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
+                        MirrorManager::UpdateMirror(false);
                     })
-                    ->AsShared()
+                    ->AsShared(),
             }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Show Handle"),
@@ -1262,7 +1298,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.showHandle = val;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
+                        MirrorManager::UpdateMirror(false);
                     })
                     ->AsShared()
             }),
@@ -1270,12 +1306,13 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUIText::Make(u"Border Color"),
                 CP_SDK::XUI::XUIColorInput::Make()
                     ->SetValue(Config::ConfigManager::GetMirrorSettings().borderColor)
+                    ->SetAlphaSupport(true)
                     ->OnValueChanged([](const UnityEngine::Color val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.borderColor = val;
                         Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror();
+                        MirrorManager::UpdateMirror(false);
                     })
                     ->AsShared()
             })

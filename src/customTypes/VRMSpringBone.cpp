@@ -1,5 +1,7 @@
 #include "customTypes/VRMSpringBone.hpp"
 
+#include <sombrero/shared/FastQuaternion.hpp>
+
 DEFINE_TYPE(VRMQavatars, VRMSpringBone);
 
 void VRMQavatars::VRMSpringBone::Awake()
@@ -33,7 +35,7 @@ void VRMQavatars::VRMSpringBone::SetLocalRotationsIdentity()
 {
     for(auto& logic : verlet)
     {
-        logic->trans->set_localRotation(UnityEngine::Quaternion::get_identity());
+        logic->trans->set_localRotation(Sombrero::FastQuaternion::get_identity());
     }
 }
 
@@ -43,7 +45,7 @@ void VRMQavatars::VRMSpringBone::Setup(bool force)
     {
         if (force || this->initialLocalRotationMap.size() == 0)
         {
-            initialLocalRotationMap = std::map<UnityEngine::Transform*, UnityEngine::Quaternion>();
+            initialLocalRotationMap = std::map<UnityEngine::Transform*, Sombrero::FastQuaternion>();
         }
         else
         {
