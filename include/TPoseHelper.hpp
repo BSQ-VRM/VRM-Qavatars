@@ -1,17 +1,18 @@
 #pragma once
+#include <sombrero/shared/FastVector3.hpp>
+
 #include "UnityEngine/Avatar.hpp"
 
 #include "UnityEngine/Transform.hpp"
-#include "UnityEngine/HumanPose.hpp"
 
 namespace VRMQavatars
 {
     struct TransData
     {
         SafePtrUnity<UnityEngine::Transform> trans;
-        UnityEngine::Vector3 position;
-        UnityEngine::Vector3 eulerRotation;
-        UnityEngine::Vector3 localScale;
+        Sombrero::FastVector3 position;
+        Sombrero::FastVector3 eulerRotation;
+        Sombrero::FastVector3 localScale;
     };
     class TPoseHelper
     {

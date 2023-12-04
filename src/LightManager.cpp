@@ -33,13 +33,6 @@ namespace VRMQavatars {
 
     SafePtrUnity<UnityEngine::Light> LightManager::_light;
     SafePtrUnity<UnityEngine::Light> LightManager::_platform;
-
-    SafePtrUnity<GlobalNamespace::SaberManager> LightManager::_saberManager;
-    SafePtr<GlobalNamespace::ColorManager> LightManager::_colorManager;
-
-    SafePtrUnity<UnityEngine::Light> LightManager::_saberLight1;
-    SafePtrUnity<UnityEngine::Light> LightManager::_saberLight2;
-
     std::vector<SafePtrUnity<GlobalNamespace::TubeBloomPrePassLight>> LightManager::lights;
 
     CP_SDK_IL2CPP_DECLARE_CTOR_IMPL(LightManager)
@@ -55,12 +48,6 @@ namespace VRMQavatars {
     custom_types::Helpers::Coroutine LightManager::Grab()
     {
         co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(0.15f));
-        while(!_colorManager || _colorManager.ptr() == nullptr)
-        {
-            getLogger().info("finding ColorManager");
-            _colorManager = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberModelController*>().FirstOrDefault()->colorManager;
-            co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
-        }
         getLogger().info("adding tubies");
         lights.clear();
 
@@ -151,6 +138,16 @@ namespace VRMQavatars {
                 lights.push_back(Light);
             }
         }
+
+        //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        auto rings = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::TrackLaneRing*>();
+        for (auto ring : rings)
+        {
+            for (auto light : ring->GetComponentsInChildren<GlobalNamespace::TubeBloomPrePassLight*>())
+            {
+                lights.push_back(light);
+            }
+        }
         co_return;
     }
 
@@ -164,16 +161,7 @@ namespace VRMQavatars {
         SceneEventManager::OnGameEnter += CP_SDK::Utils::Action<>([]
         {
             getLogger().info("hi game");
-            if(!_saberManager || _saberManager.ptr() == nullptr)
-            {
-                getLogger().info("finding saber manager");
-                _saberManager = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberManager*>().FirstOrDefault();
-                getLogger().info("found %p", _saberManager.ptr());
-                CP_SDK::Unity::MTCoroutineStarter::Start(Grab());
-            }
             inGame = true;
-            _saberLight1->set_enabled(true);
-            _saberLight2->set_enabled(true);
             UpdateLightValues();
         });
 
@@ -181,8 +169,6 @@ namespace VRMQavatars {
         {
             getLogger().info("hi menu");
             inGame = false;
-            _saberLight1->set_enabled(false);
-            _saberLight2->set_enabled(false);
             UpdateLightValues();
         });
     }
@@ -217,24 +203,6 @@ namespace VRMQavatars {
             UnityEngine::GameObject::DontDestroyOnLoad(_platform.ptr()->get_gameObject());
         }
 
-        //Saber Light (L)
-        {
-            _saberLight1 = UnityEngine::GameObject::New_ctor("Saber (L) Lighting")->AddComponent<UnityEngine::Light*>();
-            static auto setType = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, UnityEngine::LightType>("UnityEngine.Light::set_type");
-            setType(_saberLight1.ptr(), UnityEngine::LightType::Point);
-
-            UnityEngine::GameObject::DontDestroyOnLoad(_saberLight1.ptr()->get_gameObject());
-        }
-
-        //Saber Light (R)
-        {
-            _saberLight2 = UnityEngine::GameObject::New_ctor("Saber (R) Lighting")->AddComponent<UnityEngine::Light*>();
-            static auto setType = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, UnityEngine::LightType>("UnityEngine.Light::set_type");
-            setType(_saberLight2.ptr(), UnityEngine::LightType::Point);
-
-            UnityEngine::GameObject::DontDestroyOnLoad(_saberLight2.ptr()->get_gameObject());
-        }
-
         UpdateLightValues();
     }
 
@@ -256,39 +224,6 @@ namespace VRMQavatars {
                 _platform.ptr()->set_color(settings.globalColor);
                 _platform.ptr()->get_transform()->set_rotation(UnityEngine::Quaternion::Euler(settings.lightRotation));
             }
-        }
-        static auto setRange = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, float>("UnityEngine.Light::set_range");
-
-        _saberLight1.ptr()->set_intensity(settings.saberLightingIntensity);
-        setRange(_saberLight1.ptr(), settings.saberLightingRange);
-
-        _saberLight2.ptr()->set_intensity(settings.saberLightingIntensity);
-        setRange(_saberLight2.ptr(), settings.saberLightingRange);
-    }
-
-    void LightManager::UpdateSaberLight(GlobalNamespace::SaberType type)
-    {
-        UnityEngine::Light* light;
-        GlobalNamespace::Saber* saber;
-        if(!_saberManager || _saberManager.ptr() == nullptr) return;
-        if(!_colorManager || _colorManager.ptr() == nullptr) return;
-        UnityEngine::Color color = _colorManager.ptr()->ColorForSaberType(type);
-        if (type == GlobalNamespace::SaberType::SaberA)
-        {
-            light = _saberLight1.ptr();
-            saber = _saberManager.ptr()->leftSaber;
-        }
-        else
-        {
-            light = _saberLight2.ptr();
-            saber = _saberManager.ptr()->rightSaber;
-        }
-
-        light->set_enabled(saber->get_isActiveAndEnabled());
-        if (light->get_enabled())
-        {
-            light->set_color(color);
-            light->get_transform()->set_position(UnityEngine::Vector3::Lerp(saber->saberBladeTopPos, saber->saberBladeBottomPos, 0.25f));
         }
     }
 
@@ -368,11 +303,6 @@ namespace VRMQavatars {
             //Platform lighting
             _platform->set_color(normalizedColor);
             _platform->set_intensity(color.a * settings.beatmapLightingBrightness);
-        }
-        if(settings.saberLighting)
-        {
-            UpdateSaberLight(GlobalNamespace::SaberType::SaberA);
-            UpdateSaberLight(GlobalNamespace::SaberType::SaberB);
         }
     }
 }

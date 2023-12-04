@@ -72,12 +72,8 @@ namespace VRMQavatars::UI::ViewControllers {
             UpdateLocomotionTab();
             UpdateLightingTab();
             UpdateBlendshapesTab();
+            UpdateCalibrationTab();
         });
-    }
-
-    void AvatarSettingsViewController::UpdatePos()
-    {
-        AvatarManager::SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
     }
 
     int GetValue(const std::string& pose, const int idx)
@@ -111,41 +107,82 @@ namespace VRMQavatars::UI::ViewControllers {
     {
         return CP_SDK::XUI::XUIVLayout::Make(
             {
-                CP_SDK::XUI::XUIText::Make(u"(Global)")
-                    ->SetFontSize(6.0f)
-                    ->AsShared(),
-                CP_SDK::XUI::XUIVSpacer::Make(0.3f),
-
                 CP_SDK::XUI::XUIText::Make(u"Calibration Type"),
                 CP_SDK::XUI::XUIDropdown::Make({ u"Match Armspans", u"Match Heights", u"Fixed" })
                     ->SetValue(to_utf16(Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue()))
-                    ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, const std::u16string_view val)
+                    ->OnValueChanged([this](int idx, const std::u16string_view val)
                     {
                         fixedSlider->SetInteractable(val == u"Fixed");
                         Config::ConfigManager::GetGlobalConfig().CalibrationType.SetValue(to_utf8(val));
                         Config::ConfigManager::GetGlobalConfig().Save();
-                    }))
+                    })
                     ->AsShared(),
-
-                CP_SDK::XUI::XUIVSpacer::Make(0.2f),
 
                 CP_SDK::XUI::XUIText::Make(u"Fixed Scale"),
                 CP_SDK::XUI::XUISlider::Make()
                     ->SetMinValue(0.2f)
                     ->SetMaxValue(2.0f)
                     ->SetValue(Config::ConfigManager::GetGlobalConfig().FixedScale.GetValue())
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
+                    ->OnValueChanged([](const float val)
                     {
                         Config::ConfigManager::GetGlobalConfig().FixedScale.SetValue(val);
                         Config::ConfigManager::GetGlobalConfig().Save();
-                    }))
-                    ->SetIncrements(0.1f)
+                    })
+                    ->SetIncrements(18.0f)
                     ->SetInteractable(Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue() == "Fixed")
                     ->Bind(&fixedSlider)
-                    ->AsShared()
+                ->AsShared(),
+
+                CP_SDK::XUI::XUIText::Make(u"The following options require recalibration!"),
+
+                CP_SDK::XUI::XUIHLayout::Make(
+                {
+                    CP_SDK::XUI::XUIText::Make(u"Arm Scale (Per avatar)"),
+                    CP_SDK::XUI::XUISlider::Make()
+                        ->SetMinValue(0.2f)
+                        ->SetMaxValue(2.0f)
+                        ->SetValue(AvatarManager::currentContext != nullptr ? Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue() : 1.0f)
+                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                        ->OnValueChanged([](const float val)
+                        {
+                            if(AvatarManager::currentContext != nullptr)
+                            {
+                                Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.SetValue(val);
+                                Config::ConfigManager::SaveAvatarConfig();
+                            }
+                        })
+                        ->Bind(&armScaleSlider)
+                        ->AsShared(),
+                }),
+                CP_SDK::XUI::XUIHLayout::Make(
+                {
+                    CP_SDK::XUI::XUIText::Make(u"Leg Scale (Per avatar)"),
+                    CP_SDK::XUI::XUISlider::Make()
+                        ->SetMinValue(0.75f)
+                        ->SetMaxValue(1.25f)
+                        ->SetValue(AvatarManager::currentContext != nullptr ? Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.GetValue() : 1.0f)
+                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                        ->OnValueChanged([](const float val)
+                        {
+                            Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.SetValue(val);
+                            Config::ConfigManager::SaveAvatarConfig();
+                        })
+                        ->Bind(&legScaleSlider)
+                        ->AsShared()
+                })
             }
         );
     }
+
+    void AvatarSettingsViewController::UpdateCalibrationTab()
+    {
+        armScaleSlider->SetValue(AvatarManager::currentContext != nullptr ? Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue() : 1.0f);
+        armScaleSlider->SetInteractable(AvatarManager::currentContext != nullptr);
+
+        legScaleSlider->SetValue(AvatarManager::currentContext != nullptr ? Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.GetValue() : 1.0f);
+        legScaleSlider->SetInteractable(AvatarManager::currentContext != nullptr);
+    }
+
 
     std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildHandOffsetsTab()
     {
@@ -164,12 +201,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMinValue(-0.5f)
                         ->SetMaxValue(0.5f)
                         ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posX)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
+                        ->OnValueChanged([this](const float val) {
                             auto settings = Config::ConfigManager::GetOffsetSettings();
                             settings.handOffset.posX = val;
                             Config::ConfigManager::SetOffsetSettings(settings);
-                            UpdatePos();
-                        }))
+                            AvatarManager::SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
+                        })
                         ->Bind(&xPosSlider)
                         ->AsShared(),
 
@@ -180,12 +217,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMinValue(-0.5f)
                         ->SetMaxValue(0.5f)
                         ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posY)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
+                        ->OnValueChanged([this](const float val) {
                             auto settings = Config::ConfigManager::GetOffsetSettings();
                             settings.handOffset.posY = val;
                             Config::ConfigManager::SetOffsetSettings(settings);
-                            UpdatePos();
-                        }))
+                            AvatarManager::SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
+                        })
                         ->Bind(&yPosSlider)
                         ->AsShared(),
 
@@ -196,12 +233,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMinValue(-0.5f)
                         ->SetMaxValue(0.5f)
                         ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.posZ)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
+                        ->OnValueChanged([this](const float val) {
                             auto settings = Config::ConfigManager::GetOffsetSettings();
                             settings.handOffset.posZ = val;
                             Config::ConfigManager::SetOffsetSettings(settings);
-                            UpdatePos();
-                        }))
+                            AvatarManager::SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
+                        })
                         ->Bind(&zPosSlider)
                         ->AsShared(),
                 })
@@ -221,12 +258,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMinValue(-90.0f)
                         ->SetMaxValue(90.0f)
                         ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotX)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
+                        ->OnValueChanged([this](const float val) {
                             auto settings = Config::ConfigManager::GetOffsetSettings();
                             settings.handOffset.rotX = val;
                             Config::ConfigManager::SetOffsetSettings(settings);
-                            UpdatePos();
-                        }))
+                            AvatarManager::SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
+                        })
                         ->Bind(&xRotSlider)
                         ->AsShared(),
 
@@ -237,12 +274,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMinValue(-90.0f)
                         ->SetMaxValue(90.0f)
                         ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotY)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
+                        ->OnValueChanged([this](const float val) {
                             auto settings = Config::ConfigManager::GetOffsetSettings();
                             settings.handOffset.rotY = val;
                             Config::ConfigManager::SetOffsetSettings(settings);
-                            UpdatePos();
-                        }))
+                            AvatarManager::SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
+                        })
                         ->Bind(&yRotSlider)
                         ->AsShared(),
 
@@ -253,12 +290,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMinValue(-90.0f)
                         ->SetMaxValue(90.0f)
                         ->SetValue(Config::ConfigManager::GetOffsetSettings().handOffset.rotZ)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
+                        ->OnValueChanged([this](const float val) {
                             auto settings = Config::ConfigManager::GetOffsetSettings();
                             settings.handOffset.rotZ = val;
                             Config::ConfigManager::SetOffsetSettings(settings);
-                            UpdatePos();
-                        }))
+                            AvatarManager::SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
+                        })
                         ->Bind(&zRotSlider)
                         ->AsShared()
                 })
@@ -290,21 +327,21 @@ namespace VRMQavatars::UI::ViewControllers {
                                 CP_SDK::XUI::XUIText::Make(u"Auto Blink"),
                                 CP_SDK::XUI::XUIToggle::Make()
                                     ->Bind(&autoBlinkToggle)
-                                    ->OnValueChanged(CP_SDK::Utils::Action<bool>([this](const bool val) {
+                                    ->OnValueChanged([](const bool val) {
                                         auto settings = Config::ConfigManager::GetBlendShapeSettings();
                                         settings.autoBlink = val;
                                         Config::ConfigManager::SetBlendShapeSettings(settings);
-                                    }))
+                                    })
                                     ->AsShared(),
                                 CP_SDK::XUI::XUIText::Make(u"Blink Wait Time"),
                                 CP_SDK::XUI::XUISlider::Make()
                                     ->Bind(&autoBlinkWaitSlider)
                                     ->SetMaxValue(4.0f)
-                                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val) {
+                                    ->OnValueChanged([](const float val) {
                                         auto settings = Config::ConfigManager::GetBlendShapeSettings();
                                         settings.waitTime = val;
                                         Config::ConfigManager::SetBlendShapeSettings(settings);
-                                    }))
+                                    })
                                     ->AsShared(),
                             })
                             ->SetSpacing(0.1f)
@@ -313,20 +350,20 @@ namespace VRMQavatars::UI::ViewControllers {
                                 CP_SDK::XUI::XUIText::Make(u"Mock Eye Movement"),
                                 CP_SDK::XUI::XUIToggle::Make()
                                     ->Bind(&mockEyeMovementToggle)
-                                    ->OnValueChanged(CP_SDK::Utils::Action<bool>([this](const bool val) {
+                                    ->OnValueChanged([](const bool val) {
                                         auto settings = Config::ConfigManager::GetBlendShapeSettings();
                                         settings.mockEyeMovement = val;
                                         Config::ConfigManager::SetBlendShapeSettings(settings);
-                                    }))
+                                    })
                                     ->AsShared(),
                                 CP_SDK::XUI::XUIText::Make(u"Default Facial Expression"),
                                 CP_SDK::XUI::XUIDropdown::Make()
                                     ->Bind(&neutralExpressionDropdown)
-                                    ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, const std::u16string_view val) {
+                                    ->OnValueChanged([](int idx, const std::u16string_view val) {
                                         auto settings = Config::ConfigManager::GetBlendShapeSettings();
                                         settings.neutralExpression = to_utf8(val);
                                         Config::ConfigManager::SetBlendShapeSettings(settings);
-                                    }))
+                                    })
                                     ->AsShared(),
                             })
                             ->SetSpacing(0.1f)
@@ -389,12 +426,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Y (Left controller top)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&YTriggerDropdown)
-                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, const std::u16string_view val)
+                                        ->OnValueChanged([](int idx, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.Y = to_utf8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
-                                        }))
+                                        })
                                         ->AsShared()
                                 }),
                                 //X
@@ -402,12 +439,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"X (Left controller bottom)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&XTriggerDropdown)
-                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, const std::u16string_view val)
+                                        ->OnValueChanged([](int idx, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.X = to_utf8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
-                                        }))
+                                        })
                                         ->AsShared()
                                 }),
                                 //B
@@ -415,12 +452,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"B (Right controller top)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&BTriggerDropdown)
-                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, const std::u16string_view val)
+                                        ->OnValueChanged([](int idx, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.B = to_utf8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
-                                        }))
+                                        })
                                         ->AsShared()
                                 }),
                                 //A
@@ -428,12 +465,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"A (Right controller bottom)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&ATriggerDropdown)
-                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, const std::u16string_view val)
+                                        ->OnValueChanged([](int idx, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.A = to_utf8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
-                                        }))
+                                        })
                                         ->AsShared()
                                 })
                             })
@@ -446,12 +483,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Left Grip"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&LGripTriggerDropdown)
-                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, const std::u16string_view val)
+                                        ->OnValueChanged([](int idx, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.LGrip = to_utf8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
-                                        }))
+                                        })
                                         ->AsShared()
                                 }),
                                 //RGrip
@@ -459,12 +496,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Right Grip"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&RGripTriggerDropdown)
-                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, const std::u16string_view val)
+                                        ->OnValueChanged([](int idx, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.RGrip = to_utf8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
-                                        }))
+                                        })
                                         ->AsShared()
                                 }),
                                 //LTrigger
@@ -472,12 +509,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Left Trigger"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&LTriggerTriggerDropdown)
-                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, const std::u16string_view val)
+                                        ->OnValueChanged([](int idx, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.LTrigger = to_utf8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
-                                        }))
+                                        })
                                         ->AsShared()
                                 }),
                                 //RTrigger
@@ -485,12 +522,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Right Trigger"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&RTriggerTriggerDropdown)
-                                        ->OnValueChanged(CP_SDK::Utils::Action<int, std::u16string_view>([this](int idx, const std::u16string_view val)
+                                        ->OnValueChanged([](int idx, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.RTrigger = to_utf8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
-                                        }))
+                                        })
                                         ->AsShared()
                                 })
                             })
@@ -612,7 +649,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         CP_SDK::XUI::XUIText::Make(u"VMC Receiver Enabled"),
                         CP_SDK::XUI::XUIToggle::Make()
                             ->SetValue(Config::ConfigManager::GetVMCSettings().enableReceiver)
-                            ->OnValueChanged([](bool val)
+                            ->OnValueChanged([](const bool val)
                             {
                                 auto settings = Config::ConfigManager::GetVMCSettings();
                                 settings.enableReceiver = val;
@@ -640,7 +677,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         CP_SDK::XUI::XUIText::Make(u"VMC Sender Enabled"),
                         CP_SDK::XUI::XUIToggle::Make()
                             ->SetValue(Config::ConfigManager::GetVMCSettings().enableSender)
-                            ->OnValueChanged([](bool val)
+                            ->OnValueChanged([](const bool val)
                             {
                                 auto settings = Config::ConfigManager::GetVMCSettings();
                                 settings.enableSender = val;
@@ -728,12 +765,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(50.0f)
                         ->SetValue(Config::ConfigManager::GetIKSettings().legSwivel)
                         ->Bind(&legSwivelSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val) {
+                        ->OnValueChanged([](const float val) {
                             auto settings = Config::ConfigManager::GetIKSettings();
                             settings.legSwivel = val;
                             Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                         ->AsShared(),
                     CP_SDK::XUI::XUIText::Make(u"Arm Swivel"),
                     CP_SDK::XUI::XUISlider::Make()
@@ -742,12 +779,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(50.0f)
                         ->SetValue(Config::ConfigManager::GetIKSettings().armSwivel)
                         ->Bind(&armSwivelSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val) {
+                        ->OnValueChanged([](const float val) {
                             auto settings = Config::ConfigManager::GetIKSettings();
                             settings.armSwivel = val;
                             Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                         ->AsShared(),
                     CP_SDK::XUI::XUIText::Make(u"Body Stiffness"),
                     CP_SDK::XUI::XUISlider::Make()
@@ -756,12 +793,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(5.0f)
                         ->SetValue(Config::ConfigManager::GetIKSettings().bodyStiffness)
                         ->Bind(&bodyStiffnessSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val) {
+                        ->OnValueChanged([](const float val) {
                             auto settings = Config::ConfigManager::GetIKSettings();
                             settings.bodyStiffness = val;
                             Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                     ->AsShared(),
                 }),
                 CP_SDK::XUI::XUIVLayout::Make(
@@ -773,12 +810,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(1.0f)
                         ->SetValue(Config::ConfigManager::GetIKSettings().shoulderRotationWeight)
                         ->Bind(&shoulderRotationWeightSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val) {
+                        ->OnValueChanged([](const float val) {
                             auto settings = Config::ConfigManager::GetIKSettings();
                             settings.shoulderRotationWeight = val;
                             Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                         ->AsShared(),
                     CP_SDK::XUI::XUIText::Make(u"Wrist Twist Fix Amount"),
                     CP_SDK::XUI::XUISlider::Make()
@@ -787,12 +824,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(0.8f)
                         ->SetValue(Config::ConfigManager::GetIKSettings().wristTwistFixAmount)
                         ->Bind(&wristTwistFixSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val) {
+                        ->OnValueChanged([](const float val) {
                             auto settings = Config::ConfigManager::GetIKSettings();
                             settings.wristTwistFixAmount = val;
                             Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                         ->AsShared(),
                     CP_SDK::XUI::XUIText::Make(u"Shoulder Twist Fix Amount"),
                     CP_SDK::XUI::XUISlider::Make()
@@ -801,12 +838,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(0.8f)
                         ->SetValue(Config::ConfigManager::GetIKSettings().shoulderTwistFixAmount)
                         ->Bind(&shoulderTwistFixSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val) {
+                        ->OnValueChanged([](const float val) {
                             auto settings = Config::ConfigManager::GetIKSettings();
                             settings.shoulderTwistFixAmount = val;
                             Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                         ->AsShared()
                 }),
                 CP_SDK::XUI::XUIVLayout::Make({
@@ -817,12 +854,12 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(2.0f)
                         ->SetValue(Config::ConfigManager::GetIKSettings().groundOffset)
                         ->Bind(&groundOffsetSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val) {
+                        ->OnValueChanged([](const float val) {
                             auto settings = Config::ConfigManager::GetIKSettings();
                             settings.groundOffset = val;
                             Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                         ->AsShared()})
             }
         );
@@ -848,13 +885,13 @@ namespace VRMQavatars::UI::ViewControllers {
             ->SetMaxValue(120)
             ->SetInteger(true)
             ->SetValue(GetValue(Config::ConfigManager::GetFingerPosingSettings().grabPose, idx))
-            ->OnValueChanged(CP_SDK::Utils::Action<float>([this, idx](const float val)
+            ->OnValueChanged([idx](const float val)
             {
                 auto settings = Config::ConfigManager::GetFingerPosingSettings();
                 settings.grabPose = SetValue(settings.grabPose, idx, val);
                 Config::ConfigManager::SetFingerPosingSettings(settings);
                 AvatarManager::SetFingerPose(Config::ConfigManager::GetFingerPosingSettings().grabPose);
-            }))
+            })
             ->AsShared();
         fingerSliders[idx] = slider;
         return slider;
@@ -1022,13 +1059,13 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(0.3f)
                         ->SetValue(Config::ConfigManager::GetLocomotionSettings().footDistance)
                         ->Bind(&footDistanceSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
+                        ->OnValueChanged([](const float val)
                         {
                             auto settings = Config::ConfigManager::GetLocomotionSettings();
                             settings.footDistance = val;
                             Config::ConfigManager::SetLocomotionSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                         ->AsShared(),
 
                     CP_SDK::XUI::XUIText::Make(u"Step Threshold"),
@@ -1038,13 +1075,13 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(0.3f)
                         ->SetValue(Config::ConfigManager::GetLocomotionSettings().stepThreshold)
                         ->Bind(&stepThresholdSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
+                        ->OnValueChanged([](const float val)
                         {
                             auto settings = Config::ConfigManager::GetLocomotionSettings();
                             settings.stepThreshold = val;
                             Config::ConfigManager::SetLocomotionSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                         ->AsShared(),
                 }),
                 CP_SDK::XUI::XUIHLayout::Make({
@@ -1055,13 +1092,13 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(0.1f)
                         ->SetValue(Config::ConfigManager::GetLocomotionSettings().stepHeight)
                         ->Bind(&stepHeightSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
+                        ->OnValueChanged([](const float val)
                         {
                             auto settings = Config::ConfigManager::GetLocomotionSettings();
                             settings.stepHeight = val;
                             Config::ConfigManager::SetLocomotionSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                         ->AsShared(),
 
                     CP_SDK::XUI::XUIText::Make(u"Step Offset Z"),
@@ -1071,13 +1108,13 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->SetMaxValue(0.2f)
                         ->SetValue(Config::ConfigManager::GetLocomotionSettings().stepOffset.z)
                         ->Bind(&stepOffsetZSlider)
-                        ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
+                        ->OnValueChanged([](const float val)
                         {
                             auto settings = Config::ConfigManager::GetLocomotionSettings();
                             settings.stepOffset.z = val;
                             Config::ConfigManager::SetLocomotionSettings(settings);
                             AvatarManager::UpdateVRIK();
-                        }))
+                        })
                         ->AsShared()
                 })
             })
@@ -1131,39 +1168,40 @@ namespace VRMQavatars::UI::ViewControllers {
             }),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Size"),
-                CP_SDK::XUI::XUIText::Make(u"X"),
                 CP_SDK::XUI::XUISlider::Make()
-                    ->SetValue(Config::ConfigManager::GetMirrorSettings().size.x)
                     ->SetMinValue(1.0f)
                     ->SetMaxValue(150.0f)
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().size)
                     ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
-                        settings.size.x = val;
+                        settings.size = val;
                         Config::ConfigManager::SetMirrorSettings(settings);
                         MirrorManager::UpdateMirror();
                     })
                     ->AsShared(),
-                CP_SDK::XUI::XUIText::Make(u"Y"),
+                CP_SDK::XUI::XUIText::Make(u"Aspect"),
                 CP_SDK::XUI::XUISlider::Make()
-                    ->SetValue(Config::ConfigManager::GetMirrorSettings().size.y)
-                    ->SetMinValue(1.0f)
-                    ->SetMaxValue(150.0f)
+                    ->SetMinValue(0.25f)
+                    ->SetMaxValue(4.0f)
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().aspect)
                     ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
-                        settings.size.y = val;
+                        settings.aspect = val;
                         Config::ConfigManager::SetMirrorSettings(settings);
                         MirrorManager::UpdateMirror();
                     })
                     ->AsShared()
-            }),
+            })
+            ->SetSpacing(1.0f)
+            ->AsShared(),
             CP_SDK::XUI::XUIHLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Field Of View"),
                 CP_SDK::XUI::XUISlider::Make()
-                    ->SetValue(Config::ConfigManager::GetMirrorSettings().fov)
                     ->SetMinValue(10.f)
                     ->SetMaxValue(120.0f)
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().fov)
                     ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
@@ -1197,6 +1235,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.boneTracking = idx;
                         Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
                     })
                     ->AsShared()
             }),
@@ -1210,11 +1249,38 @@ namespace VRMQavatars::UI::ViewControllers {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.scene = idx;
                         Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
+                    })
+                    ->AsShared()
+            }),
+            CP_SDK::XUI::XUIHLayout::Make({
+                CP_SDK::XUI::XUIText::Make(u"Show Handle"),
+                CP_SDK::XUI::XUIToggle::Make()
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().showHandle)
+                    ->OnValueChanged([](const bool val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.showHandle = val;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
+                    })
+                    ->AsShared()
+            }),
+            CP_SDK::XUI::XUIHLayout::Make({
+                CP_SDK::XUI::XUIText::Make(u"Border Color"),
+                CP_SDK::XUI::XUIColorInput::Make()
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().borderColor)
+                    ->OnValueChanged([](const UnityEngine::Color val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.borderColor = val;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror();
                     })
                     ->AsShared()
             })
         })
-        ->SetSpacing(-0.2f)
+        ->SetSpacing(-1.2f)
         ->AsShared();
     }
 
@@ -1228,13 +1294,13 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUIColorInput::Make()
                     ->SetValue(Config::ConfigManager::GetLightingSettings().globalColor)
                     ->Bind(&globalColorInput)
-                    ->OnValueChanged(CP_SDK::Utils::Action<UnityEngine::Color>([](const UnityEngine::Color val)
+                    ->OnValueChanged([](const UnityEngine::Color val)
                     {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.globalColor = val;
                         Config::ConfigManager::SetLightingSettings(settings);
                         LightManager::UpdateLightValues();
-                    }))
+                    })
                     ->AsShared(),
 
                 CP_SDK::XUI::XUIText::Make(u"Light Intensity"),
@@ -1243,13 +1309,13 @@ namespace VRMQavatars::UI::ViewControllers {
                     ->SetMaxValue(2.5f)
                     ->SetValue(Config::ConfigManager::GetLightingSettings().globalLightIntensity)
                     ->Bind(&globalIntensitySlider)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
+                    ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.globalLightIntensity = val;
                         Config::ConfigManager::SetLightingSettings(settings);
                         LightManager::UpdateLightValues();
-                    }))
+                    })
                     ->AsShared(),
 
                 CP_SDK::XUI::XUIText::Make(u"Light Rotation X"),
@@ -1259,13 +1325,13 @@ namespace VRMQavatars::UI::ViewControllers {
                     ->SetMaxValue(360.0f)
                     ->SetValue(Config::ConfigManager::GetLightingSettings().lightRotation.x)
                     ->Bind(&lightRotationXSlider)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
+                    ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.lightRotation.x = val;
                         Config::ConfigManager::SetLightingSettings(settings);
                         LightManager::UpdateLightValues();
-                    }))
+                    })
                     ->AsShared(),
 
                 CP_SDK::XUI::XUIText::Make(u"Light Rotation Y"),
@@ -1275,13 +1341,13 @@ namespace VRMQavatars::UI::ViewControllers {
                     ->SetMaxValue(360.0f)
                     ->SetValue(Config::ConfigManager::GetLightingSettings().lightRotation.y)
                     ->Bind(&lightRotationYSlider)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([this](const float val)
+                    ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.lightRotation.y = val;
                         Config::ConfigManager::SetLightingSettings(settings);
                         LightManager::UpdateLightValues();
-                    }))
+                    })
                     ->AsShared()
             }),
 
@@ -1291,94 +1357,52 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUIToggle::Make()
                     ->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLighting)
                     ->Bind(&beatmapLightingToggle)
-                    ->OnValueChanged(CP_SDK::Utils::Action<bool>([](const bool val)
+                    ->OnValueChanged([](const bool val)
                     {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.beatmapLighting = val;
                         Config::ConfigManager::SetLightingSettings(settings);
                         LightManager::UpdateLightValues();
-                    }))
+                    })
                     ->AsShared(),
 
                 CP_SDK::XUI::XUIText::Make(u"BM Lighting Brightness"),
                 CP_SDK::XUI::XUISlider::Make()
                     ->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLightingBrightness)
                     ->Bind(&beatmapLightingBrightnessSlider)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
+                    ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.beatmapLightingBrightness = val;
                         Config::ConfigManager::SetLightingSettings(settings);
                         LightManager::UpdateLightValues();
-                    }))
+                    })
                     ->AsShared(),
 
                 CP_SDK::XUI::XUIText::Make(u"BM Lighting Saturation"),
                 CP_SDK::XUI::XUISlider::Make()
                     ->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLightingColorIntensity)
                     ->Bind(&beatmapLightingColorIntensitySlider)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
+                    ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.beatmapLightingColorIntensity = val;
                         Config::ConfigManager::SetLightingSettings(settings);
                         LightManager::UpdateLightValues();
-                    }))
+                    })
                     ->AsShared(),
 
                 CP_SDK::XUI::XUIText::Make(u"BM Lighting Min Brightness"),
                 CP_SDK::XUI::XUISlider::Make()
                     ->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLightingMinimumBrightness)
                     ->Bind(&beatmapLightingMinBrightnessSlider)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
+                    ->OnValueChanged([](const float val)
                     {
                         auto settings = Config::ConfigManager::GetLightingSettings();
                         settings.beatmapLightingMinimumBrightness = val;
                         Config::ConfigManager::SetLightingSettings(settings);
                         LightManager::UpdateLightValues();
-                    }))
-                    ->AsShared(),
-            }),
-
-            CP_SDK::XUI::XUIVLayout::Make(
-            {
-                CP_SDK::XUI::XUIText::Make(u"Saber Lighting"),
-                CP_SDK::XUI::XUIToggle::Make()
-                    ->SetValue(Config::ConfigManager::GetLightingSettings().saberLighting)
-                    ->Bind(&saberLightingToggle)
-                    ->OnValueChanged(CP_SDK::Utils::Action<bool>([](const bool val)
-                    {
-                        auto settings = Config::ConfigManager::GetLightingSettings();
-                        settings.saberLighting = val;
-                        Config::ConfigManager::SetLightingSettings(settings);
-                        LightManager::UpdateLightValues();
-                    }))
-                    ->AsShared(),
-
-                CP_SDK::XUI::XUIText::Make(u"Saber Lighting Range"),
-                CP_SDK::XUI::XUISlider::Make()
-                    ->SetValue(Config::ConfigManager::GetLightingSettings().saberLightingRange)
-                    ->Bind(&saberLightingRangeSlider)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
-                    {
-                        auto settings = Config::ConfigManager::GetLightingSettings();
-                        settings.saberLightingRange = val;
-                        Config::ConfigManager::SetLightingSettings(settings);
-                        LightManager::UpdateLightValues();
-                    }))
-                    ->AsShared(),
-
-                CP_SDK::XUI::XUIText::Make(u"Saber Lighting Intensity"),
-                CP_SDK::XUI::XUISlider::Make()
-                    ->SetValue(Config::ConfigManager::GetLightingSettings().saberLightingIntensity)
-                    ->Bind(&saberLightingIntensitySlider)
-                    ->OnValueChanged(CP_SDK::Utils::Action<float>([](const float val)
-                    {
-                        auto settings = Config::ConfigManager::GetLightingSettings();
-                        settings.saberLightingIntensity = val;
-                        Config::ConfigManager::SetLightingSettings(settings);
-                        LightManager::UpdateLightValues();
-                    }))
+                    })
                     ->AsShared(),
             })
         });
@@ -1393,7 +1417,6 @@ namespace VRMQavatars::UI::ViewControllers {
         beatmapLightingToggle->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLighting);
         beatmapLightingBrightnessSlider->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLightingBrightness);
         beatmapLightingMinBrightnessSlider->SetValue(Config::ConfigManager::GetLightingSettings().beatmapLightingMinimumBrightness);
-        saberLightingToggle->SetValue(Config::ConfigManager::GetLightingSettings().saberLighting);
     }
 
     std::shared_ptr<CP_SDK::XUI::XUIVLayout> AvatarSettingsViewController::BuildWindTab()
@@ -1402,7 +1425,7 @@ namespace VRMQavatars::UI::ViewControllers {
             CP_SDK::XUI::XUIText::Make(u"Enable Wind"),
             CP_SDK::XUI::XUIToggle::Make()
                 ->SetValue(Config::ConfigManager::GetWindSettings().enabled)
-                ->OnValueChanged([](bool val)
+                ->OnValueChanged([](const bool val)
                 {
                     auto settings = Config::ConfigManager::GetWindSettings();
                     settings.enabled = val;
@@ -1423,7 +1446,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 ->SetMinValue(0.1f)
                 ->SetMaxValue(7.5f)
                 ->SetValue(Config::ConfigManager::GetWindSettings().windStrength)
-                ->OnValueChanged([](float val)
+                ->OnValueChanged([](const float val)
                 {
                     auto settings = Config::ConfigManager::GetWindSettings();
                     settings.windStrength = val;
@@ -1440,7 +1463,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 ->SetMinValue(0.1f)
                 ->SetMaxValue(7.5f)
                 ->SetValue(Config::ConfigManager::GetWindSettings().timeFactor)
-                ->OnValueChanged([](float val)
+                ->OnValueChanged([](const float val)
                 {
                     auto settings = Config::ConfigManager::GetWindSettings();
                     settings.timeFactor = val;

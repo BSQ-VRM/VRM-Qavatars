@@ -1,8 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-
-#include "UnityEngine/Vector3.hpp"
+#include <sombrero/shared/FastVector3.hpp>
 
 namespace AssetLib::Structure::VRM
 {
@@ -11,7 +10,7 @@ namespace AssetLib::Structure::VRM
         std::string comment;
         float stiffiness{};
         float gravityPower{};
-        UnityEngine::Vector3 gravityDir{};
+        Sombrero::FastVector3 gravityDir{};
         float dragForce{};
         uint32_t center{};
         float hitRadius{};

@@ -40,7 +40,11 @@ namespace VRMQavatars::Config
     {
         if(AvatarManager::currentContext != nullptr)
         {
-            getAvatarConfig().Init(TransformVRMPath(AvatarManager::currentContext->fileName));
+            auto path = TransformVRMPath(AvatarManager::currentContext->fileName);
+            if(getAvatarConfig().__config_path != path)
+            {
+                getAvatarConfig().Init(path);
+            }
             return true;
         }
         return false;

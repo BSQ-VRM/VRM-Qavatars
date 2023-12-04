@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sombrero/shared/FastVector3.hpp>
+
 #include "main.hpp"
 
 #include "custom-types/shared/macros.hpp"
@@ -27,29 +29,31 @@ namespace VRMQavatars
     class VRMSpringBoneLogic
     {
         public:
-        VRMSpringBoneLogic(UnityEngine::Transform* center, UnityEngine::Transform* transform, UnityEngine::Vector3 localChildPosition)
+        VRMSpringBoneLogic(UnityEngine::Transform* center, UnityEngine::Transform* transform, Sombrero::FastVector3 localChildPosition):
+            radius(0)
         {
             trans = transform;
-            UnityEngine::Vector3 vector = trans->TransformPoint(localChildPosition);
+            const Sombrero::FastVector3 vector = trans->TransformPoint(localChildPosition);
             currentTail = ((center != nullptr) ? center->InverseTransformPoint(vector) : vector);
             prevTail = currentTail;
             localRotation = transform->get_localRotation();
             boneAxis = localChildPosition.get_normalized();
             length = localChildPosition.get_magnitude();
         }
-        UnityEngine::Quaternion ApplyRotation(UnityEngine::Vector3 nextTail);
-        void SetRadius(float radius);
-        void Update(UnityEngine::Transform* center, float stiffnessForce, float dragForce, UnityEngine::Vector3 external, std::vector<SphereColliderLogic> colliders);
-        UnityEngine::Vector3 Collision(std::vector<SphereColliderLogic> colliders, UnityEngine::Vector3 nextTail);
 
-        UnityEngine::Vector3 GetTail();
+        UnityEngine::Quaternion ApplyRotation(Sombrero::FastVector3 nextTail);
+        void SetRadius(float radius);
+        void Update(UnityEngine::Transform* center, float stiffnessForce, float dragForce, Sombrero::FastVector3 external, const std::vector<SphereColliderLogic>& colliders);
+        Sombrero::FastVector3 Collision(const std::vector<SphereColliderLogic>& colliders, Sombrero::FastVector3 nextTail);
+
+        Sombrero::FastVector3 GetTail();
         UnityEngine::Quaternion GetParentRotation();
         UnityEngine::Quaternion localRotation;
-        UnityEngine::Vector3 boneAxis;
-        UnityEngine::Vector3 currentTail;
+        Sombrero::FastVector3 boneAxis;
+        Sombrero::FastVector3 currentTail;
         float length;
-        UnityEngine::Vector3 localDir;
-        UnityEngine::Vector3 prevTail;
+        Sombrero::FastVector3 localDir;
+        Sombrero::FastVector3 prevTail;
         float radius;
         UnityEngine::Transform* trans;
     };

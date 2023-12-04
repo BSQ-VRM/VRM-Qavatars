@@ -1,4 +1,6 @@
 #pragma once
+#include <sombrero/shared/FastVector2.hpp>
+#include <sombrero/shared/FastVector3.hpp>
 #include <UnityEngine/Camera.hpp>
 #include <UnityEngine/GameObject.hpp>
 #include <UnityEngine/MeshRenderer.hpp>
@@ -10,7 +12,7 @@ namespace VRMQavatars
     public:
         static void UpdateMirror();
         static void CreateMainMirror();
-        static UnityEngine::GameObject* CreateMirror(UnityEngine::Vector3 position, UnityEngine::Vector3 rotation, UnityEngine::Vector2 size, int layer, float fov);
+        static UnityEngine::GameObject* CreateMirror(Sombrero::FastVector3 position, Sombrero::FastVector3 rotation, Sombrero::FastVector2 size, int layer, float fov);
     private:
         static SafePtrUnity<UnityEngine::GameObject> mainMirror;
         static SafePtrUnity<UnityEngine::Camera> mirrorCamera;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sombrero/shared/FastVector3.hpp>
+
 #include "main.hpp"
 
 #include "custom-types/shared/macros.hpp"
@@ -40,15 +42,15 @@ namespace VRMQavatars
 			this->axisRelativeToChildDefault = UnityEngine::Quaternion::Inverse(child->get_rotation()) * this->targetAxisWorld;
         }
 
-        UnityEngine::Vector3 twistAxis = UnityEngine::Vector3::get_right();
+        Sombrero::FastVector3 twistAxis = UnityEngine::Vector3::get_right();
 
-        UnityEngine::Vector3 axis = UnityEngine::Vector3::get_forward();
+        Sombrero::FastVector3 axis = UnityEngine::Vector3::get_forward();
 
-		UnityEngine::Vector3 axisRelativeToParentDefault;
+		Sombrero::FastVector3 axisRelativeToParentDefault;
 
-		UnityEngine::Vector3 axisRelativeToChildDefault;
+		Sombrero::FastVector3 axisRelativeToChildDefault;
 
-		UnityEngine::Vector3 axisRelativeToTargetDefault;
+		Sombrero::FastVector3 axisRelativeToTargetDefault;
 
         UnityEngine::Transform* parent;
 
@@ -56,7 +58,7 @@ namespace VRMQavatars
 
         UnityEngine::Transform* child;
 
-		UnityEngine::Vector3 targetAxisWorld;
+		Sombrero::FastVector3 targetAxisWorld;
     };
 };
 

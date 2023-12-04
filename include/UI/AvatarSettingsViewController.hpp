@@ -16,7 +16,6 @@ namespace VRMQavatars::UI::ViewControllers {
         SDK_UI_VIEW_CONTROLLER_INSTANCE();
     public:
         void DidActivate();
-        void UpdatePos();
 
         CP_SDK::Utils::MonoPtr<Modals::IndividualConfigModal> configModal;
 
@@ -34,6 +33,13 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUIVLayout> BuildWindTab();
 
         std::shared_ptr<CP_SDK::XUI::XUISlider> fixedSlider;
+
+        //Calibration
+
+        void UpdateCalibrationTab();
+
+        std::shared_ptr<CP_SDK::XUI::XUISlider> legScaleSlider;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> armScaleSlider;
 
         //IK
 

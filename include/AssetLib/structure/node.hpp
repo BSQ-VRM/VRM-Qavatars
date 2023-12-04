@@ -47,7 +47,7 @@ namespace AssetLib::Structure
         UnityEngine::GameObject* gameObject = nullptr;
 
         //LOCAL TO PARENT NODE
-        UnityEngine::Vector3 position;
+        Sombrero::FastVector3 position;
 
         std::optional<InterMeshData> mesh;
 

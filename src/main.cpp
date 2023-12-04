@@ -1,5 +1,8 @@
 #include "main.hpp"
 
+#include <conditional-dependencies/shared/main.hpp>
+#include <GlobalNamespace/Saber.hpp>
+
 #include "custom-types/shared/coroutine.hpp"
 #include "custom-types/shared/register.hpp"
 
@@ -91,7 +94,7 @@ custom_types::Helpers::Coroutine Setup() {
 
     VRMQavatars::MirrorManager::CreateMainMirror();
 
-    auto projector = UnityEngine::GameObject::New_ctor("Projector")->AddComponent<VRMQavatars::Projector*>();
+    /*auto projector = reinterpret_cast<VRMQavatars::Projector*>(UnityEngine::GameObject::New_ctor("Projector")->AddComponent(csTypeOf(VRMQavatars::Projector*)));
     projector->get_transform()->set_position({0,1,0});
     projector->get_transform()->set_position({90,0,0});
     projector->set_nearClipPlane(0.1f);
@@ -102,7 +105,7 @@ custom_types::Helpers::Coroutine Setup() {
     projector->set_orthographic(true);
     projector->set_orthographicSize(1);
     projector->set_material(data->shadowMaterial);
-    projector->set_ignoreLayers(0);
+    projector->set_ignoreLayers(0);*/
 
     co_return;
 }
@@ -135,6 +138,29 @@ MAKE_HOOK_MATCH(SceneManager_Internal_ActiveSceneChanged, &UnityEngine::SceneMan
     VRMQavatars::SceneEventManager::GameSceneChanged(nextScene);
 }
 
+MAKE_HOOK_MATCH(SaberPatch, &GlobalNamespace::Saber::ManualUpdate, void, GlobalNamespace::Saber* self) {
+    SaberPatch(self);
+    const static auto replay = CondDeps::Find<bool>("replay", "IsInReplay");
+    if(replay.has_value() && replay.value()())
+    {
+        if(VRMQavatars::AvatarManager::currentContext != nullptr)
+        {
+            auto targetManager = VRMQavatars::AvatarManager::currentContext->rootGameObject->GetComponent<VRMQavatars::TargetManager*>();
+            auto type = self->get_saberType();
+            if(type == GlobalNamespace::SaberType::SaberA)
+            {
+                targetManager->replayLeftSaberPos = self->get_transform()->get_position();
+                targetManager->replayLeftSaberRot = self->get_transform()->get_rotation();
+            }
+            if(type == GlobalNamespace::SaberType::SaberB)
+            {
+                targetManager->replayRightSaberPos = self->get_transform()->get_position();
+                targetManager->replayRightSaberRot = self->get_transform()->get_rotation();
+            }
+        }
+    }
+}
+
 extern "C" void setup(ModInfo& info) {
     info.id = MOD_ID;
     info.version = VERSION;
@@ -156,4 +182,5 @@ extern "C" void load() {
     INSTALL_HOOK(getLogger(), MainMenuUIHook);
     INSTALL_HOOK(getLogger(), MainCameraHook);
     INSTALL_HOOK(getLogger(), SceneManager_Internal_ActiveSceneChanged);
+    INSTALL_HOOK(getLogger(), SaberPatch);
 }

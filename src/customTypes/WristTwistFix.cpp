@@ -1,5 +1,7 @@
 #include "customTypes/WristTwistFix.hpp"
 
+#include <sombrero/shared/FastVector3.hpp>
+
 DEFINE_TYPE(VRMQavatars, WristTwistFix);
 
 void VRMQavatars::WristTwistFix::SetVRIK(RootMotion::FinalIK::VRIK* vrik)
@@ -86,17 +88,17 @@ void VRMQavatars::WristTwistFix::FixAxis(FixData* fixData, const float weight, c
         return;
     }
     const UnityEngine::Quaternion rotation = fixData->target->get_rotation();
-    const UnityEngine::Vector3 vector = fixData->target->get_rotation() * fixData->axisRelativeToTargetDefault;
-    const UnityEngine::Vector3 vector2 = fixData->child->get_rotation() * fixData->axisRelativeToChildDefault;
-    UnityEngine::Vector3 vector3;
+    const Sombrero::FastVector3 vector = fixData->target->get_rotation() * fixData->axisRelativeToTargetDefault;
+    const Sombrero::FastVector3 vector2 = fixData->child->get_rotation() * fixData->axisRelativeToChildDefault;
+    Sombrero::FastVector3 vector3;
     if (fixData->parent == nullptr)
     {
-        vector3 = UnityEngine::Vector3::Slerp(vector, vector2, weight);
+        vector3 = Sombrero::FastVector3::Slerp(vector, vector2, weight);
     }
     else
     {
-        const UnityEngine::Vector3 vector4 = fixData->parent->get_rotation() * fixData->axisRelativeToParentDefault;
-        vector3 = UnityEngine::Vector3::Slerp(vector, vector4, weight);
+        const Sombrero::FastVector3 vector4 = fixData->parent->get_rotation() * fixData->axisRelativeToParentDefault;
+        vector3 = Sombrero::FastVector3::Slerp(vector, vector4, weight);
     }
     vector3 = UnityEngine::Quaternion::Inverse(UnityEngine::Quaternion::LookRotation(rotation * fixData->axis, rotation * fixData->twistAxis)) * vector3;
     float num = std::atan2(vector3.x, vector3.z) * 57.29578f;

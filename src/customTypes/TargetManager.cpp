@@ -47,13 +47,13 @@ void VRMQavatars::TargetManager::Update()
     if(!intialized)
         return;
 
-    UnityEngine::Vector3 leftHandPos;
+    Sombrero::FastVector3 leftHandPos;
     UnityEngine::Quaternion leftHandRot;
 
-    UnityEngine::Vector3 rightHandPos;
+    Sombrero::FastVector3 rightHandPos;
     UnityEngine::Quaternion rightHandRot;
 
-    UnityEngine::Vector3 headPos;
+    Sombrero::FastVector3 headPos;
     UnityEngine::Quaternion headRot;
 
     const static auto replay = CondDeps::Find<bool>("replay", "IsInReplay");
@@ -64,33 +64,25 @@ void VRMQavatars::TargetManager::Update()
         headPos = camTrans->get_transform()->get_position();
         headRot = camTrans->get_transform()->get_rotation();
 
-        if(!saberManager)
-        {
-            saberManager = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::SaberManager*>().FirstOrDefault();
-        }
-        if(saberManager)
-        {
-            leftHandPos = saberManager->leftSaber->get_transform()->get_parent()->get_position();
-            leftHandRot = saberManager->leftSaber->get_transform()->get_parent()->get_rotation();
+        leftHandPos = replayLeftSaberPos;
+        leftHandRot = replayLeftSaberRot;
 
-            rightHandPos = saberManager->rightSaber->get_transform()->get_parent()->get_position();
-            rightHandRot = saberManager->rightSaber->get_transform()->get_parent()->get_rotation();
-        }
+        rightHandPos = replayRightSaberPos;
+        rightHandRot = replayRightSaberRot;
     }
     else
     {
-        saberManager = nullptr;
         const auto leftHandPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::HandLeft, GlobalNamespace::OVRPlugin::Step::Render);
-        leftHandPos = UnityEngine::Vector3(leftHandPose.Position.x, leftHandPose.Position.y, -leftHandPose.Position.z);
-        leftHandRot = UnityEngine::Quaternion(-leftHandPose.Orientation.x, -leftHandPose.Orientation.y, leftHandPose.Orientation.z, leftHandPose.Orientation.w);
+        leftHandPos = {leftHandPose.Position.x, leftHandPose.Position.y, -leftHandPose.Position.z};
+        leftHandRot = {-leftHandPose.Orientation.x, -leftHandPose.Orientation.y, leftHandPose.Orientation.z, leftHandPose.Orientation.w};
 
         const auto rightHandPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::HandRight, GlobalNamespace::OVRPlugin::Step::Render);
-        rightHandPos = UnityEngine::Vector3(rightHandPose.Position.x, rightHandPose.Position.y, -rightHandPose.Position.z);
-        rightHandRot = UnityEngine::Quaternion(-rightHandPose.Orientation.x, -rightHandPose.Orientation.y, rightHandPose.Orientation.z, rightHandPose.Orientation.w);
+        rightHandPos = {rightHandPose.Position.x, rightHandPose.Position.y, -rightHandPose.Position.z};
+        rightHandRot = {-rightHandPose.Orientation.x, -rightHandPose.Orientation.y, rightHandPose.Orientation.z, rightHandPose.Orientation.w};
 
         const auto headPose = GlobalNamespace::OVRPlugin::GetNodePose(GlobalNamespace::OVRPlugin::Node::Head, GlobalNamespace::OVRPlugin::Step::Render);
-        headPos = UnityEngine::Vector3(headPose.Position.x, headPose.Position.y, -headPose.Position.z);
-        headRot = UnityEngine::Quaternion(-headPose.Orientation.x, -headPose.Orientation.y, headPose.Orientation.z, headPose.Orientation.w);
+        headPos = {headPose.Position.x, headPose.Position.y, -headPose.Position.z};
+        headRot = {-headPose.Orientation.x, -headPose.Orientation.y, headPose.Orientation.z, headPose.Orientation.w};
     }
 
     VMC::VMCClient::SendHeadsetPos(headPos, headRot);
@@ -102,14 +94,14 @@ void VRMQavatars::TargetManager::Update()
     leftHandTarget->get_transform()->set_position(leftHandPos);
     leftHandTarget->get_transform()->set_rotation(leftHandRot);
 
-    leftHandTarget->get_transform()->Rotate(UnityEngine::Vector3(offset.rotX, offset.rotY, offset.rotZ));
-    leftHandTarget->get_transform()->Translate(UnityEngine::Vector3(offset.posX, offset.posY, offset.posZ));
+    leftHandTarget->get_transform()->Rotate({offset.rotX, offset.rotY, offset.rotZ});
+    leftHandTarget->get_transform()->Translate({offset.posX, offset.posY, offset.posZ});
 
     rightHandTarget->get_transform()->set_position(rightHandPos);
     rightHandTarget->get_transform()->set_rotation(rightHandRot);
 
-    rightHandTarget->get_transform()->Rotate(UnityEngine::Vector3(offset.rotX, offset.rotY, -offset.rotZ));
-    rightHandTarget->get_transform()->Translate(UnityEngine::Vector3(-offset.posX, offset.posY, offset.posZ));
+    rightHandTarget->get_transform()->Rotate({offset.rotX, offset.rotY, -offset.rotZ});
+    rightHandTarget->get_transform()->Translate({-offset.posX, offset.posY, offset.posZ});
 
     headTarget->get_transform()->set_position(headPos);
     headTarget->get_transform()->set_rotation(headRot);
@@ -119,11 +111,29 @@ void VRMQavatars::TargetManager::Calibrate(const std::optional<float> scale)
 {
     vrik->set_enabled(false);
 
-    get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
-    get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
-    get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
+    get_transform()->set_position({0.0f, 0.0f, 0.0f});
+    get_transform()->set_eulerAngles({0.0f, 0.0f, 0.0f});
+    get_transform()->set_localScale({1.0f, 1.0f, 1.0f});
 
     TPoseHelper::LoadPose();
+
+    auto armScale = Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue();
+    auto legScale = Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.GetValue();
+
+    const auto hips = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::Hips);
+    const auto LArm = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperArm);
+    const auto RArm = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperArm);
+    const auto LLeg = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
+    const auto RLeg = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperLeg);
+
+    LArm->set_localScale({armScale, armScale, armScale});
+    RArm->set_localScale({armScale, armScale, armScale});
+
+    LLeg->set_localScale({legScale, legScale, legScale});
+    RLeg->set_localScale({legScale, legScale, legScale});
+
+    auto localPos = hips->get_localPosition();
+    hips->set_localPosition({localPos.x, localPos.y*legScale, localPos.z});
 
     const float calibScale = scale.has_value() ? scale.value() : GetCalibrateScale();
 

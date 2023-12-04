@@ -6,7 +6,7 @@
 DECLARE_JSON_CLASS(name##_t, \
     DISCARD_EXTRA_FIELDS \
     __VA_ARGS__ \
-    private: \
+    public: \
     static inline std::string __config_path = ""; \
     static inline name##_t* __self_instance = nullptr; \
     public: \

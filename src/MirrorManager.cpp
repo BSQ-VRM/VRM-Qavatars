@@ -90,7 +90,7 @@ namespace VRMQavatars
         return tpmask;
     }
 
-    UnityEngine::GameObject* MirrorManager::CreateMirror(const UnityEngine::Vector3 position, const UnityEngine::Vector3 rotation, const UnityEngine::Vector2 size, const int layer, float fov)
+    UnityEngine::GameObject* MirrorManager::CreateMirror(const Sombrero::FastVector3 position, const Sombrero::FastVector3 rotation, const Sombrero::FastVector2 size, const int layer, const float fov)
     {
         int mask = GetMask(layer);
 
@@ -103,7 +103,7 @@ namespace VRMQavatars
 
         //Screen
 
-        const auto screen = BSML::FloatingScreen::CreateFloatingScreen(UnityEngine::Vector2(size) * 1.05f, true, position, UnityEngine::Quaternion::Euler(rotation), 0.0f, true);
+        const auto screen = BSML::FloatingScreen::CreateFloatingScreen(size * 1.05f, true, position, UnityEngine::Quaternion::Euler(rotation), 0.0f, true);
         UnityEngine::GameObject::DontDestroyOnLoad(screen->get_gameObject());
 
         rootObject->get_transform()->SetParent(screen->get_transform(), false);
@@ -159,6 +159,7 @@ namespace VRMQavatars
         quad->GetComponent<UnityEngine::MeshRenderer*>()->set_material(material);
 
         //Border
+        auto conf = Config::ConfigManager::GetMirrorSettings();
 
         const auto getBgSprite = GetBGSprite("RoundRect10BorderFade");
 
@@ -169,7 +170,7 @@ namespace VRMQavatars
             x->set_overrideSprite(nullptr);
             x->set_sprite(getBgSprite);
             x->set_material(GetBGMat("UINoGlow"));
-            x->set_color({1.0f, 1.0f, 1.0f, 1.0f});
+            x->set_color(conf.borderColor);
         }
 
         rootObject->AddComponent<Mirror*>();
@@ -205,16 +206,18 @@ namespace VRMQavatars
         const auto screen = mainMirror->get_transform()->get_parent()->get_gameObject();
         screen->set_active(conf.enabled);
 
+        const float aspect = conf.aspect;
+
         const auto screenComp = screen->GetComponent<BSML::FloatingScreen*>();
-        screenComp->set_ScreenSize(UnityEngine::Vector2(conf.size) * 1.05f);
+        screenComp->set_ScreenSize(Sombrero::FastVector2(conf.size * aspect, conf.size) * 1.05f);
         screenComp->set_ScreenPosition(conf.position);
         screenComp->set_ScreenRotation(UnityEngine::Quaternion::Euler(conf.rotation));
+        screenComp->set_ShowHandle(conf.showHandle);
 
-        mirrorRenderer->get_transform()->set_localScale({-conf.size.x, conf.size.y, 1.0f});
+        mirrorRenderer->get_transform()->set_localScale({-conf.size * aspect, conf.size, 1.0f});
         mirrorRenderer->get_transform()->set_localEulerAngles({0, 180, 0});
 
-        const float aspect = conf.size.x / conf.size.y;
-        const auto renderTex = UnityEngine::RenderTexture::New_ctor(aspect * 1080, 1080, 24, UnityEngine::RenderTextureFormat::_get_ARGB32());
+        const auto renderTex = UnityEngine::RenderTexture::New_ctor(1080*aspect, 1080, 24, UnityEngine::RenderTextureFormat::_get_ARGB32());
         mirrorCamera->set_targetTexture(renderTex);
         mirrorRenderer->get_material()->set_mainTexture(renderTex);
 
@@ -224,5 +227,11 @@ namespace VRMQavatars
         mirrorCamera->set_fieldOfView(conf.fov);
 
         mainMirror->GetComponent<Mirror*>()->Update();
+
+        for(const auto x : screen->GetComponentsInChildren<HMUI::ImageView*>()) {
+            if(!x)
+                continue;
+            x->set_color(conf.borderColor);
+        }
     }
 }

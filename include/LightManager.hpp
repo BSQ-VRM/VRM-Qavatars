@@ -39,7 +39,6 @@ namespace VRMQavatars
 		static void UpdateGameLights();
 
 		static void UpdateLightValues();
-		static void UpdateSaberLight(GlobalNamespace::SaberType type);
 
 		private:
 		static bool inGame;
@@ -48,12 +47,6 @@ namespace VRMQavatars
 
 		//Difference betwen this and global light? not sure but naluluna avatars has it equivalent just with the intensity multiplied by platform light intensity
 		static SafePtrUnity<UnityEngine::Light> _platform;
-
-		static SafePtrUnity<GlobalNamespace::SaberManager> _saberManager;
-		static SafePtr<GlobalNamespace::ColorManager> _colorManager;
-
-		static SafePtrUnity<UnityEngine::Light> _saberLight1;
-		static SafePtrUnity<UnityEngine::Light> _saberLight2;
 
 		static std::vector<SafePtrUnity<GlobalNamespace::TubeBloomPrePassLight>> lights;
 

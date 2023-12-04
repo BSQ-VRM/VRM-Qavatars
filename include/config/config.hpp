@@ -41,6 +41,13 @@ DECLARE_JSON_CLASS(Color2,
     VALUE_DEFAULT(float, b, {});
     VALUE_DEFAULT(float, a, {});
     Color2() = default;
+    Color2(float _r, float _g, float _b, float _a)
+    {
+        r = _r;
+        g = _g;
+        b = _b;
+        a = _a;
+    }
     Color2(const UnityEngine::Color& from)
     {
         r = from.r;
@@ -117,16 +124,13 @@ DECLARE_JSON_CLASS(BlendshapeSettings,
 )
 
 DECLARE_JSON_CLASS(LightingSettings,
-    VALUE(Color2, globalColor);
+    VALUE_DEFAULT(Color2, globalColor, Color2(1.0f, 1.0f, 1.0f, 1.0f));
     VALUE_DEFAULT(float, globalLightIntensity, 1.0f);
     VALUE_DEFAULT(VectorThree, lightRotation, UnityEngine::Vector3(30.0f, 240.0f, 0.0f));
     VALUE_DEFAULT(bool, beatmapLighting, true);
     VALUE_DEFAULT(float, beatmapLightingColorIntensity, 0.25f);
     VALUE_DEFAULT(float, beatmapLightingBrightness, 0.5f);
     VALUE_DEFAULT(float, beatmapLightingMinimumBrightness, 0.75f);
-    VALUE_DEFAULT(bool, saberLighting, false);
-    VALUE_DEFAULT(float, saberLightingIntensity, 2.0f);
-    VALUE_DEFAULT(float, saberLightingRange, 1.5f);
 )
 
 DECLARE_JSON_CLASS(LocomotionSettings,
@@ -167,11 +171,14 @@ DECLARE_JSON_CLASS(MirrorSettings,
     VALUE_DEFAULT(bool, enabled, true);
     VALUE_DEFAULT(VectorThree, position, VectorThree(0, 1.5f, 2));
     VALUE_DEFAULT(VectorThree, rotation, VectorThree(15.0f, 180, 0));
-    VALUE_DEFAULT(VectorTwo, size, VectorTwo(32.5f, 54.0f));
+    VALUE_DEFAULT(float, size, 10.0f);
+    VALUE_DEFAULT(float, aspect, 1.0f);
     VALUE_DEFAULT(int, layer, 0);
     VALUE_DEFAULT(int, boneTracking, 0);
     VALUE_DEFAULT(int, scene, 0);
     VALUE_DEFAULT(float, fov, 60);
+    VALUE_DEFAULT(Color2, borderColor, Color2(1.0f, 1.0f, 1.0f, 1.0f));
+    VALUE_DEFAULT(bool, showHandle, true);
 )
 
 DECLARE_JSON_CLASS(WindSettings,
@@ -229,4 +236,7 @@ DECLARE_CONFIG(AvatarConfig,
     CONFIG_VALUE(HasAgreedToTerms, bool, "HasAgreedToTerms", false);
     CONFIG_VALUE(HasCalibrated, bool, "HasCalibrated", false);
     CONFIG_VALUE(CalibratedScale, float, "CalibratedScale", 1.0f);
+
+    CONFIG_VALUE(ArmCalibrationScale, float, "ArmCalibrationScale", 1.0f);
+    CONFIG_VALUE(LegCalibrationScale, float, "LegCalibrationScale", 1.0f);
 )

@@ -15,6 +15,7 @@ namespace VRMQavatars
     public:
 
         DECLARE_INSTANCE_METHOD(void, Update);
+        DECLARE_INSTANCE_METHOD(void, Start);
 
     public:
         UnityEngine::Transform* camera;

@@ -1,8 +1,5 @@
 #pragma once
 #include <vector>
-#include <string>
-
-#include "UnityEngine/Vector3.hpp"
 #include "VRMSpringBoneColliderData.hpp"
 #include "AssetLib/structure/node.hpp"
 

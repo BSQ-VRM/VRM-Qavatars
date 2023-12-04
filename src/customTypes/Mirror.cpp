@@ -41,14 +41,12 @@ namespace VRMQavatars
             {
                 target = nullptr;
             }
+            lastTrack = mirrorSettings.boneTracking;
         }
         if(target != nullptr)
         {
             camera->set_position(target->get_position() + (target->get_forward() * 5.0f));
             camera->LookAt(target->get_position());
-            auto rot = camera->get_eulerAngles();
-            rot.z = -target->get_eulerAngles().z;
-            camera->set_eulerAngles(rot);
         }
         else
         {
@@ -60,4 +58,23 @@ namespace VRMQavatars
         const bool shouldShow = shouldShowMenu || shouldShowGame || mirrorSettings.scene == 0;
         get_transform()->get_parent()->get_gameObject()->SetActive(shouldShow);
     }
+    void Mirror::Start()
+    {
+        SceneEventManager::OnMenuEnter += [this]
+        {
+            const auto mirrorSettings = Config::ConfigManager::GetMirrorSettings();
+            const bool shouldShowMenu = mirrorSettings.scene == 1;
+            const bool shouldShow = shouldShowMenu || mirrorSettings.scene == 0;
+            get_transform()->get_parent()->get_gameObject()->SetActive(shouldShow);
+        };
+
+        SceneEventManager::OnGameEnter += [this]
+        {
+            const auto mirrorSettings = Config::ConfigManager::GetMirrorSettings();
+            const bool shouldShowGame = mirrorSettings.scene == 2;
+            const bool shouldShow = shouldShowGame || mirrorSettings.scene == 0;
+            get_transform()->get_parent()->get_gameObject()->SetActive(shouldShow);
+        };
+    }
+
 }

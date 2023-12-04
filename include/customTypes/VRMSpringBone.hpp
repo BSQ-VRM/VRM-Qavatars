@@ -30,7 +30,7 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, VRMSpringBone, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_FIELD(UnityEngine::Transform*, center);
     DECLARE_INSTANCE_FIELD(StringW, comment);
     DECLARE_INSTANCE_FIELD(float, dragForce);
-    DECLARE_INSTANCE_FIELD(UnityEngine::Vector3, gravityDir);
+    DECLARE_INSTANCE_FIELD(Sombrero::FastVector3, gravityDir);
     DECLARE_INSTANCE_FIELD(float, gravityPower);
     DECLARE_INSTANCE_FIELD(float, hitRadius);
     DECLARE_INSTANCE_FIELD(float, stiffnessForce);

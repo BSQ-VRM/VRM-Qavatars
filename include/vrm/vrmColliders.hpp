@@ -5,25 +5,25 @@
 
 struct SphereCollider
 {
-    SphereCollider(UnityEngine::Vector3 offset, float radius)
+    SphereCollider(const Sombrero::FastVector3 offset, const float radius)
     {
         this->offset = offset;
         this->radius = radius;
     }
-    UnityEngine::Vector3 offset;
+    Sombrero::FastVector3 offset;
     float radius;
 };
 
 struct SphereColliderLogic
 {
-    UnityEngine::Vector3 Position;
+    Sombrero::FastVector3 Position;
     float Radius;
 
-    SphereColliderLogic(UnityEngine::Transform* transform, SphereCollider collider)
+    SphereColliderLogic(UnityEngine::Transform* transform, const SphereCollider collider)
     {
         Position = transform->TransformPoint(collider.offset);
-        auto ls = transform->get_lossyScale();
-        auto scale = std::max(std::max(ls.x, ls.y), ls.z);
+        const auto ls = transform->get_lossyScale();
+        const auto scale = std::max(std::max(ls.x, ls.y), ls.z);
         Radius = scale * collider.radius;
     }
 };

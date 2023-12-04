@@ -70,13 +70,13 @@ void VRMQavatars::VRMSpringBone::Setup(bool force)
 
 void VRMQavatars::VRMSpringBone::SetupRecursive(UnityEngine::Transform* center, UnityEngine::Transform* parent)
 {
-    UnityEngine::Vector3 vector;
-	UnityEngine::Vector3 vector2;
+    Sombrero::FastVector3 vector;
+	Sombrero::FastVector3 vector2;
 	if (parent->get_childCount() == 0)
 	{
-		UnityEngine::Vector3 vector3 = parent->get_position() - parent->get_parent()->get_position();
-        float lossyScale = std::max(std::max(parent->get_lossyScale().x, parent->get_lossyScale().y), parent->get_lossyScale().z);
-		UnityEngine::Vector3 vector4 = parent->get_position() + vector3.get_normalized() * 0.07f * lossyScale;
+		const Sombrero::FastVector3 vector3 = parent->get_position() - parent->get_parent()->get_position();
+		const float lossyScale = std::max(std::max(parent->get_lossyScale().x, parent->get_lossyScale().y), parent->get_lossyScale().z);
+		const Sombrero::FastVector3 vector4 = parent->get_position() + vector3.get_normalized() * 0.07f * lossyScale;
 		vector = parent->get_worldToLocalMatrix().MultiplyPoint(vector4);
 		vector2 = parent->get_lossyScale();
 	}
@@ -86,15 +86,15 @@ void VRMQavatars::VRMSpringBone::SetupRecursive(UnityEngine::Transform* center, 
 		vector = transform->get_localPosition();
 		vector2 = transform->get_lossyScale();
 	}
-	verlet.push_back(new VRMQavatars::VRMSpringBoneLogic(center, parent, UnityEngine::Vector3(vector.x * vector2.x, vector.y * vector2.y, vector.z * vector2.z)));
+	verlet.push_back(new VRMSpringBoneLogic(center, parent, Sombrero::FastVector3(vector.x * vector2.x, vector.y * vector2.y, vector.z * vector2.z)));
     for (size_t i = 0; i < parent->get_childCount(); i++)
     {
-        auto child = parent->GetChild(i);
+	    const auto child = parent->GetChild(i);
         SetupRecursive(center, child);
     }
 }
 
-void VRMQavatars::VRMSpringBone::UpdateProcess(float deltaTime)
+void VRMQavatars::VRMSpringBone::UpdateProcess(const float deltaTime)
 {
     if (verlet.size() == 0)
 	{
@@ -116,7 +116,7 @@ void VRMQavatars::VRMSpringBone::UpdateProcess(float deltaTime)
 		}
 	}
 	float num = stiffnessForce * deltaTime;
-	UnityEngine::Vector3 vector = gravityDir * (gravityPower * deltaTime);
+	Sombrero::FastVector3 vector = gravityDir * (gravityPower * deltaTime);
 	for (auto& logic : verlet)
 	{
 		logic->SetRadius(hitRadius);

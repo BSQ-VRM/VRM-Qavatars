@@ -49,20 +49,17 @@ namespace VRMQavatars::UI::ViewControllers {
 
     VRMDescriptor LoadVRMDescriptor(const std::string& path) {
         VRMDescriptor descriptor;
-        getLogger().info("load1");
 
         //Load in binary to parse out VRM data
         std::ifstream binFile(vrm_path + std::string("/") + path, std::ios::binary);
-        getLogger().info("load2 %s", (vrm_path + std::string("/") + path).c_str());
         binFile.seekg(12); //Skip past the 12 byte header, to the json header
         uint32_t jsonLength;
         binFile.read(reinterpret_cast<char*>(&jsonLength), sizeof(uint32_t)); //Read the length of the json file from it's header
-        getLogger().info("load3");
         std::string jsonStr;
         jsonStr.resize(jsonLength);
         binFile.seekg(20); // Skip the rest of the JSON header to the start of the string
         binFile.read(jsonStr.data(), jsonLength); // Read out the json string
-        getLogger().info("load4");
+
         if(jsonLength < 10)
         {
             getLogger().info("SHITFUCK");
@@ -73,46 +70,41 @@ namespace VRMQavatars::UI::ViewControllers {
             descriptor.valid = false;
             return descriptor;
         }
+
         auto doc = nlohmann::json::parse(jsonStr);
-        getLogger().info("load4.5");
         auto exts = doc["extensions"];
-        getLogger().info("load5");
+
         if(exts.contains("VRM"))
         {
-            getLogger().info("load6");
             VRMC_VRM_0_0::Vrm vrm;
             from_json(exts["VRM"], vrm);
             descriptor.vrm0 = vrm;
         }
-        getLogger().info("load7");
+
         if(exts.contains("VRMC_vrm"))
         {
-            getLogger().info("load8");
             VRMC_VRM_1_0::Vrm vrm;
             from_json(exts["VRMC_vrm"], vrm);
             descriptor.vrm1 = vrm;
         }
-        getLogger().info("load9");
+
         descriptor.thumbnail = gLTFImageReader::ReadImageIndex(jsonLength, binFile, descriptor.vrm0.has_value() ? descriptor.vrm0.value().meta.texture : descriptor.vrm1.value().meta.thumbnailImage);
-        getLogger().info("load10");
         descriptor.filePath = path;
-        getLogger().info("load11");
+
         if(descriptor.vrm0.has_value())
         {
-            getLogger().info("load12");
             descriptor.name = descriptor.vrm0.value().meta.title;
             descriptor.name = is_whitespace(descriptor.name) ? path : descriptor.name;
             descriptor.author = descriptor.vrm0.value().meta.author;
         }
-        getLogger().info("load13");
+
         if(descriptor.vrm1.has_value())
         {
-            getLogger().info("load14");
             descriptor.name = descriptor.vrm1.value().meta.name;
             descriptor.name = is_whitespace(descriptor.name) ? path : descriptor.name;
             descriptor.author = descriptor.vrm1.value().meta.authors[0]; //TODO: join with comma
         }
-        getLogger().info("load15");
+
         return descriptor;
     }
 
@@ -188,14 +180,32 @@ namespace VRMQavatars::UI::ViewControllers {
         const auto targetManager = rootGameObject->GetComponent<TargetManager*>();
 
         targetManager->vrik->set_enabled(false);
-        targetManager->get_transform()->set_position(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
-        targetManager->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
-        targetManager->get_transform()->set_localScale(UnityEngine::Vector3(1.0f, 1.0f, 1.0f));
+        targetManager->get_transform()->set_position({0.0f, 0.0f, 0.0f});
+        targetManager->get_transform()->set_eulerAngles({0.0f, 0.0f, 0.0f});
+        targetManager->get_transform()->set_localScale({1.0f, 1.0f, 1.0f});
 
         targetManager->vrik->solver->Reset();
         targetManager->vrik->solver->FixTransforms();
 
         TPoseHelper::LoadPose();
+
+        auto armScale = Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue();
+        auto legScale = Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.GetValue();
+
+        const auto hips = targetManager->vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::Hips);
+        const auto LArm = targetManager->vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperArm);
+        const auto RArm = targetManager->vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperArm);
+        const auto LLeg = targetManager->vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
+        const auto RLeg = targetManager->vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperLeg);
+
+        LArm->set_localScale({armScale, armScale, armScale});
+        RArm->set_localScale({armScale, armScale, armScale});
+
+        LLeg->set_localScale({legScale, legScale, legScale});
+        RLeg->set_localScale({legScale, legScale, legScale});
+
+        auto localPos = hips->get_localPosition();
+        hips->set_localPosition({localPos.x, localPos.y*legScale, localPos.z});
 
         while(time < 4.0f)
         {
@@ -207,7 +217,7 @@ namespace VRMQavatars::UI::ViewControllers {
 
             headPos.y = 0.0f;
 
-            const float yRotation = UnityEngine::Vector2::Angle(UnityEngine::Vector2(leftHandPos.x, leftHandPos.z), UnityEngine::Vector2(rightHandPos.x, rightHandPos.z));
+            const float yRotation = Sombrero::FastVector2::Angle({leftHandPos.x, leftHandPos.z}, {rightHandPos.x, rightHandPos.z});
 
             rootGameObject->set_position(headPos);
             rootGameObject->set_rotation(UnityEngine::Quaternion::Euler(0.0f, yRotation, 0.0f));
@@ -266,7 +276,7 @@ namespace VRMQavatars::UI::ViewControllers {
 
         Refresh();
 
-        AvatarManager::OnLoad += [this]()
+        AvatarManager::OnLoad += [this]
         {
             RecalibrateButton->SetInteractable(AvatarManager::currentContext != nullptr);
         };

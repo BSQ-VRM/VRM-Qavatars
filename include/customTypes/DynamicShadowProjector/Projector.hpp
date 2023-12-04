@@ -7,11 +7,11 @@
 
 #define DEFINE_ICALL_PROP(namespace, prop, type) \
 type get_ ## prop() { \
-    static auto prop = reinterpret_cast<function_ptr_t< ## type, Projector*>>(il2cpp_functions::resolve_icall((#namespace + std::string("get_") + #prop).c_str())); \
+    static auto prop = reinterpret_cast<function_ptr_t<type, Projector*>>(il2cpp_functions::resolve_icall((#namespace + std::string("get_") + #prop).c_str())); \
     return prop(this); \
 } \
 void set_ ## prop(type value) { \
-    static auto prop = reinterpret_cast<function_ptr_t<void, Projector*, ## type>>(il2cpp_functions::resolve_icall((#namespace + std::string("set_") + #prop).c_str())); \
+    static auto prop = reinterpret_cast<function_ptr_t<void, Projector*, type>>(il2cpp_functions::resolve_icall((#namespace + std::string("set_") + #prop).c_str())); \
     prop(this, value); \
 } \
 

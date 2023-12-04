@@ -48,11 +48,15 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_FIELD(bool, intialized);
 
     public:
+
+    UnityEngine::Vector3 replayLeftSaberPos;
+    UnityEngine::Quaternion replayLeftSaberRot;
+    UnityEngine::Vector3 replayRightSaberPos;
+    UnityEngine::Quaternion replayRightSaberRot;
+
     Structs::OffsetPose offset;
 
     void Calibrate(std::optional<float> scale = std::nullopt);
 
     float GetCalibrateScale(std::optional<float> baseScale = std::nullopt);
-
-    SafePtrUnity<GlobalNamespace::SaberManager> saberManager;
 )
