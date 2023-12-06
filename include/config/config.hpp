@@ -141,11 +141,11 @@ DECLARE_JSON_CLASS(IKSettings,
 )
 
 DECLARE_JSON_CLASS(OffsetSettings,
-    VALUE_DEFAULT(OffsetPoseConfig, handOffset, OffsetPoseConfig(-0.02f, 0.04f, -0.13f, -55.0f, 0.0f, 90.0f));
+    VALUE_DEFAULT(OffsetPoseConfig, handOffset, OffsetPoseConfig(0.07f, 0.02f, -0.03f, -55.0f, 0.0f, 90.0f));
 )
 
 DECLARE_JSON_CLASS(FingerPoseSettings,
-    VALUE_DEFAULT(std::string, grabPose, "-34,-66,-80,0,-34,-66,-65,0,-37,-73,-43,0,-46,-48,-30,0,-77,-47,-20,19");
+    VALUE_DEFAULT(std::string, grabPose, "-36,-43,-74,0,-66,-66,-74,0,-56,-73,-70,0,-46,-90,-51,0,-77,-47,-20,19");
 )
 
 DECLARE_JSON_CLASS(VMCSettings,
@@ -164,6 +164,7 @@ DECLARE_JSON_CLASS(MirrorSettings,
     VALUE_DEFAULT(float, size, 10.0f);
     VALUE_DEFAULT(float, aspect, 1.0f);
     VALUE_DEFAULT(int, layer, 0);
+    VALUE_DEFAULT(bool, transparentBackground, false);
     VALUE_DEFAULT(int, boneTracking, 0);
     VALUE_DEFAULT(float, distance, 5.0f);
     VALUE_DEFAULT(int, scene, 0);

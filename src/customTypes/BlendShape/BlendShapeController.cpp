@@ -64,12 +64,12 @@ namespace VRMQavatars::BlendShape
                     {
                         break;
                     }
-                    blendShapeValues[AssetLib::Structure::VRM::Blink] = blinkValue;
+                    blendShapeValues[blendShapePresetMappings[AssetLib::Structure::VRM::Blink].idx] = blinkValue;
                     co_yield nullptr;
                 }
                 //Ensure full blink
                 blinkValue = 1.0f;
-                blendShapeValues[AssetLib::Structure::VRM::Blink] = blinkValue;
+                blendShapeValues[blendShapePresetMappings[AssetLib::Structure::VRM::Blink].idx] = blinkValue;
 
                 //Wait for duration of blink
                 co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(closeDuration));
@@ -82,12 +82,12 @@ namespace VRMQavatars::BlendShape
                     {
                         break;
                     }
-                    blendShapeValues[AssetLib::Structure::VRM::Blink] = blinkValue;
+                    blendShapeValues[blendShapePresetMappings[AssetLib::Structure::VRM::Blink].idx] = blinkValue;
                     co_yield nullptr;
                 }
                 //Ensure no more blinking
                 blinkValue = 0.0f;
-                blendShapeValues[AssetLib::Structure::VRM::Blink] = blinkValue;
+                blendShapeValues[blendShapePresetMappings[AssetLib::Structure::VRM::Blink].idx] = blinkValue;
             }
         }
         co_return;
@@ -97,44 +97,28 @@ namespace VRMQavatars::BlendShape
     {
         init = false;
         const auto animator = GetComponent<UnityEngine::Animator*>();
-        const auto headBone = animator->GetBoneTransform(UnityEngine::HumanBodyBones::Head);
-        const auto yPos = headBone->get_position().y;
 
         leftEye = animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftEye);
         rightEye = animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightEye);
 
-        ArrayW<UnityEngine::SkinnedMeshRenderer*> renderers = GetComponentsInChildren<UnityEngine::SkinnedMeshRenderer*>();
-        int maximumBlendShapeCount = -1;
-        float minimumHeadDist = 999.0f;
-        for (int i = 0; i < renderers.size(); i++)
+        const auto nodes = AvatarManager::currentContext->nodes;
+        for (int i = 0; i < nodes.size(); ++i)
         {
-            const auto rend = renderers[i];
-            maximumBlendShapeCount = std::max(maximumBlendShapeCount, rend->get_sharedMesh()->get_blendShapeCount());
-            float dist = std::abs(rend->get_bounds().get_center().y - yPos);
-            minimumHeadDist = std::min(minimumHeadDist, dist);
-        }
-
-        for (int i = 0; i < renderers.size(); i++)
-        {
-            const auto rend = renderers[i];
-            if(rend->get_sharedMesh()->get_blendShapeCount() > (static_cast<float>(maximumBlendShapeCount) * 0.8f))
+            const auto node = nodes[i];
+            if(node->mesh.has_value())
             {
-                const float dist = std::abs(rend->get_bounds().get_center().y - yPos);
-                if(std::abs(dist - minimumHeadDist) < 0.1f)
-                {
-                    //Head Mesh Renderer
-                    headRenderer = rend;
-                }
+                renderers.push_back(node->gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>());
             }
         }
 
         const auto blendShapeMaster = AvatarManager::currentContext->blendShapeMaster;
         for (auto blendShape : blendShapeMaster->groups)
         {
-            blendShapeMappings[blendShape.preset] = blendShape;
-            blendShapeValues[blendShape.preset] = 0.0f;
-            blendShapeTargetValues[blendShape.preset] = 0.0f;
-            reverseMappings[blendShape.name] = blendShape.preset;
+            blendShapePresetMappings[blendShape.preset] = blendShape;
+            blendShapeMappings[blendShape.idx] = blendShape;
+            blendShapeValues[blendShape.idx] = 0.0f;
+            blendShapeTargetValues[blendShape.idx] = 0.0f;
+            reverseMappings[blendShape.name] = blendShape.idx;
         }
         init = true;
 
@@ -270,7 +254,7 @@ namespace VRMQavatars::BlendShape
 
         for (auto const& [key, val] : blendShapeTargetValues)
         {
-            if(SkipBlendShape(key, blendShapeConfig, allowAutoBlink) && !any) continue;
+            if(SkipBlendShape(blendShapeMappings[key].preset, blendShapeConfig, allowAutoBlink) && !any) continue;
             blendShapeValues[key] = UnityEngine::Mathf::Lerp(blendShapeValues[key], val, UnityEngine::Time::get_deltaTime() * 10.0f);
         }
 
@@ -313,15 +297,27 @@ namespace VRMQavatars::BlendShape
 
     }
 
-    void BlendShapeController::SetBlendshape(const AssetLib::Structure::VRM::BlendShapePreset preset, const float value)
+    float smoothstep(float edge0, float edge1, float x, float max) {
+        // Scale, bias and saturate x to 0..1 range
+        x = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, max);
+        // Evaluate polynomial
+        return x * x * (3 - 2 * x);
+    }
+
+    void BlendShapeController::SetBlendshape(const int preset, const float value)
     {
-        auto [binds, isBinary, materialBinds, name, presetName] = blendShapeMappings[preset];
+        auto [binds, isBinary, materialBinds, name, idx, presetName] = blendShapeMappings[preset];
         for (int i = 0; i < binds.size(); i++)
         {
             const auto bind = binds[i];
-            if(headRenderer->get_sharedMesh()->get_blendShapeCount() > bind.index && headRenderer != nullptr)
+            for (int k = 0; k < renderers.size(); ++k)
             {
-                headRenderer->SetBlendShapeWeight(bind.index, value);
+                if(k == bind.mesh && renderers[k]->get_sharedMesh()->get_blendShapeCount() > bind.index)
+                {
+                    const auto weight = (bind.weight / 100.0f);
+                    const float newValue = isBinary ? smoothstep(5.0f, 10.0f, value, weight) : value * weight;
+                    renderers[k]->SetBlendShapeWeight(bind.index, newValue);
+                }
             }
         }
     }

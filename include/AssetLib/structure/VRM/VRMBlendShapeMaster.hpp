@@ -64,6 +64,7 @@ namespace AssetLib::Structure::VRM
         bool isBinary;
         std::vector<VRMBlendshapeMaterialBind> materialBinds;
         std::string name;
+        int idx;
         BlendShapePreset preset;
     };
 
@@ -107,6 +108,7 @@ namespace AssetLib::Structure::VRM
                 bSGroup.preset = PresetNameMappings[static_cast<int>(presetName)];
                 bSGroup.binds = std::vector<VRMBlendShapeBind>(binds.size());
                 bSGroup.materialBinds = std::vector<VRMBlendshapeMaterialBind>(materialValues.size());
+                bSGroup.idx = i;
 
                 for (int k = 0; k < binds.size(); ++k)
                 {

@@ -1,5 +1,8 @@
 #include "UI/components/AvatarListItem.hpp"
 
+#include <questui/shared/BeatSaberUI.hpp>
+
+#include "assets.hpp"
 #include "UI/components/AvatarListCell.hpp"
 
 #include "UnityEngine/SpriteMeshType.hpp"
@@ -18,6 +21,7 @@ namespace VRMQavatars::UI::Components {
 
     void AvatarListItem::OnShow()
     {
+        static auto cdsprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::cd_png);
         const auto l_TextListCell = GetCellAsClassOf<AvatarListCell*>();
         if (!l_TextListCell)
             return;
@@ -31,6 +35,9 @@ namespace VRMQavatars::UI::Components {
             const auto sprite = UnityEngine::Sprite::Create(texture, UnityEngine::Rect(0.0f, 0.0f, static_cast<float>(texture->get_width()), static_cast<float>(texture->get_height())), UnityEngine::Vector2(0.5f, 0.5f), 1024.0f, 1u, UnityEngine::SpriteMeshType::FullRect, UnityEngine::Vector4(0.0f, 0.0f, 0.0f, 0.0f), false);
             l_TextListCell->Image->Element()->SetSprite(sprite);
         }
+        else
+        {
+            l_TextListCell->Image->Element()->SetSprite(cdsprite);
+        }
     }
-
 }

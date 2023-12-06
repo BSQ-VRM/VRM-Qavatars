@@ -20,18 +20,19 @@ namespace VRMQavatars::BlendShape {
         DECLARE_INSTANCE_METHOD(void, Init);
         DECLARE_INSTANCE_METHOD(void, OnDestroy);
         DECLARE_INSTANCE_METHOD(void, Update);
-
-        DECLARE_INSTANCE_FIELD(UnityEngine::SkinnedMeshRenderer*, headRenderer);
-
+    public:
         custom_types::Helpers::Coroutine AutoBlinkCoroutine();
 
-        void SetBlendshape(AssetLib::Structure::VRM::BlendShapePreset preset, float value);
+        void SetBlendshape(int preset, float value);
 
-        std::map<AssetLib::Structure::VRM::BlendShapePreset, AssetLib::Structure::VRM::VRMBlendShapeGroup> blendShapeMappings;
-        std::map<std::string, AssetLib::Structure::VRM::BlendShapePreset> reverseMappings;
+        std::vector<UnityEngine::SkinnedMeshRenderer*> renderers;
 
-        std::map<AssetLib::Structure::VRM::BlendShapePreset, float> blendShapeValues;
-        std::map<AssetLib::Structure::VRM::BlendShapePreset, float> blendShapeTargetValues;
+        std::map<AssetLib::Structure::VRM::BlendShapePreset, AssetLib::Structure::VRM::VRMBlendShapeGroup> blendShapePresetMappings;
+        std::map<int, AssetLib::Structure::VRM::VRMBlendShapeGroup> blendShapeMappings;
+        std::map<std::string, int> reverseMappings;
+
+        std::map<int, float> blendShapeValues;
+        std::map<int, float> blendShapeTargetValues;
 
         bool init = false;
         bool allowAutoBlink = true;

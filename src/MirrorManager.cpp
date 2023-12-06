@@ -178,10 +178,11 @@ namespace VRMQavatars
         mainMirror = obj;
         mirrorCamera = obj->GetComponentInChildren<UnityEngine::Camera*>();
         mirrorRenderer = obj->GetComponentInChildren<UnityEngine::MeshRenderer*>();
-        mainMirror->get_transform()->get_parent()->get_gameObject()->set_active(conf.enabled);
         UpdateMirror(true);
 
         const auto screen = mainMirror->get_transform()->get_parent()->get_gameObject();
+        screen->set_active(conf.enabled);
+
         const auto screenComp = screen->GetComponent<BSML::FloatingScreen*>();
         screenComp->HandleReleased += [](BSML::FloatingScreen* screen, const BSML::FloatingScreenHandleEventArgs& args)
         {
@@ -213,13 +214,15 @@ namespace VRMQavatars
         }
         mirrorRenderer->get_transform()->set_localEulerAngles({0, 180, 0});
 
+        auto rendMat = mirrorRenderer->get_material();
         if(changedSize)
         {
             mirrorCamera->get_targetTexture()->Release();
             const auto renderTex = UnityEngine::RenderTexture::New_ctor(1080*aspect, 1080, 24, UnityEngine::RenderTextureFormat::_get_ARGB32());
             mirrorCamera->set_targetTexture(renderTex);
-            mirrorRenderer->get_material()->set_mainTexture(renderTex);
+            rendMat->set_mainTexture(renderTex);
         }
+        rendMat->SetFloat("_IgnoreAlpha", !conf.transparentBackground);
 
         const int mask = GetMask(conf.layer);
         mirrorCamera->set_cullingMask(mask);

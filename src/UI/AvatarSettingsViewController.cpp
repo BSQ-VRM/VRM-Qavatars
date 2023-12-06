@@ -74,6 +74,10 @@ namespace VRMQavatars::UI::ViewControllers {
             UpdateBlendshapesTab();
             UpdateCalibrationTab();
         });
+        if(AvatarManager::currentContext != nullptr)
+        {
+            UpdateBlendshapesTab();
+        }
     }
 
     int GetValue(const std::string& pose, const int idx)
@@ -1149,6 +1153,7 @@ namespace VRMQavatars::UI::ViewControllers {
             u"None",
             u"Waist",
             u"Face",
+            u"Chest"
         };
 
         const std::vector<std::u16string> sceneOptions = {
@@ -1256,6 +1261,17 @@ namespace VRMQavatars::UI::ViewControllers {
                     ->OnReady([layerOptions](CP_SDK::UI::Components::CDropdown* dropdown)
                     {
                         dropdown->SetValue(layerOptions[Config::ConfigManager::GetMirrorSettings().layer]);
+                    })
+                    ->AsShared(),
+                CP_SDK::XUI::XUIText::Make(u"Transparent Background"),
+                CP_SDK::XUI::XUIToggle::Make()
+                    ->SetValue(Config::ConfigManager::GetMirrorSettings().transparentBackground)
+                    ->OnValueChanged([](const bool val)
+                    {
+                        auto settings = Config::ConfigManager::GetMirrorSettings();
+                        settings.transparentBackground = val;
+                        Config::ConfigManager::SetMirrorSettings(settings);
+                        MirrorManager::UpdateMirror(false);
                     })
                     ->AsShared()
             }),

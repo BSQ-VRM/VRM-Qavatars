@@ -33,10 +33,28 @@ namespace VRMQavatars
         {
             if(mirrorSettings.boneTracking != 0)
             {
-                const UnityEngine::HumanBodyBones target = mirrorSettings.boneTracking == 1 ? UnityEngine::HumanBodyBones::Hips : UnityEngine::HumanBodyBones::Head;
+                UnityEngine::HumanBodyBones targetBone = UnityEngine::HumanBodyBones::Head;
+                switch (mirrorSettings.boneTracking)
+                {
+                    case 0:
+                        target = nullptr;
+                        break;
+                    case 1:
+                        targetBone = UnityEngine::HumanBodyBones::Hips;
+                        break;
+                    case 2:
+                        targetBone = UnityEngine::HumanBodyBones::Head;
+                        break;
+                    case 3:
+                        targetBone = UnityEngine::HumanBodyBones::Chest;
+                        break;
+                    default:
+                        target = nullptr;
+                        break;
+                }
                 if(AvatarManager::currentContext != nullptr)
                 {
-                    this->target = AvatarManager::currentContext->rootGameObject->GetComponent<UnityEngine::Animator*>()->GetBoneTransform(target);
+                    target = AvatarManager::currentContext->rootGameObject->GetComponent<UnityEngine::Animator*>()->GetBoneTransform(targetBone);
                 }
             }
             else
@@ -49,7 +67,7 @@ namespace VRMQavatars
         if(target)
         {
             //Head bone is placed more at the neck
-            const auto newPosition = target->get_position() + (target->get_up()*0.1f);
+            const auto newPosition = target->get_position() + (target->get_up()*0.125f);
             camera->set_position(newPosition + (target->get_forward() * mirrorSettings.distance));
             camera->LookAt(newPosition);
         }

@@ -47,7 +47,7 @@ namespace VRMQavatars {
 
     custom_types::Helpers::Coroutine LightManager::Grab()
     {
-        co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(0.15f));
+        co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(0.1f));
         lights.clear();
 
         //Find Front Lights First
@@ -149,6 +149,7 @@ namespace VRMQavatars {
 
         SceneEventManager::OnGameEnter += CP_SDK::Utils::Action<>([]
         {
+            CP_SDK::Unity::MTCoroutineStarter::Start(Grab());
             inGame = true;
             UpdateLightValues();
         });
@@ -188,6 +189,19 @@ namespace VRMQavatars {
             setType(_platform.ptr(), UnityEngine::LightType::Directional);
 
             UnityEngine::GameObject::DontDestroyOnLoad(_platform.ptr()->get_gameObject());
+        }
+
+        //Saber Light (R)
+        {
+            auto _saberLight2 = UnityEngine::GameObject::New_ctor("Saber (R) Lighting")->AddComponent<UnityEngine::Light*>();
+            static auto setType = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, UnityEngine::LightType>("UnityEngine.Light::set_type");
+            setType(_saberLight2, UnityEngine::LightType::Point);
+            UnityEngine::GameObject::DontDestroyOnLoad(_saberLight2->get_gameObject());
+            _saberLight2->get_transform()->set_position({0.0f, 1.5f, 0.0f});
+            _saberLight2->set_color({1.0f, 1.0f, 1.0f, 1.0f});
+            _saberLight2->set_intensity(100.0f);
+            static auto setRange = il2cpp_utils::resolve_icall<void, UnityEngine::Light*, float>("UnityEngine.Light::set_range");
+            setRange(_saberLight2, 100.0f);
         }
 
         UpdateLightValues();
