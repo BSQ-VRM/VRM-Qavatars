@@ -265,33 +265,6 @@ namespace VRMQavatars::UI::ViewControllers {
         overrideSwitchButton->SetSprite(toUse);
     }
 
-    int GetValue(const std::string& pose, const int idx)
-    {
-        const auto values = HandController::ParseRotations(HandController::SplitPose(pose));
-        if(values.size()-1 < idx) return 0;
-        return values[idx];
-    }
-
-    std::string SetValue(const std::string& pose, const int idx, const int value)
-    {
-        auto values = HandController::ParseRotations(HandController::SplitPose(pose));
-        values[idx] = value;
-
-        auto newValues = std::vector<std::string>(values.size());
-        for (int i = 0; i < values.size(); ++i)
-        {
-            newValues[i] = std::to_string(values[i]);
-        }
-
-        const char* const delim = ",";
-
-        std::ostringstream imploded;
-        std::copy(newValues.begin(), newValues.end(),
-                   std::ostream_iterator<std::string>(imploded, delim));
-
-        return imploded.str();
-    }
-
     std::shared_ptr<CP_SDK::XUI::XUIVLayout> AvatarSettingsViewController::BuildCalibrationTab()
     {
         std::vector<std::u16string> calibOptions = { u"Match Armspans", u"Match Heights", u"Fixed" };
@@ -1114,11 +1087,11 @@ namespace VRMQavatars::UI::ViewControllers {
             ->SetMinValue(-120)
             ->SetMaxValue(120)
             ->SetInteger(true)
-            ->SetValue(GetValue(Config::ConfigManager::GetFingerPoseSettings().grabPose, idx))
+            ->SetValue(HandController::GetValue(Config::ConfigManager::GetFingerPoseSettings().grabPose, idx))
             ->OnValueChanged([idx](const float val)
             {
                 auto settings = Config::ConfigManager::GetFingerPoseSettings();
-                settings.grabPose = SetValue(settings.grabPose, idx, val);
+                settings.grabPose = HandController::SetValue(settings.grabPose, idx, val);
                 Config::ConfigManager::SetFingerPoseSettings(settings);
                 AvatarManager::SetFingerPose(Config::ConfigManager::GetFingerPoseSettings().grabPose);
             })
@@ -1273,7 +1246,7 @@ namespace VRMQavatars::UI::ViewControllers {
         for (int i = 0; i < fingerSliders.size(); ++i)
         {
             const auto slider = fingerSliders[i];
-            slider->SetValue(GetValue(Config::ConfigManager::GetFingerPoseSettings().grabPose, i));
+            slider->SetValue(HandController::GetValue(Config::ConfigManager::GetFingerPoseSettings().grabPose, i));
         }
     }
 

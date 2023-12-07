@@ -141,6 +141,10 @@ namespace VRMQavatars
 
         targetManager->intialized = true;
         vrik->set_enabled(true);
+
+        for (const auto springBone : rootGameObject->GetComponentsInChildren<VRMSpringBone*>())
+            springBone->set_enabled(true);
+
         if(rootGameObject->GetComponent<WristTwistFix*>() == nullptr)
             rootGameObject->get_gameObject()->AddComponent<WristTwistFix*>()->SetVRIK(vrik);
     }

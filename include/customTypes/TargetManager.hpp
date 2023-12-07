@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chatplex-sdk-bs/shared/CP_SDK/Utils/Il2cpp.hpp>
+
 #include "main.hpp"
 
 #include "custom-types/shared/macros.hpp"
@@ -30,22 +32,32 @@
 
 #include "utils/structs/OffsetPose.hpp"
 
-DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
-    DECLARE_INSTANCE_METHOD(void, Initialize);
-    DECLARE_INSTANCE_METHOD(void, Update);
+namespace VRMQavatars
+{
+    class TargetManager : public UnityEngine::MonoBehaviour
+    {
+        CP_SDK_IL2CPP_INHERIT("VRMQavatars", TargetManager, UnityEngine::MonoBehaviour);
+        CP_SDK_IL2CPP_DECLARE_CTOR(TargetManager);
+        CP_SDK_IL2CPP_DECLARE_DTOR_MONOBEHAVIOUR(TargetManager);
+    public:
+        DECLARE_INSTANCE_METHOD(void, Initialize);
+        DECLARE_INSTANCE_METHOD(void, Update);
+    public:
+        UnityEngine::GameObject* vmcTracker;
 
-    DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, vmcTracker);
+        UnityEngine::GameObject* leftHandTarget;
+        UnityEngine::GameObject* rightHandTarget;
+        UnityEngine::GameObject* headTarget;
+        RootMotion::FinalIK::VRIK* vrik;
+        bool intialized;
 
-    DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, leftHandTarget);
-    DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, rightHandTarget);
-    DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, headTarget);
-    DECLARE_INSTANCE_FIELD(RootMotion::FinalIK::VRIK*, vrik);
-    DECLARE_INSTANCE_FIELD(bool, intialized);
+        UnityEngine::Vector3 replayLeftSaberPos;
+        UnityEngine::Quaternion replayLeftSaberRot;
+        UnityEngine::Vector3 replayRightSaberPos;
+        UnityEngine::Quaternion replayRightSaberRot;
 
-    UnityEngine::Vector3 replayLeftSaberPos;
-    UnityEngine::Quaternion replayLeftSaberRot;
-    UnityEngine::Vector3 replayRightSaberPos;
-    UnityEngine::Quaternion replayRightSaberRot;
+        Structs::OffsetPose offset;
+    };
+}
 
-    Structs::OffsetPose offset;
-)
+CP_SDK_IL2CPP_INHERIT_HELPERS(VRMQavatars::TargetManager);

@@ -2,10 +2,39 @@
 #include "main.hpp"
 #include <string_view>
 
+#include "MirrorManager.hpp"
+#include "AssetLib/modelImporter.hpp"
 #include "UnityEngine/AssetBundleCreateRequest.hpp"
 #include "UnityEngine/AssetBundleRequest.hpp"
 
-custom_types::Helpers::Coroutine VRM::ShaderLoader::LoadBundleFromFileAsync(std::string_view filePath, UnityEngine::AssetBundle*& out)
+namespace VRMQavatars
+{
+    #define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
+
+    custom_types::Helpers::Coroutine ShaderLoader::LoadBund()
+    {
+        UnityEngine::AssetBundle* ass;
+        co_yield coro(ShaderLoader::LoadBundleFromFileAsync("sdcard/ModData/shaders.sbund", ass));
+        if (!ass)
+        {
+            getLogger().error("Couldn't load bundle from file, dieing...");
+            co_return;
+        }
+        VRMData::ShaderSO* data = nullptr;
+        co_yield coro(ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", csTypeOf(VRMData::ShaderSO*), reinterpret_cast<UnityEngine::Object*&>(data)));
+        if(data == nullptr)
+        {
+            getLogger().error("Couldn't load asset...");
+            co_return;
+        }
+        ass->Unload(false);
+        AssetLib::ModelImporter::mtoon = data->mToonShader;
+        MirrorManager::mirrorShader = data->mirrorShader;
+
+        co_return;
+    }
+
+    custom_types::Helpers::Coroutine ShaderLoader::LoadBundleFromFileAsync(std::string_view filePath, UnityEngine::AssetBundle*& out)
     {
         if (!fileexists(filePath))
         {
@@ -23,28 +52,15 @@ custom_types::Helpers::Coroutine VRM::ShaderLoader::LoadBundleFromFileAsync(std:
         co_return;
     }
 
-custom_types::Helpers::Coroutine VRM::ShaderLoader::LoadBundleFromMemoryAsync(ArrayW<uint8_t> bytes, UnityEngine::AssetBundle*& out)
-{
-    using AssetBundle_LoadFromMemoryAsync = function_ptr_t<UnityEngine::AssetBundleCreateRequest*, ArrayW<uint8_t>, int>;
-    static AssetBundle_LoadFromMemoryAsync assetBundle_LoadFromMemoryAsync = reinterpret_cast<AssetBundle_LoadFromMemoryAsync>(il2cpp_functions::resolve_icall("UnityEngine.AssetBundle::LoadFromMemoryAsync_Internal"));
+    custom_types::Helpers::Coroutine ShaderLoader::LoadAssetFromBundleAsync(UnityEngine::AssetBundle* bundle, std::string_view name, System::Type* type, UnityEngine::Object*& out)
+    {
+        auto req = bundle->LoadAssetAsync(name, type);
+        req->set_allowSceneActivation(true);
+        while (!req->get_isDone())
+            co_yield nullptr;
 
-    auto req = assetBundle_LoadFromMemoryAsync(bytes, 0);
-    req->set_allowSceneActivation(true);
-    while (!req->get_isDone())
-        co_yield nullptr;
+        out = req->get_asset();
 
-    out = req->get_assetBundle();
-    co_return;
-}
-
-custom_types::Helpers::Coroutine VRM::ShaderLoader::LoadAssetFromBundleAsync(UnityEngine::AssetBundle* bundle, std::string_view name, System::Type* type, UnityEngine::Object*& out)
-{
-    auto req = bundle->LoadAssetAsync(name, type);
-    req->set_allowSceneActivation(true);
-    while (!req->get_isDone())
-        co_yield nullptr;
-
-    out = req->get_asset();
-
-    co_return;
+        co_return;
+    }
 }

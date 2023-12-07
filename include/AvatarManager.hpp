@@ -15,10 +15,13 @@
 #include "RootMotion/FinalIK/VRIK.hpp"
 #include "RootMotion/FinalIK/IKSolverVR.hpp"
 #include "RootMotion/FinalIK/IKSolverVR_Leg.hpp"
+
 namespace VRMQavatars {
     class AvatarManager
     {
         public:
+        static void StartupLoad();
+
         static AssetLib::Structure::VRM::VRMModelContext* currentContext;
         static void SetContext(AssetLib::Structure::VRM::VRMModelContext* context);
 

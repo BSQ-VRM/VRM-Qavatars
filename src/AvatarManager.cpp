@@ -2,17 +2,40 @@
 
 #include <HandController.hpp>
 
+#include "CalibrationHelper.hpp"
 #include "TPoseHelper.hpp"
+#include "AssetLib/modelImporter.hpp"
 #include "config/ConfigManager.hpp"
 #include "customTypes/VRMWind.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
 
 namespace VRMQavatars {
+
     AssetLib::Structure::VRM::VRMModelContext* AvatarManager::currentContext;
     RootMotion::FinalIK::VRIK* AvatarManager::vrik;
     TargetManager* AvatarManager::targetManager;
     WristTwistFix* AvatarManager::_wristTwistFix;
     CP_SDK::Utils::Event<> AvatarManager::OnLoad;
+
+    void AvatarManager::StartupLoad()
+    {
+        auto& globcon = Config::ConfigManager::GetGlobalConfig();
+        if(globcon.hasSelected.GetValue())
+        {
+            const auto path = globcon.selectedFileName.GetValue();
+            getLogger().info("%s", (std::string(vrm_path) + "/" + path).c_str());
+            if(fileexists(std::string(vrm_path) + "/" + path))
+            {
+                const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
+                SetContext(ctx);
+                auto& avaConfig = Config::ConfigManager::GetAvatarConfig();
+                if(avaConfig.HasCalibrated.GetValue())
+                {
+                    CalibrationHelper::Calibrate(avaConfig.CalibratedScale.GetValue());
+                }
+            }
+        }
+    }
 
     void AvatarManager::SetContext(AssetLib::Structure::VRM::VRMModelContext* context)
     {

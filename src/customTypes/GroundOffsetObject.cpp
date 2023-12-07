@@ -18,7 +18,7 @@ namespace VRMQavatars
 
     }
 
-    bool approx(float v1, float v2)
+    bool approx(const float v1, const float v2)
     {
         return std::abs(v1 - v2) < 0.01f;
     }

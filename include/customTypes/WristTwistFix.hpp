@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chatplex-sdk-bs/shared/CP_SDK/Utils/Il2cpp.hpp>
 #include <sombrero/shared/FastVector3.hpp>
 
 #include "main.hpp"
@@ -60,24 +61,32 @@ namespace VRMQavatars
 
 		Sombrero::FastVector3 targetAxisWorld;
     };
-};
 
-DECLARE_CLASS_CODEGEN(VRMQavatars, WristTwistFix, UnityEngine::MonoBehaviour,
-    DECLARE_INSTANCE_METHOD(void, SetVRIK, RootMotion::FinalIK::VRIK* vrik);
-    DECLARE_INSTANCE_METHOD(void, OnPostUpdate);
-    DECLARE_INSTANCE_METHOD(float, Dampen, float v, float min, float max);
+	class WristTwistFix : public UnityEngine::MonoBehaviour
+	{
+		CP_SDK_IL2CPP_INHERIT("VRMQavatars", WristTwistFix, UnityEngine::MonoBehaviour);
+		CP_SDK_IL2CPP_DECLARE_CTOR(WristTwistFix);
+		CP_SDK_IL2CPP_DECLARE_DTOR_MONOBEHAVIOUR(WristTwistFix);
 
-    DECLARE_INSTANCE_FIELD_DEFAULT(float, elbowWeight, 0.5f);
-    DECLARE_INSTANCE_FIELD_DEFAULT(float, shoulderWeight, 0.2f);
-    DECLARE_INSTANCE_FIELD_DEFAULT(float, wristWeight, 0.4f);
-    DECLARE_INSTANCE_FIELD(RootMotion::FinalIK::VRIK*, _vrik);
-    DECLARE_INSTANCE_FIELD(RootMotion::FinalIK::IKSolver::UpdateDelegate*, postUpdateDelegate);
-    public:
-    FixData* _leftWristFixData;
-    FixData* _rightWristFixData;
-    FixData* _leftShoulderFixData;
-    FixData* _rightShoulderFixData;
-    FixData* _leftElbowFixData;
-    FixData* _rightElbowFixData;
-    void FixAxis(VRMQavatars::FixData* fixData, float weight, float dampen);
-)
+		DECLARE_INSTANCE_METHOD(void, SetVRIK, RootMotion::FinalIK::VRIK* vrik);
+		DECLARE_INSTANCE_METHOD(void, OnPostUpdate);
+		float Dampen(float v, float min, float max);
+
+		float elbowWeight = 0.5f;
+		float shoulderWeight = 0.2f;
+		float wristWeight = 0.4f;
+
+		RootMotion::FinalIK::VRIK* _vrik;
+		RootMotion::FinalIK::IKSolver::UpdateDelegate* postUpdateDelegate;
+	public:
+		FixData* _leftWristFixData;
+		FixData* _rightWristFixData;
+		FixData* _leftShoulderFixData;
+		FixData* _rightShoulderFixData;
+		FixData* _leftElbowFixData;
+		FixData* _rightElbowFixData;
+		void FixAxis(FixData* fixData, float weight, float dampen);
+	};
+}
+
+CP_SDK_IL2CPP_INHERIT_HELPERS(VRMQavatars::WristTwistFix);

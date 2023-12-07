@@ -24,8 +24,8 @@ namespace VRMQavatars {
 			bool Bone3;
 		};
 
-        static UnityEngine::Mesh* CreateErasedMesh(UnityEngine::Mesh* src, std::vector<int> eraseBoneIndices);
-        static int ExcludeTriangles(ArrayW<int>& triangles, ArrayW<UnityEngine::BoneWeight> bws, std::vector<int> exclude);
-        static ExcludeBoneIndex AreBoneContains(std::vector<int>& exclude, int boneIndex0, int boneIndex1, int boneIndex2, int boneIndex3);
+        static UnityEngine::Mesh* CreateErasedMesh(UnityEngine::Mesh* src, const std::vector<int>& eraseBoneIndices);
+        static int ExcludeTriangles(ArrayW<int>& triangles, ArrayW<UnityEngine::BoneWeight> bws, const std::vector<int>& exclude);
+        static ExcludeBoneIndex AreBoneContains(const std::vector<int>& exclude, int boneIndex0, int boneIndex1, int boneIndex2, int boneIndex3);
     };
 };

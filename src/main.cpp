@@ -38,56 +38,18 @@ Logger& getLogger() {
     return *logger;
 }
 
-#define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
-
 custom_types::Helpers::Coroutine Setup() {
 
-    if(!AssetLib::ModelImporter::mtoon)
+    if(!VRM::ShaderLoader::shaders)
     {
         UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
 
-        getLogger().info("Starting Load!");
-
-        UnityEngine::AssetBundle* ass;
-        co_yield coro(VRM::ShaderLoader::LoadBundleFromFileAsync("sdcard/ModData/shaders.sbund", ass));
-        if (!ass)
-        {
-            getLogger().error("Couldn't load bundle from file, dieing...");
-            co_return;
-        }
-
-        VRMData::ShaderSO* data = nullptr;
-        co_yield coro(VRM::ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", csTypeOf(VRMData::ShaderSO*), reinterpret_cast<UnityEngine::Object*&>(data)));
-        if(data == nullptr)
-        {
-            getLogger().error("Couldn't load asset...");
-            co_return;
-        }
-
-        ass->Unload(false);
-
-        AssetLib::ModelImporter::mtoon = data->mToonShader;
-        VRMQavatars::MirrorManager::mirrorShader = data->mirrorShader;
+        co_yield custom_types::Helpers::CoroutineHelper::New(VRM::ShaderLoader::LoadBund());
     }
 
     if(VRMQavatars::AvatarManager::currentContext == nullptr)
     {
-        auto& globcon = VRMQavatars::Config::ConfigManager::GetGlobalConfig();
-        if(globcon.hasSelected.GetValue())
-        {
-            const auto path = globcon.selectedFileName.GetValue();
-            getLogger().info("%s", (std::string(vrm_path) + "/" + path).c_str());
-            if(fileexists(std::string(vrm_path) + "/" + path))
-            {
-                const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
-                VRMQavatars::AvatarManager::SetContext(ctx);
-                auto& avaConfig = VRMQavatars::Config::ConfigManager::GetAvatarConfig();
-                if(avaConfig.HasCalibrated.GetValue())
-                {
-                    VRMQavatars::CalibrationHelper::Calibrate(avaConfig.CalibratedScale.GetValue());
-                }
-            }
-        }
+        VRMQavatars::AvatarManager::StartupLoad();
     }
 
     VRMQavatars::VMC::VMCClient::InitClient();
@@ -97,19 +59,6 @@ custom_types::Helpers::Coroutine Setup() {
 
     VRMQavatars::MirrorManager::CreateMainMirror();
 
-    /*auto projector = reinterpret_cast<VRMQavatars::Projector*>(UnityEngine::GameObject::New_ctor("Projector")->AddComponent(csTypeOf(VRMQavatars::Projector*)));
-    projector->get_transform()->set_position({0,1,0});
-    projector->get_transform()->set_position({90,0,0});
-    projector->set_nearClipPlane(0.1f);
-    projector->set_farClipPlane(100.0f);
-    projector->set_fieldOfView(60.0f);
-    projector->set_fieldOfView(60.0f);
-    projector->set_aspectRatio(1.0f);
-    projector->set_orthographic(true);
-    projector->set_orthographicSize(1);
-    projector->set_material(data->shadowMaterial);
-    projector->set_ignoreLayers(0);*/
-
     co_return;
 }
  
@@ -117,7 +66,7 @@ MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidAct
     MainMenuUIHook(self, firstActivation, addedToHierarchy, screenSystemEnabling);
     if(firstActivation)
     {
-        self->StartCoroutine(coro(Setup()));
+        self->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(Setup()));
     }
 }
 
@@ -148,8 +97,8 @@ MAKE_HOOK_MATCH(SaberPatch, &GlobalNamespace::Saber::ManualUpdate, void, GlobalN
     {
         if(VRMQavatars::AvatarManager::currentContext != nullptr)
         {
-            auto targetManager = VRMQavatars::AvatarManager::currentContext->rootGameObject->GetComponent<VRMQavatars::TargetManager*>();
-            auto type = self->get_saberType();
+            const auto targetManager = VRMQavatars::AvatarManager::currentContext->rootGameObject->GetComponent<VRMQavatars::TargetManager*>();
+            const auto type = self->get_saberType();
             if(type == GlobalNamespace::SaberType::SaberA)
             {
                 targetManager->replayLeftSaberPos = self->get_transform()->get_position();
