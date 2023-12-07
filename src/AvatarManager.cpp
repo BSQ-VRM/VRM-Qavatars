@@ -9,8 +9,8 @@
 
 namespace VRMQavatars {
     AssetLib::Structure::VRM::VRMModelContext* AvatarManager::currentContext;
-    RootMotion::FinalIK::VRIK* AvatarManager::_vrik;
-    TargetManager* AvatarManager::_targetManager;
+    RootMotion::FinalIK::VRIK* AvatarManager::vrik;
+    TargetManager* AvatarManager::targetManager;
     WristTwistFix* AvatarManager::_wristTwistFix;
     CP_SDK::Utils::Event<> AvatarManager::OnLoad;
 
@@ -31,8 +31,8 @@ namespace VRMQavatars {
 
         const auto root = currentContext->rootGameObject;
 
-        _vrik = root->GetComponent<RootMotion::FinalIK::VRIK*>();
-        _targetManager = root->GetComponent<TargetManager*>();
+        vrik = root->GetComponent<RootMotion::FinalIK::VRIK*>();
+        targetManager = root->GetComponent<TargetManager*>();
         _wristTwistFix = root->GetComponent<WristTwistFix*>();
 
         const auto blendShapeMaster = root->GetComponent<BlendShape::BlendShapeController*>();
@@ -45,8 +45,8 @@ namespace VRMQavatars {
 
         TPoseHelper::SavePose(root->get_transform());
 
-        auto windSettings = Config::ConfigManager::GetWindSettings();
-        auto wind = root->AddComponent<VRMWind*>();
+        const auto windSettings = Config::ConfigManager::GetWindSettings();
+        const auto wind = root->AddComponent<VRMWind*>();
         wind->enableWind = windSettings.enabled;
         if(!windSettings.enabled)
         {
@@ -60,8 +60,8 @@ namespace VRMQavatars {
 
     void AvatarManager::SetHandOffset(const Structs::OffsetPose& pose)
     {
-        if(_targetManager == nullptr) return;
-        _targetManager->offset = pose;
+        if(targetManager == nullptr) return;
+        targetManager->offset = pose;
     }
 
     UnityEngine::Keyframe Frame(const float time, const float val)
@@ -84,44 +84,39 @@ namespace VRMQavatars {
 
     void AvatarManager::UpdateVRIK()
     {
-        if(_vrik == nullptr || !_vrik->solver->initiated) return;
+        if(vrik == nullptr || !vrik->solver->initiated) return;
         auto ikSettings = Config::ConfigManager::GetIKSettings();
         auto locoSettings = Config::ConfigManager::GetLocomotionSettings();
-        _vrik->solver->spine->bodyPosStiffness = ikSettings.bodyStiffness;
-        _vrik->solver->spine->headClampWeight = 0.38f;
-        _vrik->solver->spine->maintainPelvisPosition = 0.0f;
-        _vrik->solver->spine->minHeadHeight = -10.0f;
+        vrik->solver->spine->bodyPosStiffness = ikSettings.bodyStiffness;
+        vrik->solver->spine->headClampWeight = 0.38f;
+        vrik->solver->spine->maintainPelvisPosition = 0.0f;
+        vrik->solver->spine->minHeadHeight = -10.0f;
 
-        _vrik->solver->spine->maxRootAngle = 0.0f;
+        vrik->solver->spine->maxRootAngle = 0.0f;
 
-        _vrik->solver->leftArm->swivelOffset = ikSettings.armSwivel;
-        _vrik->solver->rightArm->swivelOffset = ikSettings.armSwivel * -1.0f;
-        _vrik->solver->leftLeg->swivelOffset = ikSettings.legSwivel;
-        _vrik->solver->rightLeg->swivelOffset = ikSettings.legSwivel * -1.0f;
+        vrik->solver->leftArm->swivelOffset = ikSettings.armSwivel;
+        vrik->solver->rightArm->swivelOffset = ikSettings.armSwivel * -1.0f;
+        vrik->solver->leftLeg->swivelOffset = ikSettings.legSwivel;
+        vrik->solver->rightLeg->swivelOffset = ikSettings.legSwivel * -1.0f;
 
-        _vrik->solver->locomotion->footDistance = locoSettings.footDistance;
-        _vrik->solver->locomotion->stepThreshold = locoSettings.stepThreshold;
-        _vrik->solver->locomotion->angleThreshold = 45.0f;
-        _vrik->solver->locomotion->maxVelocity = 0.04f;
-        _vrik->solver->locomotion->velocityFactor = 0.04f;
-        _vrik->solver->locomotion->rootSpeed = 40.0f;
-        _vrik->solver->locomotion->stepSpeed = 2.0f;
+        vrik->solver->locomotion->footDistance = locoSettings.footDistance;
+        vrik->solver->locomotion->stepThreshold = locoSettings.stepThreshold;
+        vrik->solver->locomotion->angleThreshold = 45.0f;
+        vrik->solver->locomotion->maxVelocity = 0.04f;
+        vrik->solver->locomotion->velocityFactor = 0.04f;
+        vrik->solver->locomotion->rootSpeed = 40.0f;
+        vrik->solver->locomotion->stepSpeed = 2.0f;
 
-        _vrik->solver->locomotion->offset = locoSettings.stepOffset;
+        vrik->solver->locomotion->offset = locoSettings.stepOffset;
 
-        _vrik->solver->locomotion->stepHeight->set_keys(StepHeightFrames(locoSettings.stepHeight));
-        _vrik->solver->locomotion->heelHeight->set_keys(StepHeightFrames(locoSettings.stepHeight + 0.1f));
-        _vrik->UpdateSolverExternal();
-    }
-
-    void AvatarManager::CalibrateScale(float value)
-    {
-        _targetManager->Calibrate(value);
+        vrik->solver->locomotion->stepHeight->set_keys(StepHeightFrames(locoSettings.stepHeight));
+        vrik->solver->locomotion->heelHeight->set_keys(StepHeightFrames(locoSettings.stepHeight + 0.1f));
+        vrik->UpdateSolverExternal();
     }
 
     void AvatarManager::SetFingerPose(const std::string& value)
     {
-        if(_vrik == nullptr) return;
-        HandController::ApplyHandPose(_vrik->animator, value);
+        if(vrik == nullptr) return;
+        HandController::ApplyHandPose(vrik->animator, value);
     }
 }

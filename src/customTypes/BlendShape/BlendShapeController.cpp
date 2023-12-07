@@ -178,7 +178,7 @@ namespace VRMQavatars::BlendShape
             any |= val; //If any is false and the output is true then set it
 
             const auto preset = reverseMappings[triggerConfig.A];
-            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+            blendShapeTargetValues[preset] = val ? 1.0f : blendShapeTargetValues[preset];
         }
 
         if(triggerConfig.B != "None")
@@ -187,7 +187,7 @@ namespace VRMQavatars::BlendShape
             any |= val; //If any is false and the output is true then set it
 
             const auto preset = reverseMappings[triggerConfig.B];
-            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+            blendShapeTargetValues[preset] = val ? 1.0f : blendShapeTargetValues[preset];
         }
 
         if(triggerConfig.X != "None")
@@ -196,7 +196,7 @@ namespace VRMQavatars::BlendShape
             any |= val; //If any is false and the output is true then set it
 
             const auto preset = reverseMappings[triggerConfig.X];
-            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+            blendShapeTargetValues[preset] = val ? 1.0f : blendShapeTargetValues[preset];
         }
 
         if(triggerConfig.Y != "None")
@@ -205,7 +205,7 @@ namespace VRMQavatars::BlendShape
             any |= val; //If any is false and the output is true then set it
 
             const auto preset = reverseMappings[triggerConfig.Y];
-            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+            blendShapeTargetValues[preset] = val ? 1.0f : blendShapeTargetValues[preset];
         }
 
         if(triggerConfig.LGrip != "None")
@@ -214,7 +214,7 @@ namespace VRMQavatars::BlendShape
             any |= val; //If any is false and the output is true then set it
 
             const auto preset = reverseMappings[triggerConfig.LGrip];
-            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+            blendShapeTargetValues[preset] = val ? 1.0f : blendShapeTargetValues[preset];
         }
 
         if(triggerConfig.RGrip != "None")
@@ -223,7 +223,7 @@ namespace VRMQavatars::BlendShape
             any |= val; //If any is false and the output is true then set it
 
             const auto preset = reverseMappings[triggerConfig.RGrip];
-            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+            blendShapeTargetValues[preset] = val ? 1.0f : blendShapeTargetValues[preset];
         }
 
         if(triggerConfig.LTrigger != "None")
@@ -232,7 +232,7 @@ namespace VRMQavatars::BlendShape
             any |= val; //If any is false and the output is true then set it
 
             const auto preset = reverseMappings[triggerConfig.LTrigger];
-            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+            blendShapeTargetValues[preset] = val ? 1.0f : blendShapeTargetValues[preset];
         }
 
         if(triggerConfig.RTrigger != "None")
@@ -241,12 +241,12 @@ namespace VRMQavatars::BlendShape
             any |= val; //If any is false and the output is true then set it
 
             const auto preset = reverseMappings[triggerConfig.RTrigger];
-            blendShapeTargetValues[preset] = val ? 1.0f : 0.0f;
+            blendShapeTargetValues[preset] = val ? 1.0f : blendShapeTargetValues[preset];
         }
 
         const auto neutralPreset = reverseMappings[blendShapeConfig.neutralExpression];
 
-        blendShapeTargetValues[neutralPreset] = any ? 0.0f : 1.0f;
+        blendShapeTargetValues[neutralPreset] = any ? blendShapeTargetValues[neutralPreset] : 1.0f;
 
         allowAutoBlink = !any;
 

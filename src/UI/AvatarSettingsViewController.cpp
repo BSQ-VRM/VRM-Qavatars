@@ -35,35 +35,139 @@ namespace VRMQavatars::UI::ViewControllers {
 
     void AvatarSettingsViewController::DidActivate()
     {
-        configModal = CreateModal<Modals::IndividualConfigModal>();
+        globalSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::global_png);
+        avatarSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::avatar_png);
+
         CP_SDK::XUI::Templates::FullRectLayout({
             CP_SDK::XUI::XUIHLayout::Make({
-                CP_SDK::XUI::XUIIconButton::Make(QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::settings_png))
-                    ->OnClick(CP_SDK::Utils::Action<>([this]
+                CP_SDK::XUI::XUIIconButton::Make(globalSprite)
+                    ->Bind(&overrideSwitchButton)
+                    ->OnClick([this]
                     {
-                        ShowModal(configModal.Ptr());
-                    }))
+                        if(selectedTab == "Offset")
+                        {
+                            const auto override = Config::ConfigManager::GetOffsetOverride();
+                            if(AvatarManager::currentContext != nullptr)
+                            {
+                                Config::ConfigManager::GetAvatarConfig().OverrideOffsetSettings.SetValue(!override);
+                            }
+                            AvatarManager::SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
+                            UpdateHandOffsetsTab();
+                            goto refresh;
+                        }
+                        if(selectedTab == "Finger Posing")
+                        {
+                            const auto override = Config::ConfigManager::GetFingerPoseOverride();
+                            if(AvatarManager::currentContext != nullptr)
+                            {
+                                Config::ConfigManager::GetAvatarConfig().OverrideFingerPoseSettings.SetValue(!override);
+                            }
+                            AvatarManager::SetFingerPose(Config::ConfigManager::GetFingerPoseSettings().grabPose);
+                            UpdateFingerPosingTab();
+                            goto refresh;
+                        }
+                        if(selectedTab == "BlendShapes")
+                        {
+                            const auto override = Config::ConfigManager::GetBlendshapeOverride();
+                            if(AvatarManager::currentContext != nullptr)
+                            {
+                                Config::ConfigManager::GetAvatarConfig().OverrideBlendshapeSettings.SetValue(!override);
+                            }
+                            UpdateBlendshapesTab();
+                            goto refresh;
+                        }
+                        if(selectedTab == "IK")
+                        {
+                            const auto override = Config::ConfigManager::GetIKOverride();
+                            if(AvatarManager::currentContext != nullptr)
+                            {
+                                Config::ConfigManager::GetAvatarConfig().OverrideIKSettings.SetValue(!override);
+                            }
+                            AvatarManager::UpdateVRIK();
+                            UpdateIKTab();
+                            goto refresh;
+                        }
+                        if(selectedTab == "Locomotion")
+                        {
+                            const auto override = Config::ConfigManager::GetLocomotionOverride();
+                            if(AvatarManager::currentContext != nullptr)
+                            {
+                                Config::ConfigManager::GetAvatarConfig().OverrideLocomotionSettings.SetValue(!override);
+                            }
+                            AvatarManager::UpdateVRIK();
+                            UpdateLocomotionTab();
+                            goto refresh;
+                        }
+                        if(selectedTab == "Lighting")
+                        {
+                            const auto override = Config::ConfigManager::GetLightingOverride();
+                            if(AvatarManager::currentContext != nullptr)
+                            {
+                                Config::ConfigManager::GetAvatarConfig().OverrideLightingSettings.SetValue(!override);
+                            }
+                            LightManager::UpdateLightValues();
+                            UpdateLightingTab();
+                        }
+                        refresh:
+                        RefreshButton();
+                    })
                     ->SetWidth(6.0f)
                     ->SetHeight(6.0f)
                     ->AsShared(),
-
                 CP_SDK::XUI::Templates::TitleBar(u"Avatar Settings")->AsShared(),
             }),
             CP_SDK::XUI::XUITabControl::Make(u"Settings Tab", {
                 { u"Calibration", BuildCalibrationTab() },
-                { u"Hands", CP_SDK::XUI::XUITabControl::Make({ { u"Offset", BuildHandOffsetsTab() }, { u"Finger Posing", BuildFingerPoseSettingsTab() } })},
+                { u"Hands", CP_SDK::XUI::XUITabControl::Make(
+                    {
+                        { u"Offset", BuildHandOffsetsTab() }, { u"Finger Posing", BuildFingerPoseSettingsTab() }
+                    })
+                    ->OnActiveChanged([this](const int tab)
+                    {
+                        const std::vector opts = { "Offset", "Finger Posing" };
+                        handTab = opts[tab];
+                        selectedTab = handTab;
+                        TabSelected();
+                    })
+                    ->AsShared()
+                },
                 { u"Face", BuildFaceTab() },
                 { u"VMC", BuildVMCTab() },
-                { u"VRIK", CP_SDK::XUI::XUITabControl::Make({ { u"IK", BuildIKSettingsTab() }, { u"Locomotion", BuildLocoSettingsTab() } })},
+                { u"VRIK", CP_SDK::XUI::XUITabControl::Make(
+                    {
+                        { u"IK", BuildIKSettingsTab() }, { u"Locomotion", BuildLocoSettingsTab() }
+                    })
+                    ->OnActiveChanged([this](const int tab)
+                    {
+                        const std::vector opts = { "IK", "Locomotion" };
+                        ikTab = opts[tab];
+                        selectedTab = ikTab;
+                        TabSelected();
+                    })
+                    ->AsShared()
+                },
                 { u"Mirror", BuildMirrorTab() },
                 { u"Lighting", BuildLightingTab() },
                 { u"Wind", BuildWindTab() },
             })
+            ->OnActiveChanged([this](const int tab)
+            {
+                const std::vector opts = { "Calibration", "Hands", "Face", "VMC", "VRIK", "Mirror", "Lighting", "Wind" };
+                selectedTab = opts[tab];
+                if(selectedTab == "Hands")
+                    selectedTab = handTab;
+                if(selectedTab == "VRIK")
+                    selectedTab = ikTab;
+                if(selectedTab == "Face")
+                    selectedTab = faceTab;
+                TabSelected();
+            })
+            ->AsShared()
         })
         ->SetSpacing(1.0f)
         ->BuildUI(get_transform());
 
-        AvatarManager::OnLoad += CP_SDK::Utils::Action<>([this]
+        AvatarManager::OnLoad += [this]
         {
             UpdateIKTab();
             UpdateHandOffsetsTab();
@@ -73,11 +177,92 @@ namespace VRMQavatars::UI::ViewControllers {
             UpdateLightingTab();
             UpdateBlendshapesTab();
             UpdateCalibrationTab();
-        });
+        };
         if(AvatarManager::currentContext != nullptr)
         {
             UpdateBlendshapesTab();
+            UpdateControllerTriggerTab();
         }
+        RefreshButton();
+    }
+
+    void AvatarSettingsViewController::TabSelected()
+    {
+        RefreshButton();
+    }
+
+    void AvatarSettingsViewController::RefreshButton()
+    {
+        bool interactable = false;
+        UnityEngine::Sprite* toUse = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::none_png);
+        if(selectedTab == "Calibration")
+        {
+            interactable = false;
+            toUse = globalSprite;
+            goto setButton;
+        }
+        if(selectedTab == "Offset")
+        {
+            interactable = true;
+            toUse = Config::ConfigManager::GetOffsetOverride() ? avatarSprite : globalSprite;
+            goto setButton;
+        }
+        if(selectedTab == "Finger Posing")
+        {
+            interactable = true;
+            toUse = Config::ConfigManager::GetFingerPoseOverride() ? avatarSprite : globalSprite;
+            goto setButton;
+        }
+        if(selectedTab == "BlendShapes")
+        {
+            interactable = true;
+            toUse = Config::ConfigManager::GetBlendshapeOverride() ? avatarSprite : globalSprite;
+            goto setButton;
+        }
+        if(selectedTab == "Controller Expressions")
+        {
+            interactable = false;
+            toUse = avatarSprite;
+            goto setButton;
+        }
+        if(selectedTab == "VMC")
+        {
+            interactable = false;
+            toUse = globalSprite;
+            goto setButton;
+        }
+        if(selectedTab == "IK")
+        {
+            interactable = true;
+            toUse = Config::ConfigManager::GetIKOverride() ? avatarSprite : globalSprite;
+            goto setButton;
+        }
+        if(selectedTab == "Locomotion")
+        {
+            interactable = true;
+            toUse = Config::ConfigManager::GetLocomotionOverride() ? avatarSprite : globalSprite;
+            goto setButton;
+        }
+        if(selectedTab == "Lighting")
+        {
+            interactable = true;
+            toUse = Config::ConfigManager::GetLightingOverride() ? avatarSprite : globalSprite;
+            goto setButton;
+        }
+        if(selectedTab == "Mirror")
+        {
+            interactable = false;
+            toUse = globalSprite;
+            goto setButton;
+        }
+        if(selectedTab == "Wind")
+        {
+            interactable = false;
+            toUse = globalSprite;
+        }
+        setButton:
+        overrideSwitchButton->SetInteractable(interactable);
+        overrideSwitchButton->SetSprite(toUse);
     }
 
     int GetValue(const std::string& pose, const int idx)
@@ -191,7 +376,6 @@ namespace VRMQavatars::UI::ViewControllers {
         legScaleSlider->SetValue(AvatarManager::currentContext != nullptr ? Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.GetValue() : 1.0f);
         legScaleSlider->SetInteractable(AvatarManager::currentContext != nullptr);
     }
-
 
     std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildHandOffsetsTab()
     {
@@ -368,9 +552,10 @@ namespace VRMQavatars::UI::ViewControllers {
                                 CP_SDK::XUI::XUIText::Make(u"Default Facial Expression"),
                                 CP_SDK::XUI::XUIDropdown::Make()
                                     ->Bind(&neutralExpressionDropdown)
-                                    ->OnValueChanged([](int idx, const std::u16string_view val) {
+                                    ->SetInteractable(AvatarManager::currentContext != nullptr)
+                                    ->OnValueChanged([](const int idx, const std::u16string_view val) {
                                         auto settings = Config::ConfigManager::GetBlendshapeSettings();
-                                        settings.neutralExpression = to_utf8(val);
+                                        settings.neutralExpression = to_utf8(val) + "_" + std::to_string(idx);
                                         Config::ConfigManager::SetBlendshapeSettings(settings);
                                     })
                                     ->AsShared(),
@@ -435,7 +620,8 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Y (Left controller top)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&YTriggerDropdown)
-                                        ->OnValueChanged([](int idx, const std::u16string_view val)
+                                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                                        ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.Y = to_utf8(val);
@@ -448,7 +634,8 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"X (Left controller bottom)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&XTriggerDropdown)
-                                        ->OnValueChanged([](int idx, const std::u16string_view val)
+                                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                                        ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.X = to_utf8(val);
@@ -461,7 +648,8 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"B (Right controller top)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&BTriggerDropdown)
-                                        ->OnValueChanged([](int idx, const std::u16string_view val)
+                                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                                        ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.B = to_utf8(val);
@@ -474,7 +662,8 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"A (Right controller bottom)"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&ATriggerDropdown)
-                                        ->OnValueChanged([](int idx, const std::u16string_view val)
+                                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                                        ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.A = to_utf8(val);
@@ -492,7 +681,8 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Left Grip"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&LGripTriggerDropdown)
-                                        ->OnValueChanged([](int idx, const std::u16string_view val)
+                                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                                        ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.LGrip = to_utf8(val);
@@ -505,7 +695,8 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Right Grip"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&RGripTriggerDropdown)
-                                        ->OnValueChanged([](int idx, const std::u16string_view val)
+                                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                                        ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.RGrip = to_utf8(val);
@@ -518,7 +709,8 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Left Trigger"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&LTriggerTriggerDropdown)
-                                        ->OnValueChanged([](int idx, const std::u16string_view val)
+                                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                                        ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.LTrigger = to_utf8(val);
@@ -531,7 +723,8 @@ namespace VRMQavatars::UI::ViewControllers {
                                     CP_SDK::XUI::XUIText::Make(u"Right Trigger"),
                                     CP_SDK::XUI::XUIDropdown::Make({ u"None" })
                                         ->Bind(&RTriggerTriggerDropdown)
-                                        ->OnValueChanged([](int idx, const std::u16string_view val)
+                                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                                        ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
                                             settings.RTrigger = to_utf8(val);
@@ -594,7 +787,15 @@ namespace VRMQavatars::UI::ViewControllers {
                     ->SetSpacing(-5.0f)
                     ->AsShared()
                 }*/
-            });
+            })
+            ->OnActiveChanged([this](const int tab)
+            {
+                const std::vector opts = { "BlendShapes", "Controller Expressions" };
+                faceTab = opts[tab];
+                selectedTab = faceTab;
+                TabSelected();
+            })
+            ->AsShared();
     }
 
     void AvatarSettingsViewController::UpdateControllerTriggerTab()
@@ -609,22 +810,39 @@ namespace VRMQavatars::UI::ViewControllers {
             }
         }
         const auto config = Config::ConfigManager::GetControllerTriggerSettings();
+
         ATriggerDropdown->SetOptions(options);
         ATriggerDropdown->SetValue(to_utf16(config.A));
+        ATriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
+
         BTriggerDropdown->SetOptions(options);
         BTriggerDropdown->SetValue(to_utf16(config.B));
+        BTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
+
         XTriggerDropdown->SetOptions(options);
         XTriggerDropdown->SetValue(to_utf16(config.X));
+        XTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
+
         YTriggerDropdown->SetOptions(options);
         YTriggerDropdown->SetValue(to_utf16(config.Y));
+        YTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
+
         LGripTriggerDropdown->SetOptions(options);
         LGripTriggerDropdown->SetValue(to_utf16(config.LGrip));
+        LGripTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
+
         RGripTriggerDropdown->SetOptions(options);
         RGripTriggerDropdown->SetValue(to_utf16(config.RGrip));
+        RGripTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
+
         LTriggerTriggerDropdown->SetOptions(options);
         LTriggerTriggerDropdown->SetValue(to_utf16(config.LTrigger));
+        LTriggerTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
+
         RTriggerTriggerDropdown->SetOptions(options);
         RTriggerTriggerDropdown->SetValue(to_utf16(config.RTrigger));
+        RTriggerTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
+
     }
 
     void AvatarSettingsViewController::UpdateBlendshapesTab()
@@ -638,12 +856,15 @@ namespace VRMQavatars::UI::ViewControllers {
                 options.push_back(to_utf16(val.name));
             }
         }
+
         const auto config = Config::ConfigManager::GetBlendshapeSettings();
         autoBlinkToggle->SetValue(config.autoBlink);
         autoBlinkWaitSlider->SetValue(config.waitTime);
         mockEyeMovementToggle->SetValue(config.mockEyeMovement);
+
         neutralExpressionDropdown->SetOptions(options);
         neutralExpressionDropdown->SetValue(to_utf16(config.neutralExpression));
+        neutralExpressionDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
     }
 
     std::shared_ptr<CP_SDK::XUI::XUITabControl> AvatarSettingsViewController::BuildVMCTab()
@@ -1178,7 +1399,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUIText::Make(u"Scene"),
                 CP_SDK::XUI::XUIDropdown::Make()
                     ->SetOptions(sceneOptions)
-                    ->OnValueChanged([](const int idx, std::u16string_view val)
+                    ->OnValueChanged([](const int idx, std::u16string_view)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.scene = idx;
@@ -1251,7 +1472,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUIText::Make(u"Displayed Layer"),
                 CP_SDK::XUI::XUIDropdown::Make()
                     ->SetOptions(layerOptions)
-                    ->OnValueChanged([](const int idx, std::u16string_view val)
+                    ->OnValueChanged([](const int idx, std::u16string_view)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.layer = idx;
@@ -1279,7 +1500,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 CP_SDK::XUI::XUIText::Make(u"Tracked Bone"),
                 CP_SDK::XUI::XUIDropdown::Make()
                     ->SetOptions(trackOptions)
-                    ->OnValueChanged([](const int idx, std::u16string_view val)
+                    ->OnValueChanged([](const int idx, std::u16string_view)
                     {
                         auto settings = Config::ConfigManager::GetMirrorSettings();
                         settings.boneTracking = idx;

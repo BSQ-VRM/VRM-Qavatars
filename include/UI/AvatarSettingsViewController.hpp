@@ -6,7 +6,6 @@
 
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/XUI.hpp"
 #include "chatplex-sdk-bs/shared/CP_SDK_BS/UI/ViewController.hpp"
-#include "modals/IndividualConfigModal.hpp"
 
 namespace VRMQavatars::UI::ViewControllers {
     class AvatarSettingsViewController : public CP_SDK_BS::UI::ViewController {
@@ -17,7 +16,17 @@ namespace VRMQavatars::UI::ViewControllers {
     public:
         void DidActivate();
 
-        CP_SDK::Utils::MonoPtr<Modals::IndividualConfigModal> configModal;
+        std::string ikTab = "IK";
+        std::string handTab = "Offset";
+        std::string faceTab = "BlendShapes";
+
+        std::string selectedTab = "Calibration";
+        void TabSelected();
+
+        UnityEngine::Sprite* globalSprite;
+        UnityEngine::Sprite* avatarSprite;
+        std::shared_ptr<CP_SDK::XUI::XUIIconButton> overrideSwitchButton;
+        void RefreshButton();
 
         std::shared_ptr<CP_SDK::XUI::XUISlider> BuildFingerSlider(int finger);
 
@@ -32,12 +41,11 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUIHLayout> BuildLightingTab();
         std::shared_ptr<CP_SDK::XUI::XUIVLayout> BuildWindTab();
 
-        std::shared_ptr<CP_SDK::XUI::XUISlider> fixedSlider;
-
         //Calibration
 
         void UpdateCalibrationTab();
 
+        std::shared_ptr<CP_SDK::XUI::XUISlider> fixedSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> legScaleSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> armScaleSlider;
 

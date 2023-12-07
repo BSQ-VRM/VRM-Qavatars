@@ -173,6 +173,7 @@ namespace VRMQavatars
 
     void MirrorManager::CreateMainMirror()
     {
+        if(mainMirror) return;
         auto conf = Config::ConfigManager::GetMirrorSettings();
         const auto obj = CreateMirror(conf.position, conf.rotation, {conf.size * conf.aspect, conf.size}, conf.aspect, conf.layer, conf.fov);
         mainMirror = obj;

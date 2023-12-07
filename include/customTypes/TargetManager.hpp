@@ -34,11 +34,6 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_METHOD(void, Initialize);
     DECLARE_INSTANCE_METHOD(void, Update);
 
-    DECLARE_INSTANCE_METHOD(UnityEngine::Vector3, GetPosition, GlobalNamespace::OVRPlugin::Node node);
-    DECLARE_INSTANCE_METHOD(float, GetAvatarHandHeight);
-    DECLARE_INSTANCE_METHOD(float, GetAvatarHandDist);
-    DECLARE_INSTANCE_METHOD(float, GetBase);
-
     DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, vmcTracker);
 
     DECLARE_INSTANCE_FIELD(UnityEngine::GameObject*, leftHandTarget);
@@ -47,16 +42,10 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, TargetManager, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_FIELD(RootMotion::FinalIK::VRIK*, vrik);
     DECLARE_INSTANCE_FIELD(bool, intialized);
 
-    public:
-
     UnityEngine::Vector3 replayLeftSaberPos;
     UnityEngine::Quaternion replayLeftSaberRot;
     UnityEngine::Vector3 replayRightSaberPos;
     UnityEngine::Quaternion replayRightSaberRot;
 
     Structs::OffsetPose offset;
-
-    void Calibrate(std::optional<float> scale = std::nullopt);
-
-    float GetCalibrateScale(std::optional<float> baseScale = std::nullopt);
 )

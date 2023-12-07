@@ -8,7 +8,13 @@
     static void Set ## type ## Settings(const type ## Settings& settings); \
     static void Reset ## type ## Settings(); \
 
-#define MANAGER_ITEM_CPP_AVATAR(type) \
+#define MANAGER_ITEM_OVERRIDE(type) \
+    static bool Get ## type ## Override() \
+    { \
+        return InitAvatarConfig() ? getAvatarConfig().Override ## type ## Settings.GetValue() : false; \
+    } \
+
+#define MANAGER_ITEM_CPP_BOTH(type) \
     type ## Settings ConfigManager::Get ## type ## Settings() \
     { \
         if(InitAvatarConfig()) \
@@ -45,18 +51,42 @@
         getGlobalConfig(). type .SetValue(getGlobalConfig(). type .GetDefaultValue()); \
     } \
 
-#define MANAGER_ITEM_CPP_GLOBAL(type) \
+#define MANAGER_ITEM_CPP_AVATAR(type) \
     type ## Settings ConfigManager::Get ## type ## Settings() \
     { \
-        return getGlobalConfig(). type .GetValue(); \
+        if(InitAvatarConfig()) \
+        { \
+            return getAvatarConfig(). type .GetValue(); \
+        } \
+        return type ## Settings(); \
     } \
     void ConfigManager::Set ## type ## Settings(const type ## Settings& settings) \
     { \
-        getGlobalConfig(). type .SetValue(settings); \
+        if(InitAvatarConfig()) \
+        { \
+            getAvatarConfig(). type .SetValue(settings); \
+        } \
     } \
     void ConfigManager::Reset ## type ## Settings() \
     { \
-        getGlobalConfig(). type .SetValue(getGlobalConfig(). type .GetDefaultValue()); \
+        if(InitAvatarConfig()) \
+        { \
+            getAvatarConfig(). type .SetValue(getAvatarConfig(). type .GetDefaultValue()); \
+        } \
+    } \
+
+#define MANAGER_ITEM_CPP_GLOBAL(type) \
+    type ## Settings ConfigManager::Get ## type ## Settings() \
+    { \
+    return getGlobalConfig(). type .GetValue(); \
+    } \
+    void ConfigManager::Set ## type ## Settings(const type ## Settings& settings) \
+    { \
+    getGlobalConfig(). type .SetValue(settings); \
+    } \
+    void ConfigManager::Reset ## type ## Settings() \
+    { \
+    getGlobalConfig(). type .SetValue(getGlobalConfig(). type .GetDefaultValue()); \
     } \
 
 namespace VRMQavatars::Config
@@ -80,22 +110,27 @@ namespace VRMQavatars::Config
         //IK
 
         MANAGER_ITEM(IK)
+        MANAGER_ITEM_OVERRIDE(IK)
 
         //Offsets
 
         MANAGER_ITEM(Offset)
+        MANAGER_ITEM_OVERRIDE(Offset)
 
         //Finger Posing
 
         MANAGER_ITEM(FingerPose)
+        MANAGER_ITEM_OVERRIDE(FingerPose)
 
         //Lighting
 
         MANAGER_ITEM(Lighting)
+        MANAGER_ITEM_OVERRIDE(Lighting)
 
         //Locomotion
 
         MANAGER_ITEM(Locomotion)
+        MANAGER_ITEM_OVERRIDE(Locomotion)
 
         //Controller Triggers
 
@@ -104,6 +139,7 @@ namespace VRMQavatars::Config
         //BlendShapes
 
         MANAGER_ITEM(Blendshape)
+        MANAGER_ITEM_OVERRIDE(Blendshape)
 
         //VMC
 

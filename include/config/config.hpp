@@ -107,9 +107,9 @@ DECLARE_JSON_CLASS(ControllerTriggerSettings,
 )
 
 DECLARE_JSON_CLASS(BlendshapeSettings,
-    VALUE_DEFAULT(bool, autoBlink, false);
-    VALUE_DEFAULT(float, waitTime, 4.0f);
-    VALUE_DEFAULT(bool, mockEyeMovement, false);
+    VALUE_DEFAULT(bool, autoBlink, true);
+    VALUE_DEFAULT(float, waitTime, 2.0f);
+    VALUE_DEFAULT(bool, mockEyeMovement, true);
     VALUE_DEFAULT(std::string, neutralExpression, "Neutral");
 )
 
@@ -191,7 +191,6 @@ DECLARE_CONFIG(GlobalConfig,
     CONFIG_VALUE(IK, IKSettings, "IK", {});
     CONFIG_VALUE(Locomotion, LocomotionSettings, "Locomotion", {});
     CONFIG_VALUE(Lighting, LightingSettings, "Lighting", {});
-    CONFIG_VALUE(ControllerTrigger, ControllerTriggerSettings, "Controller Triggers", {});
     CONFIG_VALUE(Blendshape, BlendshapeSettings, "Blendshapes", {});
 
     //Global
@@ -223,7 +222,6 @@ DECLARE_CONFIG(AvatarConfig,
     CONFIG_VALUE(OverrideIKSettings, bool, "OverrideIKSettings", true);
     CONFIG_VALUE(OverrideLocomotionSettings, bool, "OverrideLocoSettings", true);
     CONFIG_VALUE(OverrideLightingSettings, bool, "OverrideLightingSettings", false);
-    CONFIG_VALUE(OverrideControllerTriggerSettings, bool, "OverrideControllerTriggerSettings", true);
     CONFIG_VALUE(OverrideBlendshapeSettings, bool, "OverrideBlendshapeSettings", true);
 
     CONFIG_VALUE(HasAgreedToTerms, bool, "HasAgreedToTerms", false);

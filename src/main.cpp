@@ -3,6 +3,7 @@
 #include <conditional-dependencies/shared/main.hpp>
 #include <GlobalNamespace/Saber.hpp>
 
+#include "CalibrationHelper.hpp"
 #include "custom-types/shared/coroutine.hpp"
 #include "custom-types/shared/register.hpp"
 
@@ -41,30 +42,33 @@ Logger& getLogger() {
 
 custom_types::Helpers::Coroutine Setup() {
 
-    UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
-
-    getLogger().info("Starting Load!");
-
-    UnityEngine::AssetBundle* ass;
-    co_yield coro(VRM::ShaderLoader::LoadBundleFromFileAsync("sdcard/ModData/shaders.sbund", ass));
-    if (!ass)
+    if(!AssetLib::ModelImporter::mtoon)
     {
-        getLogger().error("Couldn't load bundle from file, dieing...");
-        co_return;
+        UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
+
+        getLogger().info("Starting Load!");
+
+        UnityEngine::AssetBundle* ass;
+        co_yield coro(VRM::ShaderLoader::LoadBundleFromFileAsync("sdcard/ModData/shaders.sbund", ass));
+        if (!ass)
+        {
+            getLogger().error("Couldn't load bundle from file, dieing...");
+            co_return;
+        }
+
+        VRMData::ShaderSO* data = nullptr;
+        co_yield coro(VRM::ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", csTypeOf(VRMData::ShaderSO*), reinterpret_cast<UnityEngine::Object*&>(data)));
+        if(data == nullptr)
+        {
+            getLogger().error("Couldn't load asset...");
+            co_return;
+        }
+
+        ass->Unload(false);
+
+        AssetLib::ModelImporter::mtoon = data->mToonShader;
+        VRMQavatars::MirrorManager::mirrorShader = data->mirrorShader;
     }
-
-    VRMData::ShaderSO* data = nullptr;
-    co_yield coro(VRM::ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", csTypeOf(VRMData::ShaderSO*), reinterpret_cast<UnityEngine::Object*&>(data)));
-    if(data == nullptr)
-    {
-        getLogger().error("Couldn't load asset...");
-        co_return;
-    }
-
-    ass->Unload(false);
-
-    AssetLib::ModelImporter::mtoon = data->mToonShader;
-    VRMQavatars::MirrorManager::mirrorShader = data->mirrorShader;
 
     if(VRMQavatars::AvatarManager::currentContext == nullptr)
     {
@@ -80,7 +84,7 @@ custom_types::Helpers::Coroutine Setup() {
                 auto& avaConfig = VRMQavatars::Config::ConfigManager::GetAvatarConfig();
                 if(avaConfig.HasCalibrated.GetValue())
                 {
-                    VRMQavatars::AvatarManager::CalibrateScale(avaConfig.CalibratedScale.GetValue());
+                    VRMQavatars::CalibrationHelper::Calibrate(avaConfig.CalibratedScale.GetValue());
                 }
             }
         }

@@ -24,8 +24,6 @@ namespace VRMQavatars {
 
         static void SetHandOffset(const Structs::OffsetPose& pose);
 
-        static void CalibrateScale(float value);
-
         static void UpdateVRIK();
 
         static void SetFingerPose(const std::string& value);
@@ -33,8 +31,10 @@ namespace VRMQavatars {
         static CP_SDK::Utils::Event<> OnLoad;
 
         private:
-        static RootMotion::FinalIK::VRIK* _vrik;
-        static TargetManager* _targetManager;
         static WristTwistFix* _wristTwistFix;
+
+        public:
+        static RootMotion::FinalIK::VRIK* vrik;
+        static TargetManager* targetManager;
     };
 };

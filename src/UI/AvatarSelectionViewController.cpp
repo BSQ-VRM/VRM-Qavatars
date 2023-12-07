@@ -4,6 +4,7 @@
 #include <UnityEngine/WaitForEndOfFrame.hpp>
 
 #include "assets.hpp"
+#include "CalibrationHelper.hpp"
 #include "TPoseHelper.hpp"
 #include "AssetLib/modelImporter.hpp"
 #include "AssetLib/mappings/gLTFImageReader.hpp"
@@ -167,71 +168,15 @@ namespace VRMQavatars::UI::ViewControllers {
             }
             if(avacon.HasCalibrated.GetValue())
             {
-                AvatarManager::CalibrateScale(avacon.CalibratedScale.GetValue());
+                CalibrationHelper::Calibrate(avacon.CalibratedScale.GetValue());
             }
         }
-    }
-
-
-    custom_types::Helpers::Coroutine StartCalibration()
-    {
-        float time = 0.0f;
-        const auto rootGameObject = AvatarManager::currentContext->rootGameObject->get_transform();
-        const auto targetManager = rootGameObject->GetComponent<TargetManager*>();
-
-        targetManager->vrik->set_enabled(false);
-        targetManager->get_transform()->set_position({0.0f, 0.0f, 0.0f});
-        targetManager->get_transform()->set_eulerAngles({0.0f, 0.0f, 0.0f});
-        targetManager->get_transform()->set_localScale({1.0f, 1.0f, 1.0f});
-
-        targetManager->vrik->solver->Reset();
-        targetManager->vrik->solver->FixTransforms();
-
-        TPoseHelper::LoadPose();
-
-        auto armScale = Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue();
-        auto legScale = Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.GetValue();
-
-        const auto hips = targetManager->vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::Hips);
-        const auto LArm = targetManager->vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperArm);
-        const auto RArm = targetManager->vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperArm);
-        const auto LLeg = targetManager->vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
-        const auto RLeg = targetManager->vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperLeg);
-
-        LArm->set_localScale({armScale, armScale, armScale});
-        RArm->set_localScale({armScale, armScale, armScale});
-
-        LLeg->set_localScale({legScale, legScale, legScale});
-        RLeg->set_localScale({legScale, legScale, legScale});
-
-        auto localPos = hips->get_localPosition();
-        hips->set_localPosition({localPos.x, localPos.y*legScale, localPos.z});
-
-        while(time < 4.0f)
-        {
-            time += UnityEngine::Time::get_deltaTime();
-
-            auto headPos = targetManager->GetPosition(GlobalNamespace::OVRPlugin::Node::Head);
-            const auto leftHandPos = targetManager->GetPosition(GlobalNamespace::OVRPlugin::Node::HandLeft);
-            const auto rightHandPos = targetManager->GetPosition(GlobalNamespace::OVRPlugin::Node::HandRight);
-
-            headPos.y = 0.0f;
-
-            const float yRotation = Sombrero::FastVector2::Angle({leftHandPos.x, leftHandPos.z}, {rightHandPos.x, rightHandPos.z});
-
-            rootGameObject->set_position(headPos);
-            rootGameObject->set_rotation(UnityEngine::Quaternion::Euler(0.0f, yRotation, 0.0f));
-
-            co_yield reinterpret_cast<System::Collections::IEnumerator*>(CRASH_UNLESS(UnityEngine::WaitForEndOfFrame::New_ctor()));
-        }
-        targetManager->Calibrate();
-        co_return;
     }
 
     void AvatarSelectionViewController::Calibrate()
     {
         if(AvatarManager::currentContext == nullptr) return;
-        this->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(StartCalibration()));
+        this->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(CalibrationHelper::StartCalibrationProc()));
     }
 
     void AvatarSelectionViewController::DidActivate()

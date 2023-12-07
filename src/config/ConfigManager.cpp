@@ -31,7 +31,6 @@ namespace VRMQavatars::Config
             cfg.OverrideLocomotionSettings.SetValue(cfg.OverrideLocomotionSettings.GetDefaultValue(), save);
             cfg.OverrideOffsetSettings.SetValue(cfg.OverrideOffsetSettings.GetDefaultValue(), save);
             cfg.HasAgreedToTerms.SetValue(cfg.HasAgreedToTerms.GetDefaultValue(), save);
-            cfg.OverrideControllerTriggerSettings.SetValue(cfg.OverrideControllerTriggerSettings.GetDefaultValue(), save);
             cfg.OverrideFingerPoseSettings.SetValue(cfg.OverrideFingerPoseSettings.GetDefaultValue(), save);
             cfg.OverrideIKSettings.SetValue(cfg.OverrideIKSettings.GetDefaultValue(), save);
         }
@@ -81,25 +80,25 @@ namespace VRMQavatars::Config
     //Start getters/setters here
 
     //IK
-    MANAGER_ITEM_CPP_AVATAR(IK)
+    MANAGER_ITEM_CPP_BOTH(IK)
 
     //Offsets
-    MANAGER_ITEM_CPP_AVATAR(Offset)
+    MANAGER_ITEM_CPP_BOTH(Offset)
 
     //Finger Posing
-    MANAGER_ITEM_CPP_AVATAR(FingerPose)
+    MANAGER_ITEM_CPP_BOTH(FingerPose)
 
     //Lighting
-    MANAGER_ITEM_CPP_AVATAR(Lighting)
+    MANAGER_ITEM_CPP_BOTH(Lighting)
 
     //Locomotion
-    MANAGER_ITEM_CPP_AVATAR(Locomotion)
+    MANAGER_ITEM_CPP_BOTH(Locomotion)
 
     //Controller Triggers
     MANAGER_ITEM_CPP_AVATAR(ControllerTrigger)
 
     //BlendShapes
-    MANAGER_ITEM_CPP_AVATAR(Blendshape)
+    MANAGER_ITEM_CPP_BOTH(Blendshape)
 
     //VMC
     MANAGER_ITEM_CPP_GLOBAL(VMC)
