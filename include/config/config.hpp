@@ -155,6 +155,14 @@ DECLARE_JSON_CLASS(VMCSettings,
 
     VALUE_DEFAULT(bool, enableReceiver, false);
     VALUE_DEFAULT(std::string, recvPort, "39539");
+
+    VALUE_DEFAULT(bool, enableFBT, false);
+    VALUE_DEFAULT(std::string, waistTracker, "human://WAIST");
+    VALUE_DEFAULT(std::string, chestTracker, "human://CHEST");
+    VALUE_DEFAULT(std::string, leftFoot, "human://LEFT_FOOT");
+    VALUE_DEFAULT(std::string, rightFoot, "human://RIGHT_FOOT");
+    VALUE_DEFAULT(std::string, leftKnee, "human://LEFT_KNEE");
+    VALUE_DEFAULT(std::string, rightKnee, "human://RIGHT_KNEE");
 )
 
 DECLARE_JSON_CLASS(MirrorSettings,

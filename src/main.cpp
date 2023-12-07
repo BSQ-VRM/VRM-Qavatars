@@ -3,7 +3,6 @@
 #include <conditional-dependencies/shared/main.hpp>
 #include <GlobalNamespace/Saber.hpp>
 
-#include "CalibrationHelper.hpp"
 #include "custom-types/shared/coroutine.hpp"
 #include "custom-types/shared/register.hpp"
 
@@ -40,11 +39,11 @@ Logger& getLogger() {
 
 custom_types::Helpers::Coroutine Setup() {
 
-    if(!VRM::ShaderLoader::shaders)
+    if(!VRMQavatars::ShaderLoader::shaders)
     {
         UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
 
-        co_yield custom_types::Helpers::CoroutineHelper::New(VRM::ShaderLoader::LoadBund());
+        co_yield custom_types::Helpers::CoroutineHelper::New(VRMQavatars::ShaderLoader::LoadBund());
     }
 
     if(VRMQavatars::AvatarManager::currentContext == nullptr)

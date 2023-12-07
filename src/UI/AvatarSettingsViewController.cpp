@@ -842,6 +842,7 @@ namespace VRMQavatars::UI::ViewControllers {
 
     std::shared_ptr<CP_SDK::XUI::XUITabControl> AvatarSettingsViewController::BuildVMCTab()
     {
+        static std::vector<std::u16string> trackingOpts = { u"None", u"Waist", u"Left Foot", u"Right Foot", u"Left Knee", u"Right Knee"};
         return CP_SDK::XUI::XUITabControl::Make({
                 {
                     u"Receiver",
@@ -917,39 +918,127 @@ namespace VRMQavatars::UI::ViewControllers {
                 {
                     u"Full Body Tracking",
                     CP_SDK::XUI::XUIVLayout::Make({
-                        CP_SDK::XUI::XUIText::Make(u"(Very Experimental!)")
-                            ->SetFontSize(5)
-                            ->AsShared(),
                         CP_SDK::XUI::XUIText::Make(u"Requires the receiever to be enabled along with the sender if using SlimeVR")
                             ->SetFontSize(3)
                             ->AsShared(),
                         CP_SDK::XUI::XUIHLayout::Make(
                         {
-                            CP_SDK::XUI::XUIText::Make(u"Right Knee Tracker"),
-                            CP_SDK::XUI::XUIDropdown::Make(),
-                        }),
-                        CP_SDK::XUI::XUIHLayout::Make(
-                        {
-                            CP_SDK::XUI::XUIText::Make(u"Left Knee Tracker"),
-                            CP_SDK::XUI::XUIDropdown::Make(),
-                        }),
-                        CP_SDK::XUI::XUIHLayout::Make(
-                        {
-                            CP_SDK::XUI::XUIText::Make(u"Right Foot Tracker"),
-                            CP_SDK::XUI::XUIDropdown::Make(),
-                        }),
-                        CP_SDK::XUI::XUIHLayout::Make(
-                        {
-                            CP_SDK::XUI::XUIText::Make(u"Left Foot Tracker"),
-                            CP_SDK::XUI::XUIDropdown::Make(),
+                            CP_SDK::XUI::XUIText::Make(u"Enabled"),
+                            CP_SDK::XUI::XUIToggle::Make()
+                                ->SetValue(Config::ConfigManager::GetVMCSettings().enableFBT)
+                                ->OnValueChanged([](const bool val)
+                                {
+                                    auto settings = Config::ConfigManager::GetVMCSettings();
+                                    settings.enableFBT = val;
+                                    Config::ConfigManager::SetVMCSettings(settings);
+                                    AvatarManager::UpdateVRIK();
+                                })
+                                ->AsShared()
                         }),
                         CP_SDK::XUI::XUIHLayout::Make(
                         {
                             CP_SDK::XUI::XUIText::Make(u"Waist Tracker"),
-                            CP_SDK::XUI::XUIDropdown::Make(),
+                            CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
+                                ->OnValueChanged([](int idx, const std::u16string_view val)
+                                {
+                                    auto settings = Config::ConfigManager::GetVMCSettings();
+                                    settings.waistTracker = to_utf8(val);
+                                    Config::ConfigManager::SetVMCSettings(settings);
+                                    AvatarManager::UpdateVRIK();
+                                })
+                                ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
+                                {
+                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().waistTracker));
+                                })
+                                ->AsShared()
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make(
+                        {
+                            CP_SDK::XUI::XUIText::Make(u"Chest Tracker"),
+                            CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
+                                ->OnValueChanged([](int idx, const std::u16string_view val)
+                                {
+                                    auto settings = Config::ConfigManager::GetVMCSettings();
+                                    settings.chestTracker = to_utf8(val);
+                                    Config::ConfigManager::SetVMCSettings(settings);
+                                    AvatarManager::UpdateVRIK();
+                                })
+                                ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
+                                {
+                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().chestTracker));
+                                })
+                                ->AsShared()
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make(
+                        {
+                            CP_SDK::XUI::XUIText::Make(u"Left Foot Tracker"),
+                            CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
+                                ->OnValueChanged([](int idx, const std::u16string_view val)
+                                {
+                                    auto settings = Config::ConfigManager::GetVMCSettings();
+                                    settings.leftFoot = to_utf8(val);
+                                    Config::ConfigManager::SetVMCSettings(settings);
+                                    AvatarManager::UpdateVRIK();
+                                })
+                                ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
+                                {
+                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().leftFoot));
+                                })
+                                ->AsShared()
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make(
+                        {
+                            CP_SDK::XUI::XUIText::Make(u"Right Foot Tracker"),
+                            CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
+                                ->OnValueChanged([](int idx, const std::u16string_view val)
+                                {
+                                    auto settings = Config::ConfigManager::GetVMCSettings();
+                                    settings.rightFoot = to_utf8(val);
+                                    Config::ConfigManager::SetVMCSettings(settings);
+                                    AvatarManager::UpdateVRIK();
+                                })
+                                ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
+                                {
+                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().rightFoot));
+                                })
+                                ->AsShared()
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make(
+                        {
+                            CP_SDK::XUI::XUIText::Make(u"Left Knee Tracker"),
+                            CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
+                                ->OnValueChanged([](int idx, const std::u16string_view val)
+                                {
+                                    auto settings = Config::ConfigManager::GetVMCSettings();
+                                    settings.leftKnee = to_utf8(val);
+                                    Config::ConfigManager::SetVMCSettings(settings);
+                                    AvatarManager::UpdateVRIK();
+                                })
+                                ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
+                                {
+                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().leftKnee));
+                                })
+                                ->AsShared()
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make(
+                        {
+                            CP_SDK::XUI::XUIText::Make(u"Right Knee Tracker"),
+                            CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
+                                ->OnValueChanged([](int idx, const std::u16string_view val)
+                                {
+                                    auto settings = Config::ConfigManager::GetVMCSettings();
+                                    settings.rightKnee = to_utf8(val);
+                                    Config::ConfigManager::SetVMCSettings(settings);
+                                    AvatarManager::UpdateVRIK();
+                                })
+                                ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
+                                {
+                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().rightKnee));
+                                })
+                                ->AsShared()
                         })
                     })
-                    ->SetSpacing(-0.5f)
+                    ->SetSpacing(-0.7f)
                     ->AsShared()
                 }
             });

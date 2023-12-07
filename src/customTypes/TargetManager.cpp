@@ -2,6 +2,7 @@
 
 #include <chatplex-sdk-bs/shared/CP_SDK/ChatPlexSDK.hpp>
 #include <UnityEngine/PrimitiveType.hpp>
+#include <UnityEngine/Time.hpp>
 
 #include "customTypes/WristTwistFix.hpp"
 
@@ -42,6 +43,24 @@ namespace VRMQavatars
 
         headTarget = UnityEngine::GameObject::New_ctor();
         headTarget->get_transform()->SetParent(get_transform(), false);
+
+        waistTracker = UnityEngine::GameObject::New_ctor();
+        waistTracker->get_transform()->SetParent(get_transform(), false);
+
+        chestTracker = UnityEngine::GameObject::New_ctor();
+        chestTracker->get_transform()->SetParent(get_transform(), false);
+
+        leftFootTracker = UnityEngine::GameObject::New_ctor();
+        leftFootTracker->get_transform()->SetParent(get_transform(), false);
+
+        rightFootTracker = UnityEngine::GameObject::New_ctor();
+        rightFootTracker->get_transform()->SetParent(get_transform(), false);
+
+        leftKneeTracker = UnityEngine::GameObject::New_ctor();
+        leftKneeTracker->get_transform()->SetParent(get_transform(), false);
+
+        rightKneeTracker = UnityEngine::GameObject::New_ctor();
+        rightKneeTracker->get_transform()->SetParent(get_transform(), false);
 
         vrik->AutoDetectReferences();
 
@@ -98,6 +117,27 @@ namespace VRMQavatars
         VMC::VMCClient::SendControllerPos(rightHandPos, rightHandRot, 1);
 
         VMC::VMCServer::Receive();
+
+        auto trackers = VMC::VMCServer::availableTrackers;
+
+        for(auto tracker : trackers)
+        {
+            auto name = tracker.name;
+            UnityEngine::Transform* transform = nullptr;
+            if(name == "human://WAIST") transform = waistTracker->get_transform();
+            if(name == "human://CHEST") transform = chestTracker->get_transform();
+            if(name == "human://LEFT_FOOT") transform = leftFootTracker->get_transform();
+            if(name == "human://RIGHT_FOOT") transform = rightFootTracker->get_transform();
+            if(name == "human://LEFT_KNEE") transform = leftKneeTracker->get_transform();
+            if(name == "human://RIGHT_KNEE") transform = rightKneeTracker->get_transform();
+            if(transform != nullptr)
+            {
+                Sombrero::FastVector3 lastPos = transform->get_position();
+                transform->set_position(Sombrero::FastVector3::Lerp(lastPos, tracker.pos, UnityEngine::Time::get_deltaTime() * 20.0f));
+                transform->set_rotation(tracker.rot);
+            }
+        }
+
 
         leftHandTarget->get_transform()->set_position(leftHandPos);
         leftHandTarget->get_transform()->set_rotation(leftHandRot);

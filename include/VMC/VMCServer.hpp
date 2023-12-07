@@ -1,10 +1,9 @@
 #pragma once
 
-#include <UnityEngine/Quaternion.hpp>
-#include <UnityEngine/Vector3.hpp>
+#include <sombrero/shared/FastQuaternion.hpp>
+#include <sombrero/shared/FastVector3.hpp>
 
 #include "kissnet.hpp"
-#include "oscpp/client.hpp"
 #include "oscpp/server.hpp"
 
 namespace VRMQavatars::VMC
@@ -12,8 +11,8 @@ namespace VRMQavatars::VMC
     struct Tracker
     {
         std::string name;
-        UnityEngine::Vector3 pos;
-        UnityEngine::Quaternion rot;
+        Sombrero::FastVector3 pos;
+        Sombrero::FastQuaternion rot;
     };
 
     class VMCServer

@@ -11,6 +11,8 @@ namespace VRMQavatars
 {
     #define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
 
+    SafePtrUnity<VRMData::ShaderSO> ShaderLoader::shaders;
+
     custom_types::Helpers::Coroutine ShaderLoader::LoadBund()
     {
         UnityEngine::AssetBundle* ass;
@@ -30,6 +32,8 @@ namespace VRMQavatars
         ass->Unload(false);
         AssetLib::ModelImporter::mtoon = data->mToonShader;
         MirrorManager::mirrorShader = data->mirrorShader;
+
+        shaders = data;
 
         co_return;
     }

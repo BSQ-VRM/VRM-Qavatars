@@ -137,6 +137,7 @@ namespace VRMQavatars
         vrik->solver->spine->headTarget = targetManager->headTarget->get_transform();
         vrik->solver->leftArm->target = targetManager->leftHandTarget->get_transform();
         vrik->solver->rightArm->target = targetManager->rightHandTarget->get_transform();
+
         vrik->Initiate();
 
         targetManager->intialized = true;

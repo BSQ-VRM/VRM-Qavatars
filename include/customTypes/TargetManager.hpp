@@ -43,10 +43,20 @@ namespace VRMQavatars
         DECLARE_INSTANCE_METHOD(void, Initialize);
         DECLARE_INSTANCE_METHOD(void, Update);
     public:
-        UnityEngine::GameObject* vmcTracker;
+        //fbt
+        UnityEngine::GameObject* waistTracker;
+        UnityEngine::GameObject* chestTracker;
 
+        UnityEngine::GameObject* leftFootTracker;
+        UnityEngine::GameObject* rightFootTracker;
+
+        UnityEngine::GameObject* leftKneeTracker;
+        UnityEngine::GameObject* rightKneeTracker;
+
+        //basic
         UnityEngine::GameObject* leftHandTarget;
         UnityEngine::GameObject* rightHandTarget;
+
         UnityEngine::GameObject* headTarget;
         RootMotion::FinalIK::VRIK* vrik;
         bool intialized;

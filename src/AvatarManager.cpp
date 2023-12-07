@@ -134,6 +134,33 @@ namespace VRMQavatars {
 
         vrik->solver->locomotion->stepHeight->set_keys(StepHeightFrames(locoSettings.stepHeight));
         vrik->solver->locomotion->heelHeight->set_keys(StepHeightFrames(locoSettings.stepHeight + 0.1f));
+
+        const auto vmcSettings = Config::ConfigManager::GetVMCSettings();
+
+        const bool pelvis = vmcSettings.waistTracker != "None" && vmcSettings.enableFBT;
+        vrik->solver->spine->pelvisTarget = pelvis ? targetManager->waistTracker->get_transform() : nullptr;
+        vrik->solver->spine->pelvisRotationWeight = pelvis ? 1.0f : 0.0f;
+
+        const bool chest = vmcSettings.chestTracker != "None" && vmcSettings.enableFBT;
+        vrik->solver->spine->chestGoal = chest ? targetManager->chestTracker->get_transform() : nullptr;
+        vrik->solver->spine->pelvisRotationWeight = chest ? 1.0f : 0.0f;
+
+        const bool lFoot = vmcSettings.leftFoot != "None" && vmcSettings.enableFBT;
+        vrik->solver->legs[0]->target = lFoot ? targetManager->leftFootTracker->get_transform() : nullptr;
+        vrik->solver->legs[0]->positionWeight = lFoot ? 1.0f : 0.0f;
+
+        const bool rFoot = vmcSettings.rightFoot != "None" && vmcSettings.enableFBT;
+        vrik->solver->legs[1]->target = rFoot ? targetManager->rightFootTracker->get_transform() : nullptr;
+        vrik->solver->legs[1]->positionWeight = rFoot ? 1.0f : 0.0f;
+
+        const bool lKnee = vmcSettings.leftKnee != "None" && vmcSettings.enableFBT;
+        vrik->solver->legs[0]->bendGoal = lKnee ? targetManager->leftKneeTracker->get_transform() : nullptr;
+        vrik->solver->legs[0]->bendGoalWeight = lKnee ? 1.0f : 0.0f;
+
+        const bool rKnee = vmcSettings.rightKnee != "None" && vmcSettings.enableFBT;
+        vrik->solver->legs[1]->bendGoal = rKnee ? targetManager->rightKneeTracker->get_transform() : nullptr;
+        vrik->solver->legs[1]->bendGoalWeight = rKnee ? 1.0f : 0.0f;
+
         vrik->UpdateSolverExternal();
     }
 
