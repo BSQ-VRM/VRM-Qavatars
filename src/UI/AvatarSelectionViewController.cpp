@@ -184,39 +184,41 @@ namespace VRMQavatars::UI::ViewControllers {
         agreementModal = CreateModal<Modals::AvatarSelectionModal>();
 
         CP_SDK::XUI::Templates::FullRectLayoutMainView({
-            CP_SDK::XUI::XUIHLayout::Make({
-                CP_SDK::XUI::XUISecondaryButton::Make(u"Refresh")
-                    ->OnClick({this, &AvatarSelectionViewController::Refresh})
-                    ->AsShared(),
-                CP_SDK::XUI::XUIPrimaryButton::Make(u"Recalibrate")
-                    ->OnClick({this, &AvatarSelectionViewController::Calibrate})
-                    ->SetInteractable(Config::ConfigManager::GetGlobalConfig().hasSelected.GetValue())
-                    ->Bind(&RecalibrateButton)
-                    ->AsShared(),
+            CP_SDK::XUI::XUIVLayout::Make({
+                CP_SDK::XUI::XUIHLayout::Make({
+                    CP_SDK::XUI::XUISecondaryButton::Make(u"Refresh")
+                        ->OnClick({this, &AvatarSelectionViewController::Refresh})
+                        ->AsShared(),
+                    CP_SDK::XUI::XUIPrimaryButton::Make(u"Recalibrate")
+                        ->OnClick({this, &AvatarSelectionViewController::Calibrate})
+                        ->SetInteractable(AvatarManager::currentContext != nullptr)
+                        ->Bind(&RecalibrateButton)
+                        ->AsShared(),
+                })
+                ->SetSpacing(8.0f)
+                ->AsShared(),
+                CP_SDK::XUI::XUIHLayout::Make({
+                    CP_SDK::XUI::XUIVVList::Make()
+                        ->SetListCellPrefab(CP_SDK::UI::Data::ListCellPrefabs<Components::AvatarListCell>::Get())
+                        ->OnListItemSelected({this, &AvatarSelectionViewController::OnListSelect})
+                        ->Bind(&avatarList)
+                        ->AsShared()
+                })
+                ->SetHeight(65)
+                ->SetSpacing(0)
+                ->SetPadding(0)
+                ->OnReady([](CP_SDK::UI::Components::CHLayout* x) -> void {
+                    x->CSizeFitter()->set_horizontalFit(UnityEngine::UI::ContentSizeFitter::FitMode::PreferredSize);
+                    x->CSizeFitter()->set_verticalFit(UnityEngine::UI::ContentSizeFitter::FitMode::Unconstrained);
+                    x->HOrVLayoutGroup()->set_childForceExpandWidth(true);
+                    x->HOrVLayoutGroup()->set_childForceExpandHeight(true);
+                    x->LElement()->set_preferredWidth(80);
+                })
+                ->AsShared(),
             })
-            ->SetSpacing(8.0f)
-            ->AsShared(),
-            CP_SDK::XUI::XUIHLayout::Make({
-                CP_SDK::XUI::XUIVVList::Make()
-                    ->SetListCellPrefab(CP_SDK::UI::Data::ListCellPrefabs<Components::AvatarListCell>::Get())
-                    ->OnListItemSelected({this, &AvatarSelectionViewController::OnListSelect})
-                    ->Bind(&avatarList)
-                    ->AsShared()
-            })
-            ->SetHeight(65)
-            ->SetSpacing(0)
-            ->SetPadding(0)
-            ->SetBackground(true, std::nullopt, true)
-            ->OnReady([](CP_SDK::UI::Components::CHLayout* x) -> void {
-                x->CSizeFitter()->set_horizontalFit(UnityEngine::UI::ContentSizeFitter::FitMode::PreferredSize);
-                x->CSizeFitter()->set_verticalFit(UnityEngine::UI::ContentSizeFitter::FitMode::Unconstrained);
-                x->HOrVLayoutGroup()->set_childForceExpandWidth(true);
-                x->HOrVLayoutGroup()->set_childForceExpandHeight(true);
-                x->LElement()->set_preferredWidth(80);
-            })
-            ->AsShared(),
+            ->SetSpacing(1.0f)
+            ->AsShared()
         })
-        ->SetSpacing(1.0f)
         ->BuildUI(get_transform());
 
         Refresh();

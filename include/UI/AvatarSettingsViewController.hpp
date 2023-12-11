@@ -1,5 +1,7 @@
 #pragma once
 
+#include <bsml/shared/BSML/FloatingScreen/FloatingScreen.hpp>
+
 #include "main.hpp"
 #include "HMUI/ViewController.hpp"
 #include "bsml/shared/BSML.hpp"
@@ -15,6 +17,8 @@ namespace VRMQavatars::UI::ViewControllers {
         SDK_UI_VIEW_CONTROLLER_INSTANCE();
     public:
         void DidActivate();
+        void DidDeactivate();
+        void OnShow();
 
         std::string ikTab = "IK";
         std::string handTab = "Offset";
@@ -27,6 +31,8 @@ namespace VRMQavatars::UI::ViewControllers {
         UnityEngine::Sprite* avatarSprite;
         std::shared_ptr<CP_SDK::XUI::XUIIconButton> overrideSwitchButton;
         void RefreshButton();
+
+        BSML::FloatingScreen* helperScreen;
 
         std::shared_ptr<CP_SDK::XUI::XUISlider> BuildFingerSlider(int finger);
 

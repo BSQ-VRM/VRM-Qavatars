@@ -6,14 +6,14 @@
 #include "custom-types/shared/macros.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 
-#include "CenterMirrorViewController.hpp"
+#include "MirrorViewController.hpp"
 #include "AvatarSettingsViewController.hpp"
 #include "AvatarSelectionViewController.hpp"
 
 using namespace VRMQavatars::UI;
 
 DECLARE_CLASS_CODEGEN(VRMQavatars::UI::FlowCoordinators, AvatarsFlowCoordinator, HMUI::FlowCoordinator,
-    DECLARE_INSTANCE_FIELD(ViewControllers::CenterMirrorViewController*, CenterMirrorViewController);
+    DECLARE_INSTANCE_FIELD(ViewControllers::MirrorViewController*, MirrorViewController);
     DECLARE_INSTANCE_FIELD(ViewControllers::AvatarSettingsViewController*, AvatarSettingsViewController);
     DECLARE_INSTANCE_FIELD(ViewControllers::AvatarSelectionViewController*, AvatarSelectionViewController);
 

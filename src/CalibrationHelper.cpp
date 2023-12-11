@@ -91,6 +91,7 @@ namespace VRMQavatars
 
     float GetCalibrateScale(const std::optional<float> baseScale)
     {
+        getLogger().info("scale: %d %f", baseScale.has_value(), baseScale.has_value() ? baseScale.value() : 0.0f);
         const auto type = Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue();
         if(type == 0)
         {
@@ -169,11 +170,12 @@ namespace VRMQavatars
 
             headPos.y = 0.0f;
 
-            const float yRotation = Sombrero::FastVector2::Angle({leftHandPos.x, leftHandPos.z}, {rightHandPos.x, rightHandPos.z});
+            const float yRotation = Sombrero::FastQuaternion::LookRotation(rightHandPos - leftHandPos, Sombrero::FastVector3::forward()).get_eulerAngles().y + 90.0f;
 
             rootGameObject->set_position(headPos);
             rootGameObject->set_rotation(UnityEngine::Quaternion::Euler(0.0f, yRotation, 0.0f));
-            rootGameObject->set_localScale(GetCalibrateScale(baseScale));
+            const float scale = GetCalibrateScale(baseScale);
+            rootGameObject->set_localScale(Sombrero::FastVector3(scale, scale, scale));
 
             co_yield reinterpret_cast<System::Collections::IEnumerator*>(CRASH_UNLESS(UnityEngine::WaitForEndOfFrame::New_ctor()));
         }

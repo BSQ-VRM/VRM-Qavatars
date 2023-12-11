@@ -9,6 +9,7 @@
 #include "AvatarManager.hpp"
 
 #include <string_view>
+#include <bsml/shared/BSML/FloatingScreen/FloatingScreen.hpp>
 #include <questui/shared/BeatSaberUI.hpp>
 
 #include "MirrorManager.hpp"
@@ -26,11 +27,22 @@ namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_DECLARE_CTOR_IMPL(AvatarSettingsViewController)
     {
         OnViewCreation      = {this, &AvatarSettingsViewController::DidActivate};
+        OnViewDeactivation  = {this, &AvatarSettingsViewController::DidDeactivate};
     }
 
     CP_SDK_IL2CPP_DECLARE_DTOR_MONOBEHAVIOUR_IMPL(AvatarSettingsViewController)
     {
 
+    }
+
+    UnityEngine::Sprite* GetBGSprite(std::string str)
+    {
+        return UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Sprite*>().First( [str](UnityEngine::Sprite* x) { return x->get_name() == str; });
+    }
+
+    UnityEngine::Material* GetBGMat(std::string str)
+    {
+        return UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Material*>().First([str](UnityEngine::Material* x) { return x->get_name() == str; });
     }
 
     void AvatarSettingsViewController::DidActivate()
@@ -178,12 +190,53 @@ namespace VRMQavatars::UI::ViewControllers {
             UpdateBlendshapesTab();
             UpdateCalibrationTab();
         };
+
         if(AvatarManager::currentContext != nullptr)
         {
             UpdateBlendshapesTab();
             UpdateControllerTriggerTab();
         }
+
         RefreshButton();
+
+        helperScreen = BSML::FloatingScreen::CreateFloatingScreen({30, 20}, true, {-1.0f, 0.6f, 1.0f}, UnityEngine::Quaternion::Euler({45, -45, 0}), 0.0f, true);
+        const auto getBgSprite = GetBGSprite("RoundRect10BorderFade");
+        UnityEngine::GameObject::DontDestroyOnLoad(helperScreen);
+
+        for(const auto x : helperScreen->GetComponentsInChildren<HMUI::ImageView*>()) {
+            if(!x)
+                continue;
+            x->skew = 0.0f;
+            x->set_overrideSprite(nullptr);
+            x->set_sprite(getBgSprite);
+            x->set_material(GetBGMat("UINoGlow"));
+            x->set_color(UnityEngine::Color::get_white());
+        }
+
+        CP_SDK::XUI::Templates::ModalRectLayout({
+            CP_SDK::XUI::XUIVLayout::Make({
+                CP_SDK::XUI::XUIText::Make(u"Helper"),
+                CP_SDK::XUI::XUIText::Make(u"Hi!! :3")
+            })
+        })
+        ->OnReady([](CP_SDK::UI::Components::CVLayout* layout)
+        {
+            layout->LElement()->set_preferredWidth(35);
+        })
+        ->BuildUI(helperScreen->get_transform());
+    }
+
+    void AvatarSettingsViewController::DidDeactivate()
+    {
+        helperScreen->get_gameObject()->SetActive(false);
+    }
+
+    void AvatarSettingsViewController::OnShow()
+    {
+        if(helperScreen != nullptr)
+        {
+            helperScreen->get_gameObject()->SetActive(true);
+        }
     }
 
     void AvatarSettingsViewController::TabSelected()
@@ -937,7 +990,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         }),
                         CP_SDK::XUI::XUIHLayout::Make(
                         {
-                            CP_SDK::XUI::XUIText::Make(u"Waist Tracker"),
+                            CP_SDK::XUI::XUIText::Make(u"Waist"),
                             CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
@@ -950,11 +1003,8 @@ namespace VRMQavatars::UI::ViewControllers {
                                 {
                                     dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().waistTracker));
                                 })
-                                ->AsShared()
-                        }),
-                        CP_SDK::XUI::XUIHLayout::Make(
-                        {
-                            CP_SDK::XUI::XUIText::Make(u"Chest Tracker"),
+                                ->AsShared(),
+                            CP_SDK::XUI::XUIText::Make(u"Chest"),
                             CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
@@ -971,7 +1021,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         }),
                         CP_SDK::XUI::XUIHLayout::Make(
                         {
-                            CP_SDK::XUI::XUIText::Make(u"Left Foot Tracker"),
+                            CP_SDK::XUI::XUIText::Make(u"Left Foot"),
                             CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
@@ -984,28 +1034,8 @@ namespace VRMQavatars::UI::ViewControllers {
                                 {
                                     dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().leftFoot));
                                 })
-                                ->AsShared()
-                        }),
-                        CP_SDK::XUI::XUIHLayout::Make(
-                        {
-                            CP_SDK::XUI::XUIText::Make(u"Right Foot Tracker"),
-                            CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
-                                ->OnValueChanged([](int idx, const std::u16string_view val)
-                                {
-                                    auto settings = Config::ConfigManager::GetVMCSettings();
-                                    settings.rightFoot = to_utf8(val);
-                                    Config::ConfigManager::SetVMCSettings(settings);
-                                    AvatarManager::UpdateVRIK();
-                                })
-                                ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
-                                {
-                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().rightFoot));
-                                })
-                                ->AsShared()
-                        }),
-                        CP_SDK::XUI::XUIHLayout::Make(
-                        {
-                            CP_SDK::XUI::XUIText::Make(u"Left Knee Tracker"),
+                                ->AsShared(),
+                            CP_SDK::XUI::XUIText::Make(u"Left Knee"),
                             CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
@@ -1022,7 +1052,21 @@ namespace VRMQavatars::UI::ViewControllers {
                         }),
                         CP_SDK::XUI::XUIHLayout::Make(
                         {
-                            CP_SDK::XUI::XUIText::Make(u"Right Knee Tracker"),
+                            CP_SDK::XUI::XUIText::Make(u"Right Foot"),
+                            CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
+                                ->OnValueChanged([](int idx, const std::u16string_view val)
+                                {
+                                    auto settings = Config::ConfigManager::GetVMCSettings();
+                                    settings.rightFoot = to_utf8(val);
+                                    Config::ConfigManager::SetVMCSettings(settings);
+                                    AvatarManager::UpdateVRIK();
+                                })
+                                ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
+                                {
+                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().rightFoot));
+                                })
+                                ->AsShared(),
+                            CP_SDK::XUI::XUIText::Make(u"Right Knee"),
                             CP_SDK::XUI::XUIDropdown::Make(trackingOpts)
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
@@ -1036,9 +1080,12 @@ namespace VRMQavatars::UI::ViewControllers {
                                     dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().rightKnee));
                                 })
                                 ->AsShared()
-                        })
+                        }),
                     })
-                    ->SetSpacing(-0.7f)
+                    ->OnReady([](CP_SDK::UI::Components::CVLayout* layout)
+                    {
+                        layout->SetSpacing(-0.7f);
+                    })
                     ->AsShared()
                 }
             });

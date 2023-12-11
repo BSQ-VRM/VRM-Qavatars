@@ -89,7 +89,7 @@ namespace VRMQavatars
         return tpmask;
     }
 
-    UnityEngine::GameObject* MirrorManager::CreateMirror(const Sombrero::FastVector3 position, const Sombrero::FastVector3 rotation, const Sombrero::FastVector2 size, float aspect, const int layer, const float fov)
+    UnityEngine::GameObject* MirrorManager::CreateMirror(const Sombrero::FastVector3 position, const Sombrero::FastVector3 rotation, const Sombrero::FastVector2 size, const float aspect, const int layer, const float fov, const UnityEngine::Color border, const bool transparentBackground, const bool addComponent, const bool handle)
     {
         const int mask = GetMask(layer);
 
@@ -102,7 +102,8 @@ namespace VRMQavatars
 
         //Screen
 
-        const auto screen = BSML::FloatingScreen::CreateFloatingScreen(size * 1.05f, true, position, UnityEngine::Quaternion::Euler(rotation), 0.0f, true);
+        auto s = Sombrero::FastVector2(size.y * aspect, size.y);
+        const auto screen = BSML::FloatingScreen::CreateFloatingScreen({s.x + 5.0f, s.y + 5.0f}, handle, position, UnityEngine::Quaternion::Euler(rotation), 0.0f, true);
         UnityEngine::GameObject::DontDestroyOnLoad(screen->get_gameObject());
 
         screen->get_gameObject()->set_layer(firstPersonAvatar);
@@ -150,9 +151,9 @@ namespace VRMQavatars
         material->set_mainTexture(renderTex);
         const auto renderer = quad->GetComponent<UnityEngine::MeshRenderer*>();
         renderer->set_material(material);
+        material->SetFloat("_IgnoreAlpha", !transparentBackground);
 
         //Border
-        auto conf = Config::ConfigManager::GetMirrorSettings();
 
         const auto getBgSprite = GetBGSprite("RoundRect10BorderFade");
 
@@ -163,10 +164,11 @@ namespace VRMQavatars
             x->set_overrideSprite(nullptr);
             x->set_sprite(getBgSprite);
             x->set_material(GetBGMat("UINoGlow"));
-            x->set_color(conf.borderColor);
+            x->set_color(border);
         }
 
-        rootObject->AddComponent<Mirror*>();
+        if(addComponent)
+            rootObject->AddComponent<Mirror*>();
 
         return rootObject;
     }
@@ -175,7 +177,7 @@ namespace VRMQavatars
     {
         if(mainMirror) return;
         auto conf = Config::ConfigManager::GetMirrorSettings();
-        const auto obj = CreateMirror(conf.position, conf.rotation, {conf.size * conf.aspect, conf.size}, conf.aspect, conf.layer, conf.fov);
+        const auto obj = CreateMirror(conf.position, conf.rotation, {conf.size * conf.aspect, conf.size}, conf.aspect, conf.layer, conf.fov, conf.borderColor, conf.transparentBackground, true, conf.showHandle);
         mainMirror = obj;
         mirrorCamera = obj->GetComponentInChildren<UnityEngine::Camera*>();
         mirrorRenderer = obj->GetComponentInChildren<UnityEngine::MeshRenderer*>();
@@ -204,7 +206,8 @@ namespace VRMQavatars
         const auto screenComp = screen->GetComponent<BSML::FloatingScreen*>();
         if(changedSize)
         {
-            screenComp->set_ScreenSize(Sombrero::FastVector2(conf.size * aspect, conf.size) * 1.05f);
+            auto s = Sombrero::FastVector2(conf.size * aspect, conf.size);
+            screenComp->set_ScreenSize({s.x + 5.0f, s.y + 5.0f});
         }
         screenComp->set_ScreenPosition(conf.position);
         screenComp->set_ScreenRotation(UnityEngine::Quaternion::Euler(conf.rotation));

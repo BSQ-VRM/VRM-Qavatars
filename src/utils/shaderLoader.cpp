@@ -16,19 +16,25 @@ namespace VRMQavatars
     custom_types::Helpers::Coroutine ShaderLoader::LoadBund()
     {
         UnityEngine::AssetBundle* ass;
+
         co_yield coro(ShaderLoader::LoadBundleFromFileAsync("sdcard/ModData/shaders.sbund", ass));
+
         if (!ass)
         {
             getLogger().error("Couldn't load bundle from file, dieing...");
             co_return;
         }
+
         VRMData::ShaderSO* data = nullptr;
+
         co_yield coro(ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", csTypeOf(VRMData::ShaderSO*), reinterpret_cast<UnityEngine::Object*&>(data)));
+
         if(data == nullptr)
         {
             getLogger().error("Couldn't load asset...");
             co_return;
         }
+
         ass->Unload(false);
         AssetLib::ModelImporter::mtoon = data->mToonShader;
         MirrorManager::mirrorShader = data->mirrorShader;

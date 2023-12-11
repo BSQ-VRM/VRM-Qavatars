@@ -4,6 +4,7 @@
 #include <UnityEngine/PrimitiveType.hpp>
 #include <UnityEngine/Time.hpp>
 
+#include "SceneEventManager.hpp"
 #include "customTypes/WristTwistFix.hpp"
 
 #include "UnityEngine/Camera.hpp"
@@ -83,6 +84,12 @@ namespace VRMQavatars
         Sombrero::FastVector3 headPos;
         Sombrero::FastQuaternion headRot;
 
+        if(SceneEventManager::inGame && !noodleTrack)
+        {
+            noodleTrack = UnityEngine::GameObject::Find("NoodlePlayerTrack");
+            GetComponent<GroundOffsetObject*>()->set_enabled(false);
+        }
+
         const static auto replay = CondDeps::Find<bool>("replay", "IsInReplay");
         if(replay.has_value() && replay.value()())
         {
@@ -136,6 +143,17 @@ namespace VRMQavatars
                 transform->set_position(Sombrero::FastVector3::Lerp(lastPos, tracker.pos, UnityEngine::Time::get_deltaTime() * 20.0f));
                 transform->set_rotation(tracker.rot);
             }
+        }
+
+        if(SceneEventManager::inGame && noodleTrack)
+        {
+            auto ikConfig = Config::ConfigManager::GetIKSettings();
+            get_transform()->set_position(noodleTrack->get_transform()->get_position() + UnityEngine::Vector3(0.0f, ikConfig.groundOffset, 0.0f));
+        }
+        else
+        {
+            noodleTrack = nullptr;
+            GetComponent<GroundOffsetObject*>()->set_enabled(true);
         }
 
 

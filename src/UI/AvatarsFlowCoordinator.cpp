@@ -9,8 +9,8 @@ DEFINE_TYPE(VRMQavatars::UI::FlowCoordinators, AvatarsFlowCoordinator);
 namespace VRMQavatars::UI
 {
     void FlowCoordinators::AvatarsFlowCoordinator::Awake() {
-        if (!CenterMirrorViewController || !CenterMirrorViewController->m_CachedPtr.m_value) {
-            CenterMirrorViewController = QuestUI::BeatSaberUI::CreateViewController<ViewControllers::CenterMirrorViewController*>();
+        if (!MirrorViewController || !MirrorViewController->m_CachedPtr.m_value) {
+            MirrorViewController = QuestUI::BeatSaberUI::CreateViewController<ViewControllers::MirrorViewController*>();
         }
         if (!AvatarSelectionViewController ||  !AvatarSelectionViewController->m_CachedPtr.m_value) {
             AvatarSelectionViewController = QuestUI::BeatSaberUI::CreateViewController<ViewControllers::AvatarSelectionViewController*>();
@@ -20,12 +20,12 @@ namespace VRMQavatars::UI
         }
     }
 
-    void FlowCoordinators::AvatarsFlowCoordinator::DidActivate(bool firstActivation, bool addedToHeirarchy, bool screenSystemEnabling) {
+    void FlowCoordinators::AvatarsFlowCoordinator::DidActivate(const bool firstActivation, bool, bool) {
         if (!firstActivation) return;
         showBackButton = true;
 
         SetTitle(il2cpp_utils::newcsstr("VRM Qavatars"), HMUI::ViewController::AnimationType::In);
-        ProvideInitialViewControllers(AvatarSelectionViewController, AvatarSettingsViewController, CenterMirrorViewController, nullptr, nullptr);
+        ProvideInitialViewControllers(AvatarSelectionViewController, AvatarSettingsViewController, MirrorViewController, nullptr, nullptr);
     }
 
     void FlowCoordinators::AvatarsFlowCoordinator::BackButtonWasPressed(HMUI::ViewController* topViewController) {

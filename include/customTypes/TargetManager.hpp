@@ -43,6 +43,8 @@ namespace VRMQavatars
         DECLARE_INSTANCE_METHOD(void, Initialize);
         DECLARE_INSTANCE_METHOD(void, Update);
     public:
+        UnityEngine::GameObject* noodleTrack;
+
         //fbt
         UnityEngine::GameObject* waistTracker;
         UnityEngine::GameObject* chestTracker;
