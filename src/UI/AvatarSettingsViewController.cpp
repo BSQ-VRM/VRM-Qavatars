@@ -27,6 +27,7 @@ namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_DECLARE_CTOR_IMPL(AvatarSettingsViewController)
     {
         OnViewCreation      = {this, &AvatarSettingsViewController::DidActivate};
+        OnViewActivation    = {this, &AvatarSettingsViewController::OnShow};
         OnViewDeactivation  = {this, &AvatarSettingsViewController::DidDeactivate};
     }
 
@@ -197,33 +198,69 @@ namespace VRMQavatars::UI::ViewControllers {
             UpdateControllerTriggerTab();
         }
 
-        RefreshButton();
-
-        helperScreen = BSML::FloatingScreen::CreateFloatingScreen({30, 20}, true, {-1.0f, 0.6f, 1.0f}, UnityEngine::Quaternion::Euler({45, -45, 0}), 0.0f, true);
-        const auto getBgSprite = GetBGSprite("RoundRect10BorderFade");
+        helperScreen = BSML::FloatingScreen::CreateFloatingScreen({30, 22}, true, {-1.0f, 0.3f, 1.0f}, UnityEngine::Quaternion::Euler({45, -45, 0}), 0.0f, false);
         UnityEngine::GameObject::DontDestroyOnLoad(helperScreen);
-
-        for(const auto x : helperScreen->GetComponentsInChildren<HMUI::ImageView*>()) {
-            if(!x)
-                continue;
-            x->skew = 0.0f;
-            x->set_overrideSprite(nullptr);
-            x->set_sprite(getBgSprite);
-            x->set_material(GetBGMat("UINoGlow"));
-            x->set_color(UnityEngine::Color::get_white());
-        }
 
         CP_SDK::XUI::Templates::ModalRectLayout({
             CP_SDK::XUI::XUIVLayout::Make({
                 CP_SDK::XUI::XUIText::Make(u"Helper"),
-                CP_SDK::XUI::XUIText::Make(u"Hi!! :3")
+                CP_SDK::XUI::XUIHLayout::Make({
+                    CP_SDK::XUI::XUISecondaryButton::Make(u"Reset Active Tab!")
+                        ->Bind(&resetButton)
+                        ->OnClick([this]
+                        {
+                            if(selectedTab == "Offset")
+                            {
+                                Config::ConfigManager::ResetOffsetSettings();
+                                UpdateHandOffsetsTab();
+                                AvatarManager::SetHandOffset(Config::ConfigManager::GetOffsetSettings().handOffset);
+                            }
+                            if(selectedTab == "Locomotion")
+                            {
+                                Config::ConfigManager::ResetLocomotionSettings();
+                                UpdateLocomotionTab();
+                                AvatarManager::UpdateVRIK();
+                            }
+                            if(selectedTab == "Lighting")
+                            {
+                                Config::ConfigManager::ResetLightingSettings();
+                                UpdateLightingTab();
+                            }
+                            if(selectedTab == "Face")
+                            {
+                                Config::ConfigManager::ResetBlendshapeSettings();
+                                UpdateBlendshapesTab();
+                            }
+                            if(selectedTab == "Controller Triggers")
+                            {
+                                Config::ConfigManager::ResetControllerTriggerSettings();
+                                UpdateControllerTriggerTab();
+                            }
+                            if(selectedTab == "IK")
+                            {
+                                Config::ConfigManager::ResetIKSettings();
+                                UpdateLocomotionTab();
+                                AvatarManager::UpdateVRIK();
+                            }
+                            if(selectedTab == "Wind")
+                            {
+                                Config::ConfigManager::ResetWindSettings();
+                                UpdateWindTab();
+                            }
+                            if(selectedTab == "Finger Posing")
+                            {
+                                Config::ConfigManager::ResetFingerPoseSettings();
+                                UpdateFingerPosingTab();
+                                AvatarManager::SetFingerPose(Config::ConfigManager::GetFingerPoseSettings().grabPose);
+                            }
+                        })
+                        ->AsShared()
+                })
             })
         })
-        ->OnReady([](CP_SDK::UI::Components::CVLayout* layout)
-        {
-            layout->LElement()->set_preferredWidth(35);
-        })
         ->BuildUI(helperScreen->get_transform());
+
+        TabSelected();
     }
 
     void AvatarSettingsViewController::DidDeactivate()
@@ -237,11 +274,16 @@ namespace VRMQavatars::UI::ViewControllers {
         {
             helperScreen->get_gameObject()->SetActive(true);
         }
+
+        globalSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::global_png);
+        avatarSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::avatar_png);
+        RefreshButton();
     }
 
     void AvatarSettingsViewController::TabSelected()
     {
         RefreshButton();
+        resetButton->SetInteractable(selectedTab != "VMC" && selectedTab != "Mirror" && selectedTab != "Calibration");
     }
 
     void AvatarSettingsViewController::RefreshButton()
@@ -1807,6 +1849,7 @@ namespace VRMQavatars::UI::ViewControllers {
         return CP_SDK::XUI::XUIVLayout::Make({
             CP_SDK::XUI::XUIText::Make(u"Enable Wind"),
             CP_SDK::XUI::XUIToggle::Make()
+                ->Bind(&enableWindToggle)
                 ->SetValue(Config::ConfigManager::GetWindSettings().enabled)
                 ->OnValueChanged([](const bool val)
                 {
@@ -1826,6 +1869,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 ->AsShared(),
             CP_SDK::XUI::XUIText::Make(u"Strength Force"),
             CP_SDK::XUI::XUISlider::Make()
+                ->Bind(&strengthSlider)
                 ->SetMinValue(0.1f)
                 ->SetMaxValue(7.5f)
                 ->SetValue(Config::ConfigManager::GetWindSettings().windStrength)
@@ -1843,6 +1887,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 ->AsShared(),
             CP_SDK::XUI::XUIText::Make(u"Time Factor"),
             CP_SDK::XUI::XUISlider::Make()
+                ->Bind(&timeForceSlider)
                 ->SetMinValue(0.1f)
                 ->SetMaxValue(7.5f)
                 ->SetValue(Config::ConfigManager::GetWindSettings().timeFactor)
@@ -1859,5 +1904,13 @@ namespace VRMQavatars::UI::ViewControllers {
                 })
                 ->AsShared(),
         });
+    }
+
+    void AvatarSettingsViewController::UpdateWindTab()
+    {
+        const auto settings = Config::ConfigManager::GetWindSettings();
+        enableWindToggle->SetValue(settings.enabled);
+        strengthSlider->SetValue(settings.windStrength);
+        timeForceSlider->SetValue(settings.timeFactor);
     }
 }

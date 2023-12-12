@@ -29,10 +29,12 @@ namespace VRMQavatars::UI::ViewControllers {
 
         UnityEngine::Sprite* globalSprite;
         UnityEngine::Sprite* avatarSprite;
+
         std::shared_ptr<CP_SDK::XUI::XUIIconButton> overrideSwitchButton;
         void RefreshButton();
 
         BSML::FloatingScreen* helperScreen;
+        std::shared_ptr<CP_SDK::XUI::XUISecondaryButton> resetButton;
 
         std::shared_ptr<CP_SDK::XUI::XUISlider> BuildFingerSlider(int finger);
 
@@ -135,6 +137,14 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUISlider> autoBlinkWaitSlider;
         std::shared_ptr<CP_SDK::XUI::XUIToggle> mockEyeMovementToggle;
         std::shared_ptr<CP_SDK::XUI::XUIDropdown> neutralExpressionDropdown;
+
+        //Wind
+
+        void UpdateWindTab();
+
+        std::shared_ptr<CP_SDK::XUI::XUIToggle> enableWindToggle;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> strengthSlider;
+        std::shared_ptr<CP_SDK::XUI::XUISlider> timeForceSlider;
     };
 }
 

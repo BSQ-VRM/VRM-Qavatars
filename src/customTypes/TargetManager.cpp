@@ -148,7 +148,18 @@ namespace VRMQavatars
         if(SceneEventManager::inGame && noodleTrack)
         {
             auto ikConfig = Config::ConfigManager::GetIKSettings();
-            get_transform()->set_position(noodleTrack->get_transform()->get_position() + UnityEngine::Vector3(0.0f, ikConfig.groundOffset, 0.0f));
+
+            auto pos = noodleTrack->get_transform()->get_position();
+            auto offsetPos = pos + UnityEngine::Vector3(0.0f, ikConfig.groundOffset, 0.0f);
+
+            if(UnityEngine::Vector3::Distance(get_transform()->get_position(), offsetPos) > 0.05f)
+            {
+                get_transform()->set_position(offsetPos);
+            }
+            leftHandPos += pos;
+            rightHandPos += pos;
+            headPos += pos;
+
         }
         else
         {

@@ -204,7 +204,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->Bind(&avatarList)
                         ->AsShared()
                 })
-                ->SetHeight(65)
+                ->SetHeight(58)
                 ->SetSpacing(0)
                 ->SetPadding(0)
                 ->OnReady([](CP_SDK::UI::Components::CHLayout* x) -> void {
@@ -216,7 +216,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 })
                 ->AsShared(),
             })
-            ->SetSpacing(1.0f)
+            ->SetSpacing(3.0f)
             ->AsShared()
         })
         ->BuildUI(get_transform());

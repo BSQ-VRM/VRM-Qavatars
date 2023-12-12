@@ -1,5 +1,7 @@
 #include "AssetLib/modelImporter.hpp"
 
+#include "UnityEngine/AnimatorCullingMode.hpp"
+
 #include "customTypes/AniLipSync/AnimMorphTarget.hpp"
 #include "customTypes/AniLipSync/LowLatencyLipSyncContext.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
@@ -248,7 +250,8 @@ void ConstructUnityMesh(const AssetLib::Structure::Node* node, const AssetLib::S
         if(context->isSkinned)
         {
             const auto renderer = node->gameObject->AddComponent<UnityEngine::SkinnedMeshRenderer*>();
-
+            renderer->set_updateWhenOffscreen(true);
+            renderer->set_allowOcclusionWhenDynamic(false);
             const auto armature = context->armature.value();
 
             std::vector<UnityEngine::Matrix4x4> bindPoses = std::vector<UnityEngine::Matrix4x4>(context->nodes.size());
@@ -273,6 +276,7 @@ void ConstructUnityMesh(const AssetLib::Structure::Node* node, const AssetLib::S
                                 );
             renderer->set_bones(il2cpp_utils::vectorToArray(bones));
             renderer->set_sharedMesh(unityMesh);
+            unityMesh->RecalculateBounds();
         }
         else
         {
@@ -561,6 +565,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     modelContext->blendShapeMaster = Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm);
     auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->nodes, modelContext->armature.value().rootBone->gameObject);
     auto anim = modelContext->rootGameObject->AddComponent<UnityEngine::Animator*>();
+    anim->set_cullingMode(UnityEngine::AnimatorCullingMode::AlwaysAnimate);
     anim->set_avatar(avatar);
     //Fix crossed legs
 

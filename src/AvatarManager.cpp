@@ -140,10 +140,11 @@ namespace VRMQavatars {
         const bool pelvis = vmcSettings.waistTracker != "None" && vmcSettings.enableFBT;
         vrik->solver->spine->pelvisTarget = pelvis ? targetManager->waistTracker->get_transform() : nullptr;
         vrik->solver->spine->pelvisRotationWeight = pelvis ? 1.0f : 0.0f;
+        vrik->solver->spine->pelvisPositionWeight = pelvis ? 1.0f : 0.0f;
 
         const bool chest = vmcSettings.chestTracker != "None" && vmcSettings.enableFBT;
         vrik->solver->spine->chestGoal = chest ? targetManager->chestTracker->get_transform() : nullptr;
-        vrik->solver->spine->pelvisRotationWeight = chest ? 1.0f : 0.0f;
+        vrik->solver->spine->chestGoalWeight = chest ? 1.0f : 0.0f;
 
         const bool lFoot = vmcSettings.leftFoot != "None" && vmcSettings.enableFBT;
         vrik->solver->legs[0]->target = lFoot ? targetManager->leftFootTracker->get_transform() : nullptr;
