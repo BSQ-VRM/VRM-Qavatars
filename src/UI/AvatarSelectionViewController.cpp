@@ -48,31 +48,44 @@ namespace VRMQavatars::UI::ViewControllers {
         return descriptor;
     }
 
+    std::ifstream::pos_type filesize(const char* filename)
+    {
+        std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
+        return in.tellg();
+    }
+
     VRMDescriptor LoadVRMDescriptor(const std::string& path) {
         VRMDescriptor descriptor;
+
+        if(filesize((vrm_path + std::string("/") + path).c_str()) < 1)
+        {
+            getLogger().info("die");
+            descriptor.valid = false;
+            return descriptor;
+        }
 
         //Load in binary to parse out VRM data
         std::ifstream binFile(vrm_path + std::string("/") + path, std::ios::binary);
         binFile.seekg(12); //Skip past the 12 byte header, to the json header
         uint32_t jsonLength;
         binFile.read(reinterpret_cast<char*>(&jsonLength), sizeof(uint32_t)); //Read the length of the json file from it's header
+        getLogger().info("%u", jsonLength);
         std::string jsonStr;
         jsonStr.resize(jsonLength);
         binFile.seekg(20); // Skip the rest of the JSON header to the start of the string
         binFile.read(jsonStr.data(), jsonLength); // Read out the json string
 
-        if(jsonLength < 10)
+        nlohmann::json doc;
+        try
         {
-            getLogger().info("SHITFUCK");
-            descriptor = GetNoneDescriptor();
-            descriptor.filePath = path;
-            descriptor.name = "Failed to load Avatar!";
-            descriptor.author = "):";
+            doc = nlohmann::json::parse(jsonStr);
+        }
+        catch (nlohmann::json::parse_error& ex)
+        {
+            getLogger().error("parse error at byte %zu", ex.byte);
             descriptor.valid = false;
             return descriptor;
         }
-
-        auto doc = nlohmann::json::parse(jsonStr);
         auto exts = doc["extensions"];
 
         if(exts.contains("VRM"))
@@ -119,7 +132,11 @@ namespace VRMQavatars::UI::ViewControllers {
             avatarSet.push_back(std::make_shared<Components::AvatarListItem>(GetNoneDescriptor()));
             for(auto& vrm : vrms)
             {
-                avatarSet.push_back(std::make_shared<Components::AvatarListItem>(LoadVRMDescriptor(vrm)));
+                auto descriptor = LoadVRMDescriptor(vrm);
+                if(descriptor.valid)
+                {
+                    avatarSet.push_back(std::make_shared<Components::AvatarListItem>(descriptor));
+                }
             }
             avatarList->SetListItems(avatarSet);
             auto& globcon = Config::ConfigManager::GetGlobalConfig();

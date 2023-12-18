@@ -2,12 +2,15 @@
 
 #include <conditional-dependencies/shared/main.hpp>
 #include <GlobalNamespace/Saber.hpp>
+#include <UnityEngine/Resources.hpp>
 
 #include "custom-types/shared/coroutine.hpp"
 #include "custom-types/shared/register.hpp"
 
 #include "GlobalNamespace/MainMenuViewController.hpp"
 #include "GlobalNamespace/MainCamera.hpp"
+#include "GlobalNamespace/MainEffectContainerSO.hpp"
+#include "GlobalNamespace/MainEffectSO.hpp"
 
 #include "UnityEngine/SceneManagement/SceneManager.hpp"
 #include "UnityEngine/Camera.hpp"
@@ -22,6 +25,7 @@
 #include "LightManager.hpp"
 #include "SceneEventManager.hpp"
 #include "GroundOffsetManager.hpp"
+#include "MaterialTracker.hpp"
 #include "MirrorManager.hpp"
 
 #include "config/ConfigManager.hpp"
@@ -38,26 +42,34 @@ Logger& getLogger() {
 }
 
 custom_types::Helpers::Coroutine Setup() {
-
+    getLogger().info("x1");
     if(!VRMQavatars::ShaderLoader::shaders)
     {
-        UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
-
+        getLogger().info("x2");
+        //Womp womp
+        if(UnityEngine::Resources::FindObjectsOfTypeAll<VRMQavatars::LightManager*>().size() == 0)
+        {
+            UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
+        }
+        getLogger().info("x3");
         co_yield custom_types::Helpers::CoroutineHelper::New(VRMQavatars::ShaderLoader::LoadBund());
+        getLogger().info("x4");
     }
-
+    getLogger().info("x5");
     if(VRMQavatars::AvatarManager::currentContext == nullptr)
     {
+        getLogger().info("x6");
         VRMQavatars::AvatarManager::StartupLoad();
     }
+    getLogger().info("x7");
 
     VRMQavatars::VMC::VMCClient::InitClient();
     VRMQavatars::VMC::VMCServer::InitServer();
-
+    getLogger().info("x8");
     VRMQavatars::GroundOffsetManager::Init();
-
+    getLogger().info("x9");
     VRMQavatars::MirrorManager::CreateMainMirror();
-
+    getLogger().info("x10");
     co_return;
 }
  
@@ -112,6 +124,16 @@ MAKE_HOOK_MATCH(SaberPatch, &GlobalNamespace::Saber::ManualUpdate, void, GlobalN
     }
 }
 
+MAKE_HOOK_MATCH(BloomHook, &GlobalNamespace::MainEffectContainerSO::Init, void, GlobalNamespace::MainEffectContainerSO* self, GlobalNamespace::MainEffectSO* mainEffect) {
+    getLogger().info("x1");
+    getLogger().info("%d", mainEffect->get_hasPostProcessEffect());
+    getLogger().info("x2");
+    BloomHook(self, mainEffect);
+    VRMQavatars::MaterialTracker::bloomEnabled = mainEffect->get_hasPostProcessEffect();
+    VRMQavatars::MaterialTracker::UpdateMaterials();
+    getLogger().info("x3");
+}
+
 extern "C" void setup(ModInfo& info) {
     info.id = MOD_ID;
     info.version = VERSION;
@@ -134,4 +156,5 @@ extern "C" void load() {
     INSTALL_HOOK(getLogger(), MainCameraHook);
     INSTALL_HOOK(getLogger(), SceneManager_Internal_ActiveSceneChanged);
     INSTALL_HOOK(getLogger(), SaberPatch);
+    INSTALL_HOOK(getLogger(), BloomHook);
 }

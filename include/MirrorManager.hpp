@@ -13,12 +13,10 @@ namespace VRMQavatars
         static void UpdateMirror(bool changedSize);
         static void CreateMainMirror();
         static UnityEngine::GameObject* CreateMirror(Sombrero::FastVector3 position, Sombrero::FastVector3 rotation, Sombrero::FastVector2 size, float aspect, int layer, float fov, UnityEngine::Color border, bool transparentBackground, bool addComponent, bool handle);
-    private:
+    public:
         static SafePtrUnity<UnityEngine::GameObject> mainMirror;
         static SafePtrUnity<UnityEngine::Camera> mirrorCamera;
         static SafePtrUnity<UnityEngine::MeshRenderer> mirrorRenderer;
-
-    public:
         static SafePtrUnity<UnityEngine::Shader> mirrorShader;
     };
 }

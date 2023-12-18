@@ -1,5 +1,6 @@
 #include "AssetLib/modelImporter.hpp"
 
+#include "MaterialTracker.hpp"
 #include "UnityEngine/AnimatorCullingMode.hpp"
 
 #include "customTypes/AniLipSync/AnimMorphTarget.hpp"
@@ -379,7 +380,6 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
 
     const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_PopulateArmatureData | aiProcess_MakeLeftHanded);
     modelContext->originalScene = scene;
-
     const auto Root = UnityEngine::GameObject::New_ctor("ROOT");
     UnityEngine::GameObject::DontDestroyOnLoad(Root);
     Root->get_transform()->set_position(Sombrero::FastVector3(0.0f, 0.0f, 0.0f));
@@ -500,6 +500,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     std::vector<UnityEngine::Material*> materials;
 
+    VRMQavatars::MaterialTracker::materials.clear();
     for (size_t i = 0; i < vrm.materialProperties.size(); i++)
     {
         auto [name, shader, renderQueue, floatProperties, vectorProperties, textureProperties, keywordMap, tagMap] = vrm.materialProperties[i];
@@ -542,8 +543,9 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         mat->set_renderQueue(renderQueue);
 
         materials.push_back(mat);
+        VRMQavatars::MaterialTracker::materials.push_back(mat);
     }
-
+    VRMQavatars::MaterialTracker::UpdateMaterials();
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
         if(auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)

@@ -198,7 +198,7 @@ namespace VRMQavatars::UI::ViewControllers {
             UpdateControllerTriggerTab();
         }
 
-        helperScreen = BSML::FloatingScreen::CreateFloatingScreen({30, 22}, true, {-1.0f, 0.3f, 1.0f}, UnityEngine::Quaternion::Euler({45, -45, 0}), 0.0f, false);
+        /*helperScreen = BSML::FloatingScreen::CreateFloatingScreen({30, 22}, true, {-1.0f, 0.3f, 1.0f}, UnityEngine::Quaternion::Euler({45, -45, 0}), 0.0f, false);
         UnityEngine::GameObject::DontDestroyOnLoad(helperScreen);
 
         CP_SDK::XUI::Templates::ModalRectLayout({
@@ -258,32 +258,32 @@ namespace VRMQavatars::UI::ViewControllers {
                 })
             })
         })
-        ->BuildUI(helperScreen->get_transform());
+        ->BuildUI(helperScreen->get_transform());*/
 
         TabSelected();
     }
 
     void AvatarSettingsViewController::DidDeactivate()
     {
-        helperScreen->get_gameObject()->SetActive(false);
+        //helperScreen->get_gameObject()->SetActive(false);
     }
 
     void AvatarSettingsViewController::OnShow()
     {
-        if(helperScreen != nullptr)
+        /*if(helperScreen != nullptr)
         {
             helperScreen->get_gameObject()->SetActive(true);
         }
 
         globalSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::global_png);
-        avatarSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::avatar_png);
+        avatarSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::avatar_png);*/
         RefreshButton();
     }
 
     void AvatarSettingsViewController::TabSelected()
     {
         RefreshButton();
-        resetButton->SetInteractable(selectedTab != "VMC" && selectedTab != "Mirror" && selectedTab != "Calibration");
+        //resetButton->SetInteractable(selectedTab != "VMC" && selectedTab != "Mirror" && selectedTab != "Calibration");
     }
 
     void AvatarSettingsViewController::RefreshButton()
@@ -1198,7 +1198,21 @@ namespace VRMQavatars::UI::ViewControllers {
                             AvatarManager::UpdateVRIK();
                         })
                         ->AsShared(),
-                    CP_SDK::XUI::XUIText::Make(u"Wrist Twist Fix Amount"),
+                    CP_SDK::XUI::XUIText::Make(u"Ground Y Offset"),
+                    CP_SDK::XUI::XUISlider::Make()
+                        ->SetIncrements(100.0f)
+                        ->SetMinValue(-2.0f)
+                        ->SetMaxValue(2.0f)
+                        ->SetValue(Config::ConfigManager::GetIKSettings().groundOffset)
+                        ->Bind(&groundOffsetSlider)
+                        ->OnValueChanged([](const float val) {
+                            auto settings = Config::ConfigManager::GetIKSettings();
+                            settings.groundOffset = val;
+                            Config::ConfigManager::SetIKSettings(settings);
+                            AvatarManager::UpdateVRIK();
+                        })
+                        ->AsShared()
+                    /*CP_SDK::XUI::XUIText::Make(u"Wrist Twist Fix Amount"),
                     CP_SDK::XUI::XUISlider::Make()
                         ->SetIncrements(80.0f)
                         ->SetMinValue(0.0f)
@@ -1225,23 +1239,8 @@ namespace VRMQavatars::UI::ViewControllers {
                             Config::ConfigManager::SetIKSettings(settings);
                             AvatarManager::UpdateVRIK();
                         })
-                        ->AsShared()
+                        ->AsShared()*/
                 }),
-                CP_SDK::XUI::XUIVLayout::Make({
-                    CP_SDK::XUI::XUIText::Make(u"Ground Y Offset"),
-                    CP_SDK::XUI::XUISlider::Make()
-                        ->SetIncrements(100.0f)
-                        ->SetMinValue(-2.0f)
-                        ->SetMaxValue(2.0f)
-                        ->SetValue(Config::ConfigManager::GetIKSettings().groundOffset)
-                        ->Bind(&groundOffsetSlider)
-                        ->OnValueChanged([](const float val) {
-                            auto settings = Config::ConfigManager::GetIKSettings();
-                            settings.groundOffset = val;
-                            Config::ConfigManager::SetIKSettings(settings);
-                            AvatarManager::UpdateVRIK();
-                        })
-                        ->AsShared()})
             }
         );
     }
@@ -1253,8 +1252,8 @@ namespace VRMQavatars::UI::ViewControllers {
         bodyStiffnessSlider->SetValue(Config::ConfigManager::GetIKSettings().bodyStiffness);
         groundOffsetSlider->SetValue(Config::ConfigManager::GetIKSettings().groundOffset);
         shoulderRotationWeightSlider->SetValue(Config::ConfigManager::GetIKSettings().shoulderRotationWeight);
-        wristTwistFixSlider->SetValue(Config::ConfigManager::GetIKSettings().wristTwistFixAmount);
-        shoulderTwistFixSlider->SetValue(Config::ConfigManager::GetIKSettings().shoulderTwistFixAmount);
+        //wristTwistFixSlider->SetValue(Config::ConfigManager::GetIKSettings().wristTwistFixAmount);
+        //shoulderTwistFixSlider->SetValue(Config::ConfigManager::GetIKSettings().shoulderTwistFixAmount);
     }
 
     std::shared_ptr<CP_SDK::XUI::XUISlider> AvatarSettingsViewController::BuildFingerSlider(const int finger)
@@ -1688,21 +1687,22 @@ namespace VRMQavatars::UI::ViewControllers {
                         Config::ConfigManager::SetMirrorSettings(settings);
                         MirrorManager::UpdateMirror(false);
                     })
-                    ->AsShared()
+                    ->AsShared(),
+                    CP_SDK::XUI::XUIText::Make(u"Border Color"),
+                    CP_SDK::XUI::XUIColorInput::Make()
+                        ->SetValue(Config::ConfigManager::GetMirrorSettings().borderColor)
+                        ->SetAlphaSupport(true)
+                        ->OnValueChanged([](const UnityEngine::Color val)
+                        {
+                            auto settings = Config::ConfigManager::GetMirrorSettings();
+                            settings.borderColor = val;
+                            Config::ConfigManager::SetMirrorSettings(settings);
+                            MirrorManager::UpdateMirror(false);
+                        })
+                        ->AsShared()
             }),
             CP_SDK::XUI::XUIHLayout::Make({
-                CP_SDK::XUI::XUIText::Make(u"Border Color"),
-                CP_SDK::XUI::XUIColorInput::Make()
-                    ->SetValue(Config::ConfigManager::GetMirrorSettings().borderColor)
-                    ->SetAlphaSupport(true)
-                    ->OnValueChanged([](const UnityEngine::Color val)
-                    {
-                        auto settings = Config::ConfigManager::GetMirrorSettings();
-                        settings.borderColor = val;
-                        Config::ConfigManager::SetMirrorSettings(settings);
-                        MirrorManager::UpdateMirror(false);
-                    })
-                    ->AsShared()
+                CP_SDK::XUI::XUIText::Make(u"<i>Transparency does not currently work with bloom enabled</i>")
             })
         })
         ->SetSpacing(-1.2f)

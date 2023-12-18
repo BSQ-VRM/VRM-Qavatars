@@ -15,6 +15,7 @@
 #include <UnityEngine/AudioListener.hpp>
 #include <UnityEngine/PrimitiveType.hpp>
 
+#include "MaterialTracker.hpp"
 #include "config/ConfigManager.hpp"
 #include "customTypes/Mirror.hpp"
 
@@ -102,7 +103,7 @@ namespace VRMQavatars
 
         //Screen
 
-        auto s = Sombrero::FastVector2(size.y * aspect, size.y);
+        const auto s = Sombrero::FastVector2(size.y * aspect, size.y);
         const auto screen = BSML::FloatingScreen::CreateFloatingScreen({s.x + 5.0f, s.y + 5.0f}, handle, position, UnityEngine::Quaternion::Euler(rotation), 0.0f, true);
         UnityEngine::GameObject::DontDestroyOnLoad(screen->get_gameObject());
 
@@ -151,7 +152,7 @@ namespace VRMQavatars
         material->set_mainTexture(renderTex);
         const auto renderer = quad->GetComponent<UnityEngine::MeshRenderer*>();
         renderer->set_material(material);
-        material->SetFloat("_IgnoreAlpha", !transparentBackground);
+        material->SetFloat("_IgnoreAlpha", !transparentBackground || MaterialTracker::bloomEnabled);
 
         //Border
 
@@ -226,7 +227,8 @@ namespace VRMQavatars
             mirrorCamera->set_targetTexture(renderTex);
             rendMat->set_mainTexture(renderTex);
         }
-        rendMat->SetFloat("_IgnoreAlpha", !conf.transparentBackground);
+        rendMat->SetFloat("_IgnoreAlpha", !conf.transparentBackground || MaterialTracker::bloomEnabled);
+        rendMat->SetFloat("_ColorMask", MaterialTracker::bloomEnabled ? 14 : 15);
 
         const int mask = GetMask(conf.layer);
         mirrorCamera->set_cullingMask(mask);
