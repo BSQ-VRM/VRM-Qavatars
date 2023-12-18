@@ -288,6 +288,9 @@ namespace VRMQavatars::UI::ViewControllers {
 
     void AvatarSettingsViewController::RefreshButton()
     {
+        globalSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::global_png);
+        avatarSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::avatar_png);
+
         bool interactable = false;
         UnityEngine::Sprite* toUse = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::none_png);
         if(selectedTab == "Calibration")
@@ -403,6 +406,7 @@ namespace VRMQavatars::UI::ViewControllers {
                     CP_SDK::XUI::XUISlider::Make()
                         ->SetMinValue(0.2f)
                         ->SetMaxValue(2.0f)
+                        ->SetIncrements(180)
                         ->SetValue(AvatarManager::currentContext != nullptr ? Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue() : 1.0f)
                         ->SetInteractable(AvatarManager::currentContext != nullptr)
                         ->OnValueChanged([](const float val)
@@ -416,7 +420,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->Bind(&armScaleSlider)
                         ->AsShared(),
                 }),
-                CP_SDK::XUI::XUIHLayout::Make(
+                /*CP_SDK::XUI::XUIHLayout::Make(
                 {
                     CP_SDK::XUI::XUIText::Make(u"Leg Scale (Per avatar)"),
                     CP_SDK::XUI::XUISlider::Make()
@@ -431,7 +435,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         })
                         ->Bind(&legScaleSlider)
                         ->AsShared()
-                })
+                })*/
             }
         );
     }
@@ -623,7 +627,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     ->SetInteractable(AvatarManager::currentContext != nullptr)
                                     ->OnValueChanged([](const int idx, const std::u16string_view val) {
                                         auto settings = Config::ConfigManager::GetBlendshapeSettings();
-                                        settings.neutralExpression = to_utf8(val) + "_" + std::to_string(idx);
+                                        settings.neutralExpression = to_utf8(val);
                                         Config::ConfigManager::SetBlendshapeSettings(settings);
                                     })
                                     ->AsShared(),
