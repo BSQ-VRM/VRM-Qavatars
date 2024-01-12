@@ -14,7 +14,6 @@
 
 #include "RootMotion/FinalIK/VRIK.hpp"
 #include "RootMotion/FinalIK/IKSolverVR.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Leg.hpp"
 
 namespace VRMQavatars {
     class AvatarManager

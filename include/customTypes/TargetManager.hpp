@@ -18,15 +18,10 @@
 #include "UnityEngine/AnimationCurve.hpp"
 
 #include "RootMotion/FinalIK/VRIK.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Arm.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Spine.hpp"
-#include "RootMotion/FinalIK/VRIK_References.hpp"
-#include "RootMotion/FinalIK/IKSolver_UpdateDelegate.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Locomotion.hpp"
+#include "RootMotion/FinalIK/IKSolverVR.hpp"
+#include "RootMotion/FinalIK/IKSolver.hpp"
 
 #include "GlobalNamespace/OVRPlugin.hpp"
-#include "GlobalNamespace/OVRPlugin_Node.hpp"
-#include "GlobalNamespace/OVRPlugin_Step.hpp"
 #include "GlobalNamespace/OVRPose.hpp"
 #include "GlobalNamespace/SaberManager.hpp"
 

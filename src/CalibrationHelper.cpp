@@ -3,8 +3,7 @@
 #include <UnityEngine/Time.hpp>
 #include <UnityEngine/WaitForEndOfFrame.hpp>
 
-#include "GlobalNamespace/OVRPlugin_Node.hpp"
-#include "GlobalNamespace/OVRPlugin_Step.hpp"
+#include "GlobalNamespace/OVRPlugin.hpp"
 #include "AvatarManager.hpp"
 #include "HandController.hpp"
 #include "TPoseHelper.hpp"

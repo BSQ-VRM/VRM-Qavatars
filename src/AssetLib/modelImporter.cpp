@@ -262,7 +262,7 @@ void ConstructUnityMesh(const AssetLib::Structure::Node* node, const AssetLib::S
                 const auto ctxNode = context->nodes[i];
                 if(ctxNode->isBone)
                 {
-                    bindPoses[i] = ctxNode->gameObject->get_transform()->get_worldToLocalMatrix() * renderer->get_transform()->get_localToWorldMatrix();
+                    bindPoses[i] = UnityEngine::Matrix4x4::op_Multiply(ctxNode->gameObject->get_transform()->get_worldToLocalMatrix(), renderer->get_transform()->get_localToWorldMatrix());
                 }
             } 
 

@@ -150,7 +150,7 @@ namespace VRMQavatars
             auto ikConfig = Config::ConfigManager::GetIKSettings();
 
             auto pos = noodleTrack->get_transform()->get_position();
-            auto offsetPos = pos + UnityEngine::Vector3(0.0f, ikConfig.groundOffset, 0.0f);
+            auto offsetPos = UnityEngine::Vector3::op_Addition(pos, UnityEngine::Vector3(0.0f, ikConfig.groundOffset, 0.0f));
 
             if(UnityEngine::Vector3::Distance(get_transform()->get_position(), offsetPos) > 0.05f)
             {

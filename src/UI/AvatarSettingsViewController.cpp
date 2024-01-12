@@ -9,8 +9,8 @@
 #include "AvatarManager.hpp"
 
 #include <string_view>
-#include <bsml/shared/BSML/FloatingScreen/FloatingScreen.hpp>
-#include <questui/shared/BeatSaberUI.hpp>
+#include <bsml/shared/Helpers/utilities.hpp>
+#include <UnityEngine/Resources.hpp>
 
 #include "MirrorManager.hpp"
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/Templates.hpp"
@@ -48,8 +48,8 @@ namespace VRMQavatars::UI::ViewControllers {
 
     void AvatarSettingsViewController::DidActivate()
     {
-        globalSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::global_png);
-        avatarSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::avatar_png);
+        globalSprite = BSML::Utilities::LoadSpriteRaw(IncludedAssets::global_png);
+        avatarSprite = BSML::Utilities::LoadSpriteRaw(IncludedAssets::avatar_png);
 
         CP_SDK::XUI::Templates::FullRectLayout({
             CP_SDK::XUI::XUIHLayout::Make({
@@ -288,11 +288,11 @@ namespace VRMQavatars::UI::ViewControllers {
 
     void AvatarSettingsViewController::RefreshButton()
     {
-        globalSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::global_png);
-        avatarSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::avatar_png);
+        globalSprite = BSML::Utilities::LoadSpriteRaw(IncludedAssets::global_png);
+        avatarSprite = BSML::Utilities::LoadSpriteRaw(IncludedAssets::avatar_png);
 
         bool interactable = false;
-        UnityEngine::Sprite* toUse = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::none_png);
+        UnityEngine::Sprite* toUse = BSML::Utilities::LoadSpriteRaw(IncludedAssets::none_png);
         if(selectedTab == "Calibration")
         {
             interactable = false;
@@ -445,8 +445,8 @@ namespace VRMQavatars::UI::ViewControllers {
         armScaleSlider->SetValue(AvatarManager::currentContext != nullptr ? Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue() : 1.0f);
         armScaleSlider->SetInteractable(AvatarManager::currentContext != nullptr);
 
-        legScaleSlider->SetValue(AvatarManager::currentContext != nullptr ? Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.GetValue() : 1.0f);
-        legScaleSlider->SetInteractable(AvatarManager::currentContext != nullptr);
+        //legScaleSlider->SetValue(AvatarManager::currentContext != nullptr ? Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.GetValue() : 1.0f);
+        //legScaleSlider->SetInteractable(AvatarManager::currentContext != nullptr);
     }
 
     std::shared_ptr<CP_SDK::XUI::XUIHLayout> AvatarSettingsViewController::BuildHandOffsetsTab()
@@ -1289,7 +1289,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         u"???",
                         CP_SDK::XUI::XUIHLayout::Make({
                             CP_SDK::XUI::XUIImage::Make()
-                                ->SetSprite(QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::human_hand_png))
+                                ->SetSprite(BSML::Utilities::LoadSpriteRaw(IncludedAssets::human_hand_png))
                                 ->SetWidth(45)
                                 ->SetHeight(45)
                                 ->AsShared(),

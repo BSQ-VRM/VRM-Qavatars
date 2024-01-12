@@ -20,7 +20,11 @@ namespace VRMQavatars
     custom_types::Helpers::Coroutine Wait(const std::string toAdd)
     {
         co_yield reinterpret_cast<System::Collections::IEnumerator*>(CRASH_UNLESS(UnityEngine::WaitForSeconds::New_ctor(0.2f)));
-        UnityEngine::GameObject::Find(toAdd)->AddComponent<GroundOffsetObject*>();
+        auto obj = UnityEngine::GameObject::Find(toAdd);
+        if(obj)
+        {
+            obj->AddComponent<GroundOffsetObject*>();
+        }
         co_return;
     }
 

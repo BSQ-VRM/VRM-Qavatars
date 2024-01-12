@@ -12,9 +12,9 @@
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/Mathf.hpp"
 
-#include "RootMotion/FinalIK/IKSolver_UpdateDelegate.hpp"
+#include "RootMotion/FinalIK/IKSolver.hpp"
 #include "RootMotion/FinalIK/VRIK.hpp"
-#include "RootMotion/FinalIK/VRIK_References.hpp"
+#include "RootMotion/FinalIK/VRIK.hpp"
 
 #include "custom-types/shared/delegate.hpp"
 
@@ -32,15 +32,15 @@ namespace VRMQavatars
 			this->parent = parent;
 			this->target = target;
 			this->child = child;
-			this->twistAxis = target->InverseTransformDirection(child->get_position() - target->get_position());
+			this->twistAxis = target->InverseTransformDirection(UnityEngine::Vector3::op_Subtraction(child->get_position(), target->get_position()));
 			this->axis = UnityEngine::Vector3(this->twistAxis.y, this->twistAxis.z, this->twistAxis.x);
-			this->targetAxisWorld = target->get_rotation() * this->axis;
-			this->axisRelativeToTargetDefault = UnityEngine::Quaternion::Inverse(target->get_rotation()) * this->targetAxisWorld;
+			this->targetAxisWorld = UnityEngine::Quaternion::op_Multiply(target->get_rotation(), this->axis);
+			this->axisRelativeToTargetDefault = UnityEngine::Quaternion::op_Multiply(UnityEngine::Quaternion::Inverse(target->get_rotation()), this->targetAxisWorld);
 			if (parent != nullptr)
 			{
-				this->axisRelativeToParentDefault = UnityEngine::Quaternion::Inverse(parent->get_rotation()) * this->targetAxisWorld;
+				this->axisRelativeToParentDefault = UnityEngine::Quaternion::op_Multiply(UnityEngine::Quaternion::Inverse(parent->get_rotation()), this->targetAxisWorld);
 			}
-			this->axisRelativeToChildDefault = UnityEngine::Quaternion::Inverse(child->get_rotation()) * this->targetAxisWorld;
+			this->axisRelativeToChildDefault = UnityEngine::Quaternion::op_Multiply(UnityEngine::Quaternion::Inverse(child->get_rotation()), this->targetAxisWorld);
         }
 
         Sombrero::FastVector3 twistAxis = UnityEngine::Vector3::get_right();

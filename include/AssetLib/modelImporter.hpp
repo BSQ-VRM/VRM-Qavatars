@@ -27,10 +27,6 @@
 
 #include "RootMotion/FinalIK/VRIK.hpp"
 #include "RootMotion/FinalIK/IKSolverVR.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Arm.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Spine.hpp"
-#include "RootMotion/FinalIK/VRIK_References.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Locomotion.hpp"
 
 #include "assimp/shared/assimp/postprocess.h"
 #include "assimp/shared/assimp/Importer.hpp"

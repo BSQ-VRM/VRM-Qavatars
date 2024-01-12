@@ -29,12 +29,11 @@
 #include "MirrorManager.hpp"
 
 #include "config/ConfigManager.hpp"
-#include "customTypes/DynamicShadowProjector/Projector.hpp"
 
 #include "VMC/VMCClient.hpp"
 #include "VMC/VMCServer.hpp"
 
-static ModInfo modInfo;
+static CModInfo* modInfo;
 
 Logger& getLogger() {
     static Logger* logger = new Logger(modInfo, LoggerOptions(false, true));
@@ -97,8 +96,11 @@ MAKE_HOOK_MATCH(MainCameraHook, &GlobalNamespace::MainCamera::Awake, void, Globa
 //Scene manager is bad
 //Open a PR (please)
 MAKE_HOOK_MATCH(SceneManager_Internal_ActiveSceneChanged, &UnityEngine::SceneManagement::SceneManager::Internal_ActiveSceneChanged, void, UnityEngine::SceneManagement::Scene prevScene, UnityEngine::SceneManagement::Scene nextScene) {
+    getLogger().info("x1");
     SceneManager_Internal_ActiveSceneChanged(prevScene, nextScene);
+    getLogger().info("x2");
     VRMQavatars::SceneEventManager::GameSceneChanged(nextScene);
+    getLogger().info("finish");
 }
 
 MAKE_HOOK_MATCH(SaberPatch, &GlobalNamespace::Saber::ManualUpdate, void, GlobalNamespace::Saber* self) {
@@ -134,27 +136,32 @@ MAKE_HOOK_MATCH(BloomHook, &GlobalNamespace::MainEffectContainerSO::Init, void, 
     getLogger().info("x3");
 }
 
-extern "C" void setup(ModInfo& info) {
-    info.id = MOD_ID;
-    info.version = VERSION;
+extern "C" void setup(CModInfo* info) {
+    info->id        = "vrm-qavatars";
+    info->version   = VERSION;
+    info->version_long = GIT_COMMIT;
+
     modInfo = info;
 
-    getGlobalConfig().Init(Configuration::getConfigFilePath(modInfo));
+    getGlobalConfig().Init(Configuration::getConfigFilePath(modloader::ModInfo(*modInfo)));
+    getLogger().info("hii");
 }
 
 extern "C" void load() {
+    getLogger().info("load");
     il2cpp_functions::Init();
-
+    getLogger().info("load1");
     mkpath(vrm_path);
     mkpath(avaconfig_path);
-
+    getLogger().info("load2");
     custom_types::Register::AutoRegister(); 
-
+    getLogger().info("load3");
     BSML::Register::RegisterMainMenu<FlowCoordinators::AvatarsFlowCoordinator*>("Avatars", "VRM Custom Avatars");
-
+    getLogger().info("load4");
     INSTALL_HOOK(getLogger(), MainMenuUIHook);
-    INSTALL_HOOK(getLogger(), MainCameraHook);
-    INSTALL_HOOK(getLogger(), SceneManager_Internal_ActiveSceneChanged);
-    INSTALL_HOOK(getLogger(), SaberPatch);
-    INSTALL_HOOK(getLogger(), BloomHook);
+    //INSTALL_HOOK(getLogger(), MainCameraHook);
+    //INSTALL_HOOK(getLogger(), SceneManager_Internal_ActiveSceneChanged);
+    //INSTALL_HOOK(getLogger(), SaberPatch);
+    //INSTALL_HOOK(getLogger(), BloomHook);
+    getLogger().info("load5");
 }

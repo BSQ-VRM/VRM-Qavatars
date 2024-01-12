@@ -1,6 +1,7 @@
 #include "customTypes/WristTwistFix.hpp"
 
 #include <chatplex-sdk-bs/shared/CP_SDK/ChatPlexSDK.hpp>
+#include <sombrero/shared/FastQuaternion.hpp>
 #include <sombrero/shared/FastVector3.hpp>
 
 namespace VRMQavatars
@@ -100,9 +101,9 @@ namespace VRMQavatars
         {
             return;
         }
-        const UnityEngine::Quaternion rotation = fixData->target->get_rotation();
-        const Sombrero::FastVector3 vector = fixData->target->get_rotation() * fixData->axisRelativeToTargetDefault;
-        const Sombrero::FastVector3 vector2 = fixData->child->get_rotation() * fixData->axisRelativeToChildDefault;
+        const Sombrero::FastQuaternion rotation = fixData->target->get_rotation();
+        const Sombrero::FastVector3 vector =  Sombrero::FastQuaternion(fixData->target->get_rotation()) * fixData->axisRelativeToTargetDefault;
+        const Sombrero::FastVector3 vector2 = Sombrero::FastQuaternion(fixData->child->get_rotation()) * fixData->axisRelativeToChildDefault;
         Sombrero::FastVector3 vector3;
         if (fixData->parent == nullptr)
         {
@@ -110,15 +111,15 @@ namespace VRMQavatars
         }
         else
         {
-            const Sombrero::FastVector3 vector4 = fixData->parent->get_rotation() * fixData->axisRelativeToParentDefault;
+            const Sombrero::FastVector3 vector4 = Sombrero::FastQuaternion(fixData->parent->get_rotation()) * fixData->axisRelativeToParentDefault;
             vector3 = Sombrero::FastVector3::Slerp(vector, vector4, weight);
         }
-        vector3 = UnityEngine::Quaternion::Inverse(UnityEngine::Quaternion::LookRotation(rotation * fixData->axis, rotation * fixData->twistAxis)) * vector3;
+        vector3 = Sombrero::FastQuaternion(UnityEngine::Quaternion::Inverse(UnityEngine::Quaternion::LookRotation(rotation * fixData->axis, rotation * fixData->twistAxis))) * vector3;
         float num = std::atan2(vector3.x, vector3.z) * 57.29578f;
         num = UnityEngine::Mathf::Repeat(num + 180.0f, 360.0f) - 180.0f;
         num = Dampen(num, -dampen, dampen);
         const UnityEngine::Quaternion rotation2 = fixData->child->get_rotation();
-        fixData->target->set_rotation(UnityEngine::Quaternion::AngleAxis(num, rotation * fixData->twistAxis) * rotation);
+        fixData->target->set_rotation(Sombrero::FastQuaternion(UnityEngine::Quaternion::AngleAxis(num, rotation * fixData->twistAxis)) * rotation);
         fixData->child->set_rotation(rotation2);
     }
 }

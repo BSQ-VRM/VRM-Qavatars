@@ -6,6 +6,7 @@
 #include <GlobalNamespace/MainCamera.hpp>
 #include <GlobalNamespace/VisualEffectsController.hpp>
 
+#include <UnityEngine/RenderTextureFormat.hpp>
 #include <UnityEngine/Shader.hpp>
 #include <UnityEngine/Resources.hpp>
 #include <UnityEngine/RenderTexture.hpp>
@@ -114,7 +115,7 @@ namespace VRMQavatars
 
         //Make render texture
 
-        const auto renderTex = UnityEngine::RenderTexture::New_ctor(1080 * aspect, 1080, 24, UnityEngine::RenderTextureFormat::_get_ARGB32());
+        const auto renderTex = UnityEngine::RenderTexture::New_ctor(1080 * aspect, 1080, 24, UnityEngine::RenderTextureFormat::ARGB32);
 
         //Add Camera
 
@@ -161,7 +162,7 @@ namespace VRMQavatars
         for(const auto x : screen->GetComponentsInChildren<HMUI::ImageView*>()) {
             if(!x)
                 continue;
-            x->skew = 0.0f;
+            x->____skew = 0.0f;
             x->set_overrideSprite(nullptr);
             x->set_sprite(getBgSprite);
             x->set_material(GetBGMat("UINoGlow"));
@@ -223,7 +224,7 @@ namespace VRMQavatars
         if(changedSize)
         {
             mirrorCamera->get_targetTexture()->Release();
-            const auto renderTex = UnityEngine::RenderTexture::New_ctor(1080*aspect, 1080, 24, UnityEngine::RenderTextureFormat::_get_ARGB32());
+            const auto renderTex = UnityEngine::RenderTexture::New_ctor(1080*aspect, 1080, 24, UnityEngine::RenderTextureFormat::ARGB32);
             mirrorCamera->set_targetTexture(renderTex);
             rendMat->set_mainTexture(renderTex);
         }
