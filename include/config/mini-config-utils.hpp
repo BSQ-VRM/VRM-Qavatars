@@ -49,7 +49,7 @@ ConfigUtils::ConfigValue<type> name = {&this->Save, &__##name, jsonName, def __V
 namespace ConfigUtils {
 
     inline Logger& getLogger() {
-        static auto info = new CModInfo("config-utils", "1.1.0", 0);
+        static auto info = modloader::ModInfo("config-utils", "1.1.0", 0);
         static Logger* logger = new Logger(info, LoggerOptions(false, true));
         return *logger;
     }

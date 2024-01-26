@@ -19,11 +19,11 @@ struct IncludedAsset {
     }
 
     operator std::string_view() const {
-        return { reinterpret_cast<char*>(array->values), array->Length() };
+        return { reinterpret_cast<char*>(array->values), array->get_Length() };
     }
     
     operator std::span<uint8_t>() const {
-        return { array->values, array->Length() };
+        return { array->values, array->get_Length() };
     }
 
     void init() const {

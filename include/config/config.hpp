@@ -126,7 +126,6 @@ DECLARE_JSON_CLASS(LightingSettings,
 DECLARE_JSON_CLASS(LocomotionSettings,
     VALUE_DEFAULT(float, footDistance, 0.1f);
     VALUE_DEFAULT(float, stepThreshold, 0.1f);
-    VALUE_DEFAULT(float, stepHeight, 0.02f);
     VALUE_DEFAULT(VectorThree, stepOffset, UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
 )
 

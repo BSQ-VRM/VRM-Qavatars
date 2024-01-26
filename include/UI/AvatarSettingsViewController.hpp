@@ -114,7 +114,6 @@ namespace VRMQavatars::UI::ViewControllers {
         std::shared_ptr<CP_SDK::XUI::XUISlider> footDistanceSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> stepThresholdSlider;
         std::shared_ptr<CP_SDK::XUI::XUISlider> stepOffsetZSlider;
-        std::shared_ptr<CP_SDK::XUI::XUISlider> stepHeightSlider;
 
         //Controller Triggers
 

@@ -87,29 +87,13 @@ namespace VRMQavatars {
         targetManager->offset = pose;
     }
 
-    UnityEngine::Keyframe Frame(const float time, const float val)
-    {
-        UnityEngine::Keyframe frame;
-        frame.m_Time = time;
-        frame.m_Value = val;
-        return frame;
-    }
-
-    ArrayW<UnityEngine::Keyframe> StepHeightFrames(const float val) {
-
-        std::vector frames = {
-            Frame(0.0f, 0.0f),
-            Frame(0.5f, val),
-            Frame(1.0f, 0.0f)
-        };
-        return il2cpp_utils::vectorToArray(frames);
-    }
-
     void AvatarManager::UpdateVRIK()
     {
         if(vrik == nullptr || !vrik->solver->initiated) return;
         auto ikSettings = Config::ConfigManager::GetIKSettings();
         auto locoSettings = Config::ConfigManager::GetLocomotionSettings();
+
+        //vrik->fixTransforms = true;
         vrik->solver->spine->bodyPosStiffness = ikSettings.bodyStiffness;
         vrik->solver->spine->headClampWeight = 0.38f;
         vrik->solver->spine->maintainPelvisPosition = 0.0f;
@@ -131,9 +115,6 @@ namespace VRMQavatars {
         vrik->solver->locomotion->stepSpeed = 2.0f;
 
         vrik->solver->locomotion->offset = locoSettings.stepOffset;
-
-        vrik->solver->locomotion->stepHeight->set_keys(StepHeightFrames(locoSettings.stepHeight));
-        vrik->solver->locomotion->heelHeight->set_keys(StepHeightFrames(locoSettings.stepHeight + 0.1f));
 
         const auto vmcSettings = Config::ConfigManager::GetVMCSettings();
 

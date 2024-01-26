@@ -86,7 +86,8 @@ namespace VRMQavatars
 		}
 		else
 		{
-			UnityEngine::Transform* transform = GetChildren(parent).First();
+			UnityEngine::Transform* transform = GetChildren(parent)->First();
+
 			vector = transform->get_localPosition();
 			vector2 = transform->get_lossyScale();
 		}
@@ -102,7 +103,7 @@ namespace VRMQavatars
 	{
 		if (verlet.size() == 0)
 		{
-			if (rootBones.Length() == 0)
+			if (rootBones.size() == 0)
 			{
 				return;
 			}

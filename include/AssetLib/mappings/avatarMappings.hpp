@@ -9,9 +9,9 @@
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/SkeletonBone.hpp"
+#include "UnityEngine/HumanBone.hpp"
+#include "UnityEngine/HumanDescription.hpp"
 
-#include "AssetLib/skinTypes/newHumanBone.hpp"
-#include "AssetLib/skinTypes/newHumanDescription.hpp"
 #include "AssetLib/structure/node.hpp"
 
 #include "UnityEngine/HumanLimit.hpp"
@@ -30,7 +30,7 @@ namespace VRM::Mappings
         static UnityEngine::Avatar* CreateAvatar(VRMC_VRM_0_0::Vrm vrm, std::vector<AssetLib::Structure::Node*> bones, UnityEngine::GameObject* root)
         {
             auto humanoid = vrm.humanoid;
-            auto hd = CustomHumanDescription();
+            auto hd = UnityEngine::HumanDescription();
             //Mecanim names
             static const std::vector<std::string> names = {
                 "Hips",
@@ -88,7 +88,7 @@ namespace VRM::Mappings
                 "Right Little Distal",
                 "UpperChest",
             };
-            ArrayW<CustomHumanBone> humanBones(humanoid.humanBones.size());
+            ArrayW<UnityEngine::HumanBone> humanBones(humanoid.humanBones.size());
 
             for (size_t i = 0; i < humanoid.humanBones.size(); i++)
             {
@@ -173,8 +173,7 @@ namespace VRM::Mappings
                 if(boneType == VRMC_VRM_0_0::HumanoidBone::Bone::UpperChest) humanName = names[53];
                 if(bone.node+1 >= bones.size() || bones[bone.node+1]->gameObject == nullptr) continue;
                 StringW boneName = bones[bone.node+1]->gameObject->get_name();
-                getLogger().info("%s, %s", static_cast<std::string>(boneName).c_str(), static_cast<std::string>(humanName).c_str());
-                humanBones[i] = CustomHumanBone(boneName, humanName, UnityEngine::HumanLimit(convertVector(bone.min), convertVector(bone.max), convertVector(bone.center), bone.axisLength, bone.useDefaultValues ? 0 : 1));
+                humanBones[i] = UnityEngine::HumanBone(boneName, humanName, UnityEngine::HumanLimit(convertVector(bone.min), convertVector(bone.max), convertVector(bone.center), bone.axisLength, bone.useDefaultValues ? 0 : 1));
             }
             auto allObjs = root->GetComponentsInChildren<UnityEngine::Transform*>(true);
             ArrayW<UnityEngine::SkeletonBone> skeletonBones(allObjs.size());
@@ -209,7 +208,7 @@ namespace VRM::Mappings
             hd.m_RootMotionBoneName = "";
             try
             {
-                static auto buildHumanoid = il2cpp_utils::resolve_icall<UnityEngine::Avatar*, UnityEngine::GameObject*, CustomHumanDescription*>("UnityEngine.AvatarBuilder::BuildHumanAvatarInternal_Injected");
+                static auto buildHumanoid = il2cpp_utils::resolve_icall<UnityEngine::Avatar*, UnityEngine::GameObject*, UnityEngine::HumanDescription*>("UnityEngine.AvatarBuilder::BuildHumanAvatarInternal_Injected");
                 auto ava = buildHumanoid(root, &hd);
                 return ava;
             }

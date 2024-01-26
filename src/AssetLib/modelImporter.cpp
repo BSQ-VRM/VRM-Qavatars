@@ -12,7 +12,7 @@ SafePtrUnity<UnityEngine::Shader> AssetLib::ModelImporter::mtoon;
 //Used for debugging armatures
 void AddSphere(UnityEngine::Transform* obj)
 {
-    const auto gameObject = UnityEngine::GameObject::CreatePrimitive(UnityEngine::PrimitiveType::Sphere)->get_transform();
+    auto gameObject = UnityEngine::GameObject::CreatePrimitive(UnityEngine::PrimitiveType::Sphere)->get_transform();
     gameObject->SetParent(obj, false);
     gameObject->set_localScale(Sombrero::FastVector3(0.05f, 0.05f, 0.05f));
 }
@@ -336,7 +336,7 @@ void CreateNodeTreeObject(AssetLib::Structure::Node* node)
         node->gameObject = UnityEngine::GameObject::New_ctor(node->name);
         if(node->parent != nullptr && node->parent->gameObject != nullptr)
         {
-            const auto trans = node->gameObject->get_transform();
+            auto trans = node->gameObject->get_transform();
             trans->SetParent(node->parent->gameObject->get_transform());
         }
         node->gameObject->get_transform()->set_localPosition(node->position);
@@ -605,7 +605,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
                 auto bone = modelContext->nodes[j];
                 if(bone->isBone)
                 {
-                    if(auto ancestors = Ancestors(bone->gameObject->get_transform()); std::find(ancestors.begin(), ancestors.end(), headBone) != ancestors.end())
+                    if(auto ancestors = Ancestors(bone->gameObject->get_transform()); std::find(ancestors.begin(), ancestors.end(), headBone.ptr()) != ancestors.end())
                     {
                         toErase.push_back(j);
                     }

@@ -38,12 +38,12 @@ namespace VRMQavatars::UI::ViewControllers {
 
     UnityEngine::Sprite* GetBGSprite(std::string str)
     {
-        return UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Sprite*>().First( [str](UnityEngine::Sprite* x) { return x->get_name() == str; });
+        return UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Sprite*>()->First( [str](UnityEngine::Sprite* x) { return x->get_name() == str; });
     }
 
     UnityEngine::Material* GetBGMat(std::string str)
     {
-        return UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Material*>().First([str](UnityEngine::Material* x) { return x->get_name() == str; });
+        return UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Material*>()->First([str](UnityEngine::Material* x) { return x->get_name() == str; });
     }
 
     void AvatarSettingsViewController::DidActivate()
@@ -1469,21 +1469,6 @@ namespace VRMQavatars::UI::ViewControllers {
                         ->AsShared(),
                 }),
                 CP_SDK::XUI::XUIHLayout::Make({
-                    CP_SDK::XUI::XUIText::Make(u"Step Height"),
-                    CP_SDK::XUI::XUISlider::Make()
-                        ->SetIncrements(10.0f)
-                        ->SetMinValue(0.0f)
-                        ->SetMaxValue(0.1f)
-                        ->SetValue(Config::ConfigManager::GetLocomotionSettings().stepHeight)
-                        ->Bind(&stepHeightSlider)
-                        ->OnValueChanged([](const float val)
-                        {
-                            auto settings = Config::ConfigManager::GetLocomotionSettings();
-                            settings.stepHeight = val;
-                            Config::ConfigManager::SetLocomotionSettings(settings);
-                            AvatarManager::UpdateVRIK();
-                        })
-                        ->AsShared(),
 
                     CP_SDK::XUI::XUIText::Make(u"Step Offset Z"),
                     CP_SDK::XUI::XUISlider::Make()
@@ -1510,7 +1495,6 @@ namespace VRMQavatars::UI::ViewControllers {
         footDistanceSlider->SetValue(Config::ConfigManager::GetLocomotionSettings().footDistance);
         stepThresholdSlider->SetValue(Config::ConfigManager::GetLocomotionSettings().stepThreshold);
         stepOffsetZSlider->SetValue(Config::ConfigManager::GetLocomotionSettings().stepOffset.z);
-        stepHeightSlider->SetValue(Config::ConfigManager::GetLocomotionSettings().stepHeight);
     }
 
     std::shared_ptr<CP_SDK::XUI::XUIVLayout> AvatarSettingsViewController::BuildMirrorTab()

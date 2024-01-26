@@ -19,6 +19,7 @@ namespace VRMQavatars
     public:
         static void SavePose(UnityEngine::Transform* root);
         static void LoadPose();
+        static void LoadPose(const UnityEngine::Transform* trans);
     private:
         static std::vector<TransData> originalPositions;
     };

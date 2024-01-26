@@ -35,6 +35,7 @@ if ($help -eq $true) {
 
 $bspid = adb shell pidof com.beatgames.beatsaber
 $command = "adb logcat "
+$command2 = "adb logcat -c"
 
 if ($all -eq $false) {
 }
@@ -60,4 +61,5 @@ if (![string]::IsNullOrEmpty($file)) {
 }
 
 Write-Output "Logging using Command `"$command`""
+Invoke-Expression $command2
 Invoke-Expression $command

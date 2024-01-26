@@ -15,6 +15,7 @@
 #include <UnityEngine/StereoTargetEyeMask.hpp>
 #include <UnityEngine/AudioListener.hpp>
 #include <UnityEngine/PrimitiveType.hpp>
+#include <UnityEngine/SpatialTracking/TrackedPoseDriver.hpp>
 
 #include "MaterialTracker.hpp"
 #include "config/ConfigManager.hpp"
@@ -29,12 +30,12 @@ namespace VRMQavatars
 
     UnityEngine::Sprite* GetBGSprite(std::string str)
     {
-        return UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Sprite*>().First( [str](UnityEngine::Sprite* x) { return x->get_name() == str; });
+        return UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Sprite*>()->First( [str](UnityEngine::Sprite* x) { return x->get_name() == str; });
     }
 
     UnityEngine::Material* GetBGMat(std::string str)
     {
-        return UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Material*>().First([str](UnityEngine::Material* x) { return x->get_name() == str; });
+        return UnityEngine::Resources::FindObjectsOfTypeAll<UnityEngine::Material*>()->First([str](UnityEngine::Material* x) { return x->get_name() == str; });
     }
 
     int firstPersonAvatar = 1 << 6;
@@ -96,36 +97,30 @@ namespace VRMQavatars
         const int mask = GetMask(layer);
 
         //Main Camera
-
         const auto mainCamera = UnityEngine::GameObject::FindGameObjectWithTag("MainCamera");
-        //Root
 
+        //Root
         UnityEngine::GameObject* rootObject = UnityEngine::GameObject::New_ctor("Mirror");
 
         //Screen
-
         const auto s = Sombrero::FastVector2(size.y * aspect, size.y);
         const auto screen = BSML::FloatingScreen::CreateFloatingScreen({s.x + 5.0f, s.y + 5.0f}, handle, position, UnityEngine::Quaternion::Euler(rotation), 0.0f, true);
         UnityEngine::GameObject::DontDestroyOnLoad(screen->get_gameObject());
-
         screen->get_gameObject()->set_layer(firstPersonAvatar);
 
         rootObject->get_transform()->SetParent(screen->get_transform(), false);
         rootObject->get_transform()->set_localPosition({0.0f, 0.0f, 0.05f});
-
         //Make render texture
 
         const auto renderTex = UnityEngine::RenderTexture::New_ctor(1080 * aspect, 1080, 24, UnityEngine::RenderTextureFormat::ARGB32);
-
         //Add Camera
 
-        const auto newCamera = UnityEngine::GameObject::Instantiate(mainCamera, rootObject->get_transform(), false);
+        auto newCamera = UnityEngine::GameObject::Instantiate(mainCamera, rootObject->get_transform(), false);
         const auto camcomp = newCamera->GetComponent<UnityEngine::Camera*>();
-
         UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<UnityEngine::AudioListener*>());
         UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<GlobalNamespace::MainCamera*>());
         UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<GlobalNamespace::VisualEffectsController*>());
-
+        UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<UnityEngine::SpatialTracking::TrackedPoseDriver*>());
         camcomp->set_nearClipPlane(1.0f);
 
         camcomp->set_targetDisplay(0);
@@ -142,15 +137,15 @@ namespace VRMQavatars
 
         //Quad
 
-        const auto quad = UnityEngine::GameObject::CreatePrimitive(UnityEngine::PrimitiveType::Quad);
+        auto quad = UnityEngine::GameObject::CreatePrimitive(UnityEngine::PrimitiveType::Quad);
         quad->get_transform()->SetParent(rootObject->get_transform(), false);
         quad->get_transform()->set_localScale({-size.x, size.y, 1.0f});
         quad->get_transform()->set_localEulerAngles({0, 180, 0});
-
         quad->set_layer(firstPersonAvatar);
 
         const auto material = UnityEngine::Material::New_ctor(mirrorShader.ptr());
         material->set_mainTexture(renderTex);
+
         const auto renderer = quad->GetComponent<UnityEngine::MeshRenderer*>();
         renderer->set_material(material);
         material->SetFloat("_IgnoreAlpha", !transparentBackground || MaterialTracker::bloomEnabled);
@@ -171,7 +166,6 @@ namespace VRMQavatars
 
         if(addComponent)
             rootObject->AddComponent<Mirror*>();
-
         return rootObject;
     }
 
@@ -179,16 +173,20 @@ namespace VRMQavatars
     {
         if(mainMirror) return;
         auto conf = Config::ConfigManager::GetMirrorSettings();
+
         const auto obj = CreateMirror(conf.position, conf.rotation, {conf.size * conf.aspect, conf.size}, conf.aspect, conf.layer, conf.fov, conf.borderColor, conf.transparentBackground, true, conf.showHandle);
+
         mainMirror = obj;
         mirrorCamera = obj->GetComponentInChildren<UnityEngine::Camera*>();
         mirrorRenderer = obj->GetComponentInChildren<UnityEngine::MeshRenderer*>();
+
         UpdateMirror(true);
 
-        const auto screen = mainMirror->get_transform()->get_parent()->get_gameObject();
+        auto screen = mainMirror->get_transform()->get_parent()->get_gameObject();
         screen->set_active(conf.enabled);
 
         const auto screenComp = screen->GetComponent<BSML::FloatingScreen*>();
+
         screenComp->HandleReleased += [](BSML::FloatingScreen* screen, const BSML::FloatingScreenHandleEventArgs& args)
         {
             auto rot = args.rotation;
@@ -202,18 +200,24 @@ namespace VRMQavatars
     void MirrorManager::UpdateMirror(const bool changedSize)
     {
         auto conf = Config::ConfigManager::GetMirrorSettings();
-        const auto screen = mainMirror->get_transform()->get_parent()->get_gameObject();
+
+        auto screen = mainMirror->get_transform()->get_parent()->get_gameObject();
         screen->set_active(conf.enabled);
+
         const float aspect = conf.aspect;
+
         const auto screenComp = screen->GetComponent<BSML::FloatingScreen*>();
+
         if(changedSize)
         {
             auto s = Sombrero::FastVector2(conf.size * aspect, conf.size);
             screenComp->set_ScreenSize({s.x + 5.0f, s.y + 5.0f});
         }
+
         screenComp->set_ScreenPosition(conf.position);
         screenComp->set_ScreenRotation(UnityEngine::Quaternion::Euler(conf.rotation));
         screenComp->set_ShowHandle(conf.showHandle);
+
         if(changedSize)
         {
             mirrorRenderer->get_transform()->set_localScale({-conf.size * aspect, conf.size, 1.0f});
@@ -230,7 +234,6 @@ namespace VRMQavatars
         }
         rendMat->SetFloat("_IgnoreAlpha", !conf.transparentBackground || MaterialTracker::bloomEnabled);
         rendMat->SetFloat("_ColorMask", MaterialTracker::bloomEnabled ? 14 : 15);
-
         const int mask = GetMask(conf.layer);
         mirrorCamera->set_cullingMask(mask);
         mirrorCamera->set_nearClipPlane(conf.nearClip);

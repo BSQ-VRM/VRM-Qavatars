@@ -5,8 +5,8 @@ namespace AssetLib::SkinTypes
 {
     struct BoneWeightProxy
     {
-        std::vector<int> ids = std::vector<int>(4);
-        std::vector<float> weights = {-1.0f, -1.0f, -1.0f, -1.0f};
+        std::array<int, 4> ids = {0, 0, 0, 0};
+        std::array<float, 4> weights = {-1.0f, -1.0f, -1.0f, -1.0f};
 
         void AddBoneData(uint BoneID, float Weight)
         {
@@ -23,32 +23,16 @@ namespace AssetLib::SkinTypes
 
         UnityEngine::BoneWeight convert()
         {
-            UnityEngine::BoneWeight bw;
-
-            for (size_t i = 0; i < ids.size(); i++)
-            {
-                if(i == 0 && weights[i] > 0.0f)
-                {
-                    bw.set_boneIndex0(ids[i]);
-                    bw.set_weight0(std::max(weights[i], 0.0f));
-                }
-                if(i == 1 && weights[i] > 0.0f)
-                {
-                    bw.set_boneIndex1(ids[i]);
-                    bw.set_weight1(std::max(weights[i], 0.0f));
-                }
-                if(i == 2 && weights[i] > 0.0f)
-                {
-                    bw.set_boneIndex2(ids[i]);
-                    bw.set_weight2(std::max(weights[i], 0.0f));
-                }
-                if(i == 3 && weights[i] > 0.0f)
-                {
-                    bw.set_boneIndex3(ids[i]);
-                    bw.set_weight3(std::max(weights[i], 0.0f));
-                }
-            }
-            return bw;
+            return UnityEngine::BoneWeight(
+                std::max(weights[0], 0.0f),
+                std::max(weights[1], 0.0f),
+                std::max(weights[2], 0.0f),
+                std::max(weights[3], 0.0f),
+                weights[0] > 0.0f ? ids[0] : 0,
+                weights[1] > 0.0f ? ids[1] : 0,
+                weights[2] > 0.0f ? ids[2] : 0,
+                weights[3] > 0.0f ? ids[3] : 0
+            );
         }
     };
 };

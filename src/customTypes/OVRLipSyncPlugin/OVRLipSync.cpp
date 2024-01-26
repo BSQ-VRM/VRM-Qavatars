@@ -4,6 +4,7 @@
 
 #include "UnityEngine/AudioSettings.hpp"
 
+#include "System/Array.hpp"
 #include "System/Runtime/InteropServices/GCHandle.hpp"
 #include "System/Runtime/InteropServices/GCHandleType.hpp"
 
@@ -102,13 +103,14 @@ namespace VRMQavatars::OVRLipSync
         auto audioDataType = (stereo ? ovrLipSyncAudioDataType_F32_Stereo : ovrLipSyncAudioDataType_F32_Mono);
         auto num = static_cast<uint>(stereo ? (bufferSize / 2) : bufferSize);
 
-        static float* testBuffer = new float[bufferSize];
-        memcpy(audioBuffer, testBuffer, sizeof(float)*bufferSize);
-
-        //auto gcHandle = System::Runtime::InteropServices::GCHandle::Alloc(static_cast<Array<float>*>(ArrayW<float>(audioBuffer)), System::Runtime::InteropServices::GCHandleType::Pinned);
-        const auto result = ovrLipSyncDll_ProcessFrameEx(context, static_cast<Array<float>*>(ArrayW<float>(testBuffer)), num, audioDataType, &frame);
-        //gcHandle.Free();
-        delete[] testBuffer;
+        auto list = System::Collections::Generic::List_1<float>::New_ctor(bufferSize);
+        for (int i = 0; i < bufferSize; i++)
+        {
+            list->set_Item(i, audioBuffer[i]);
+        }
+        auto gcHandle = System::Runtime::InteropServices::GCHandle::Alloc(list, System::Runtime::InteropServices::GCHandleType::Pinned);
+        const auto result = ovrLipSyncDll_ProcessFrameEx(context, gcHandle.AddrOfPinnedObject(), num, audioDataType, &frame);
+        gcHandle.Free();
         return result;
     }
 
