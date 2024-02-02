@@ -1,6 +1,7 @@
 #include "AssetLib/modelImporter.hpp"
 
 #include "MaterialTracker.hpp"
+#include "config/ConfigManager.hpp"
 #include "UnityEngine/AnimatorCullingMode.hpp"
 
 #include "customTypes/AniLipSync/AnimMorphTarget.hpp"
@@ -483,10 +484,25 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     binFile.read(jsonStr.data(), jsonLength); // Read out the json string
 
     auto doc = nlohmann::json::parse(jsonStr);
-    VRMC_VRM_0_0::Vrm vrm; //final ext Data;
-    from_json(doc["extensions"]["VRM"], vrm);
+    std::optional<VRMC_VRM_0_0::Vrm> vrm; //final ext Data;
+    std::optional<VRMC_VRM_1_0::Vrm> vrm1; //final ext Data;
 
-    modelContext->vrm0 = vrm;
+    auto exts = doc["extensions"];
+    if(exts.contains("VRM"))
+    {
+        VRMC_VRM_0_0::Vrm vrm0;
+        from_json(exts["VRM"], vrm0);
+        vrm = vrm0;
+        modelContext->vrm0 = vrm;
+    }
+
+    if(exts.contains("VRMC_vrm"))
+    {
+        VRMC_VRM_1_0::Vrm vrm10;
+        from_json(exts["VRMC_vrm"], vrm10);
+        vrm1 = vrm10;
+        modelContext->vrm1 = vrm1;
+    }
 
     //Generate Textures
 
@@ -501,49 +517,84 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     std::vector<UnityEngine::Material*> materials;
 
     VRMQavatars::MaterialTracker::materials.clear();
-    for (size_t i = 0; i < vrm.materialProperties.size(); i++)
+    if(vrm.has_value())
     {
-        auto [name, shader, renderQueue, floatProperties, vectorProperties, textureProperties, keywordMap, tagMap] = vrm.materialProperties[i];
-        
-        auto mat = UnityEngine::Material::New_ctor(mtoon);
-
-        for (const auto & [ key, value ] : floatProperties )
+        for (size_t i = 0; i < vrm.value().materialProperties.size(); i++)
         {
-            mat->SetFloat(key.c_str(), value);
-        }
+            auto [name, shader, renderQueue, floatProperties, vectorProperties, textureProperties, keywordMap, tagMap] = vrm.value().materialProperties[i];
 
-        for (const auto & [ key, value ] : keywordMap )
-        {
-            if(value)
+            auto mat = UnityEngine::Material::New_ctor(mtoon);
+
+            for (const auto & [ key, value ] : floatProperties )
             {
-                mat->EnableKeyword(key.c_str());
-            }
-            else
-            {
-                mat->DisableKeyword(key.c_str());
+                mat->SetFloat(key.c_str(), value);
             }
 
-        }
+            for (const auto & [ key, value ] : keywordMap )
+            {
+                if(value)
+                {
+                    mat->EnableKeyword(key.c_str());
+                }
+                else
+                {
+                    mat->DisableKeyword(key.c_str());
+                }
 
-        for (const auto & [ key, value ] : textureProperties )
+            }
+
+            for (const auto & [ key, value ] : textureProperties )
+            {
+                mat->SetTexture(key.c_str(), textures[value]);
+            }
+
+            for (const auto & [ key, value ] : vectorProperties )
+            {
+                mat->SetColor(key.c_str(), Sombrero::FastColor(value[0], value[1], value[2], value[3]));
+            }
+
+            for (const auto & [ key, value ] : tagMap )
+            {
+                mat->SetOverrideTag(key, value);
+            }
+
+            mat->set_renderQueue(renderQueue);
+
+            materials.push_back(mat);
+            VRMQavatars::MaterialTracker::materials.push_back(mat);
+        }
+    }
+    else
+    {
+        if(doc.contains("materials"))
         {
-            mat->SetTexture(key.c_str(), textures[value]);
+            auto vrmMaterials = doc["materials"];
+            for (size_t i = 0; i < vrmMaterials.size(); i++)
+            {
+                VRMC_VRM_1_0::MaterialsMtoon vrmMat;
+                VRMC_VRM_1_0::from_json(vrmMaterials[i], vrmMat);
+
+                auto mat = UnityEngine::Material::New_ctor(mtoon);
+
+                //mat->SetInt(vrmMat.transparentWithZWrite);
+
+                auto shadeColor = vrmMat.shadeColorFactor;
+                mat->SetColor("_ShadeColor", Sombrero::FastColor(shadeColor[0], shadeColor[1], shadeColor[2], shadeColor[3]));
+                mat->SetTexture("_ShadeTexture", textures[vrmMat.shadeMultiplyTexture.index]);
+
+                mat->SetFloat("_ShadeShift", vrmMat.shadingShiftFactor);
+                mat->SetFloat("_ShadeToony", vrmMat.shadingToonyFactor);
+                mat->SetFloat("_ShadeToony", vrmMat.giEqualizationFactor);
+
+                auto outlineColor = vrmMat.outlineColorFactor;
+                mat->SetColor("_OutlineColor", Sombrero::FastColor(outlineColor[0], outlineColor[1], outlineColor[2], outlineColor[3]));
+                mat->SetFloat("_OutlineLightingMix", vrmMat.outlineLightingMixFactor);
+                mat->SetFloat("_OutlineWidth", vrmMat.outlineWidthFactor);
+
+                materials.push_back(mat);
+                VRMQavatars::MaterialTracker::materials.push_back(mat);
+            }
         }
-
-        for (const auto & [ key, value ] : vectorProperties )
-        {
-            mat->SetColor(key.c_str(), Sombrero::FastColor(value[0], value[1], value[2], value[3]));
-        }
-
-        for (const auto & [ key, value ] : tagMap )
-        {
-            mat->SetOverrideTag(key, value);
-        }
-
-        mat->set_renderQueue(renderQueue);
-
-        materials.push_back(mat);
-        VRMQavatars::MaterialTracker::materials.push_back(mat);
     }
     VRMQavatars::MaterialTracker::UpdateMaterials();
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
@@ -564,8 +615,8 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     //modelContext->rootGameObject->AddComponent<VRMQavatars::OVRLipSync::OVRLipSync*>();
 
-    modelContext->blendShapeMaster = Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm);
-    auto avatar = VRM::Mappings::AvatarMappings::CreateAvatar(vrm, modelContext->nodes, modelContext->armature.value().rootBone->gameObject);
+    modelContext->blendShapeMaster = vrm.has_value() ? Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm.value()) : Structure::VRM::VRMBlendShapeMaster::LoadFromVRM1(vrm1.value());;
+    auto avatar = vrm.has_value() ? VRM::Mappings::AvatarMappings::CreateAvatar(vrm.value(), modelContext->nodes, modelContext->armature.value().rootBone->gameObject) :  VRM::Mappings::AvatarMappings::CreateAvatar(vrm1.value(), modelContext->nodes, modelContext->armature.value().rootBone->gameObject);
     auto anim = modelContext->rootGameObject->AddComponent<UnityEngine::Animator*>();
     anim->set_cullingMode(UnityEngine::AnimatorCullingMode::AlwaysAnimate);
     anim->set_avatar(avatar);
@@ -596,29 +647,35 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         if(const auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)
         {
             auto gameObject = modelContext->nodes[i]->gameObject;
-            auto skinnedRenderer = gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
-
-            std::vector<int> toErase;
-
-            for (size_t j = 0; j < modelContext->nodes.size(); j++)
+            if(!VRMQavatars::Config::ConfigManager::GetGlobalConfig().ForceHideBody.GetValue())
             {
-                auto bone = modelContext->nodes[j];
-                if(bone->isBone)
+                auto skinnedRenderer = gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
+
+                std::vector<int> toErase;
+
+                for (size_t j = 0; j < modelContext->nodes.size(); j++)
                 {
-                    if(auto ancestors = Ancestors(bone->gameObject->get_transform()); std::find(ancestors.begin(), ancestors.end(), headBone.ptr()) != ancestors.end())
+                    auto bone = modelContext->nodes[j];
+                    if(bone->isBone)
                     {
-                        toErase.push_back(j);
+                        if(auto ancestors = Ancestors(bone->gameObject->get_transform()); std::find(ancestors.begin(), ancestors.end(), headBone.ptr()) != ancestors.end())
+                        {
+                            toErase.push_back(j);
+                        }
                     }
                 }
-            }
-            
-            auto newMesh = VRMQavatars::BoneMeshUtility::CreateErasedMesh(skinnedRenderer->get_sharedMesh(), toErase);
-            auto newObj = UnityEngine::GameObject::Instantiate(gameObject, gameObject->get_transform(), false);
-            newObj->GetComponent<UnityEngine::SkinnedMeshRenderer*>()->set_sharedMesh(newMesh);
 
-            //SetLayers
-            newObj->set_layer(6); //First Person
-            gameObject->set_layer(3); //Third Person
+                auto newMesh = VRMQavatars::BoneMeshUtility::CreateErasedMesh(skinnedRenderer->get_sharedMesh(), toErase);
+                auto newObj = UnityEngine::GameObject::Instantiate(gameObject, gameObject->get_transform(), false);
+                newObj->GetComponent<UnityEngine::SkinnedMeshRenderer*>()->set_sharedMesh(newMesh);
+
+                //SetLayers
+                newObj->set_layer(6); //First Person
+            }
+            if(!VRMQavatars::Config::ConfigManager::GetGlobalConfig().ForceHead.GetValue() || VRMQavatars::Config::ConfigManager::GetGlobalConfig().ForceHideBody.GetValue())
+            {
+                gameObject->set_layer(3); //Third Person
+            }
         }
     }
 
@@ -628,58 +685,126 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::LowLatencyLipSyncContext*>();
     //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::AnimMorphTarget*>();
 
-    auto colliders = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>();
-    for (auto colliderGroup : vrm.secondaryAnimation.colliderGroups)
+    if(vrm.has_value())
     {
-        if (auto node = modelContext->nodes[colliderGroup.node+1]->gameObject)
+        auto colliders = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>();
+        for (auto colliderGroup : vrm.value().secondaryAnimation.colliderGroups)
         {
-            auto vrmGroup = node->AddComponent<VRMQavatars::VRMSpringBoneColliderGroup*>();
-            for (auto colliderRef : colliderGroup.colliders)
+            if (auto node = modelContext->nodes[colliderGroup.node+1]->gameObject)
             {
-                vrmGroup->colliders.push_back(SphereCollider(convertVector(colliderRef.offset), colliderRef.radius));
+                auto vrmGroup = node->AddComponent<VRMQavatars::VRMSpringBoneColliderGroup*>();
+                for (auto colliderRef : colliderGroup.colliders)
+                {
+                    vrmGroup->colliders.push_back(SphereCollider(convertVector(colliderRef.offset), colliderRef.radius));
+                }
+                colliders.push_back(vrmGroup);
             }
-            colliders.push_back(vrmGroup);
+            else
+            {
+                break;
+            }
         }
-        else
+
+        auto springs = vrm.value().secondaryAnimation.boneGroups;
+        for (size_t i = 0; i < springs.size(); i++)
         {
-            break;
+            auto springRef = springs[i];
+
+            auto springBone = secondary->get_gameObject()->AddComponent<VRMQavatars::VRMSpringBone*>();
+
+            if (springRef.center != -1)
+            {
+                springBone->center = modelContext->nodes[springRef.center+1]->gameObject->get_transform();
+            }
+
+            springBone->comment = springRef.comment;
+            springBone->dragForce = springRef.dragForce;
+            springBone->gravityDir = convertVector(springRef.gravityDir);
+            springBone->gravityPower = springRef.gravityPower;
+            springBone->hitRadius = springRef.hitRadius;
+            springBone->stiffnessForce = springRef.stiffiness;
+            if ( springRef.colliderGroups.size() > 0)
+            {
+                springBone->colliderGroups = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>(springRef.colliderGroups.size());
+                for (int j = 0; j < springRef.colliderGroups.size(); j++)
+                {
+                    auto group = springRef.colliderGroups[j];
+                    springBone->colliderGroups[j] = colliders[group];
+                }
+            }
+            ArrayW<UnityEngine::Transform*> list2 = ArrayW<UnityEngine::Transform*>(springRef.bones.size());
+            for (size_t k = 0; k < springRef.bones.size(); k++)
+            {
+                auto bone = springRef.bones[k];
+                list2[k] = modelContext->nodes[bone+1]->gameObject->get_transform();
+            }
+            springBone->rootBones = list2;
         }
     }
-    
-    auto springs = vrm.secondaryAnimation.boneGroups;
-    for (size_t i = 0; i < springs.size(); i++)
+    else if(exts.contains("VRMC_springBone"))
     {
-        auto springRef = springs[i];
+        /*auto sprigEx = exts["VRMC_springBone"];
 
-        auto springBone = secondary->get_gameObject()->AddComponent<VRMQavatars::VRMSpringBone*>();
+        auto sprigColliders = sprigEx["colliders"];
 
-        if (springRef.center != -1)
-		{
-			springBone->center = modelContext->nodes[springRef.center+1]->gameObject->get_transform();
-		}
-
-		springBone->comment = springRef.comment;
-		springBone->dragForce = springRef.dragForce;
-		springBone->gravityDir = convertVector(springRef.gravityDir);
-		springBone->gravityPower = springRef.gravityPower;
-		springBone->hitRadius = springRef.hitRadius;
-		springBone->stiffnessForce = springRef.stiffiness;
-		if ( springRef.colliderGroups.size() > 0)
-		{
-			springBone->colliderGroups = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>(springRef.colliderGroups.size());
-			for (int j = 0; j < springRef.colliderGroups.size(); j++)
-			{
-                auto group = springRef.colliderGroups[j];
-				springBone->colliderGroups[j] = colliders[group];   
-			}
-		}   
-		ArrayW<UnityEngine::Transform*> list2 = ArrayW<UnityEngine::Transform*>(springRef.bones.size());
-        for (size_t k = 0; k < springRef.bones.size(); k++)
+        auto colliders = std::vector<SphereCollider>();
+        for (auto collider : sprigColliders)
         {
-            auto bone = springRef.bones[k];
-            list2[k] = modelContext->nodes[bone+1]->gameObject->get_transform();
+            colliders.push_back(SphereCollider(convertVector(collider["offset"]), collider["radius"]));
         }
-		springBone->rootBones = list2;
+
+        auto colliderGroups = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>();
+        for (auto colliderGroup : sprigEx["colliderGroups"])
+        {
+            auto firstCollider = static_cast<int>(colliderGroup["colliders"][0]);
+            if (auto node = modelContext->nodes[static_cast<int>(sprigColliders[firstCollider]["node"])+1]->gameObject)
+            {
+                auto vrmGroup = node->AddComponent<VRMQavatars::VRMSpringBoneColliderGroup*>();
+                for (auto colliderRef : colliderGroup["colliders"])
+                {
+                    vrmGroup->colliders.push_back(colliders[colliderRef]);
+                }
+                colliderGroups.push_back(vrmGroup);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        auto springs = sprigEx["springs"];
+        for (auto springRef : sprigEx["springs"])
+        {
+            auto springBone = secondary->get_gameObject()->AddComponent<VRMQavatars::VRMSpringBone*>();
+
+            if (springRef.contains("center") && springRef["center"] != -1)
+            {
+                springBone->center = modelContext->nodes[static_cast<int>(springRef["center"])+1]->gameObject->get_transform();
+            }
+
+            springBone->comment = springRef["name"];
+            springBone->dragForce = springRef.dragForce;
+            springBone->gravityDir = convertVector(springRef.gravityDir);
+            springBone->gravityPower = springRef.gravityPower;
+            springBone->hitRadius = springRef.hitRadius;
+            springBone->stiffnessForce = springRef.stiffiness;
+            if ( springRef["colliderGroups"].size() > 0)
+            {
+                springBone->colliderGroups = std::vector<VRMQavatars::VRMSpringBoneColliderGroup*>(springRef["colliderGroups"].size());
+                for (int j = 0; j < springRef["colliderGroups"].size(); j++)
+                {
+                    auto group = springRef["colliderGroups"][j];
+                    springBone->colliderGroups[j] = colliderGroups[group];
+                }
+            }
+            ArrayW<UnityEngine::Transform*> list2 = ArrayW<UnityEngine::Transform*>(springRef.bones.size());
+            for (size_t k = 0; k < springRef.bones.size(); k++)
+            {
+                auto bone = springRef.bones[k];
+                list2[k] = modelContext->nodes[bone+1]->gameObject->get_transform();
+            }
+            springBone->rootBones = list2;
+        }*/
     }
     
     return modelContext;

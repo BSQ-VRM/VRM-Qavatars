@@ -162,10 +162,61 @@ namespace VRMQavatars::UI::ViewControllers {
                 { u"Mirror", BuildMirrorTab() },
                 { u"Lighting", BuildLightingTab() },
                 { u"Wind", BuildWindTab() },
+                { u"Exp", CP_SDK::XUI::XUIVLayout::Make({
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIImage::Make(BSML::Utilities::LoadSpriteRaw(IncludedAssets::Wallsocket_Album_Cover_jpeg))
+                                ->SetWidth(8.0f)
+                                ->SetHeight(8.0f)
+                                ->AsShared(),
+                            CP_SDK::XUI::XUIText::Make(u"Uncanny long arms :) (Recalibrate)"),
+                            CP_SDK::XUI::XUIToggle::Make()
+                                ->SetValue(Config::ConfigManager::GetGlobalConfig().UncannyLongArmsFunnyUnderscoresReference.GetValue())
+                                ->OnValueChanged([](const bool val)
+                                {
+                                    Config::ConfigManager::GetGlobalConfig().UncannyLongArmsFunnyUnderscoresReference.SetValue(val);
+                                    Config::ConfigManager::GetGlobalConfig().Save();
+                                })
+                                ->AsShared()
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIText::Make(u"Force Show Hair In First Person (Reload Avatar)"),
+                            CP_SDK::XUI::XUIToggle::Make()
+                                ->SetValue(Config::ConfigManager::GetGlobalConfig().ForceHair.GetValue())
+                                ->OnValueChanged([](const bool val)
+                                {
+                                    Config::ConfigManager::GetGlobalConfig().ForceHair.SetValue(val);
+                                    Config::ConfigManager::GetGlobalConfig().Save();
+                                })
+                                ->AsShared()
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIText::Make(u"Force Show Head In First Person (Reload Avatar)"),
+                            CP_SDK::XUI::XUIToggle::Make()
+                                ->SetValue(Config::ConfigManager::GetGlobalConfig().ForceHead.GetValue())
+                                ->OnValueChanged([](const bool val)
+                                {
+                                    Config::ConfigManager::GetGlobalConfig().ForceHead.SetValue(val);
+                                    Config::ConfigManager::GetGlobalConfig().Save();
+                                })
+                                ->AsShared()
+                        }),
+                        CP_SDK::XUI::XUIHLayout::Make({
+                            CP_SDK::XUI::XUIText::Make(u"Force Hide Body In First Person (Reload Avatar)"),
+                            CP_SDK::XUI::XUIToggle::Make()
+                                ->SetValue(Config::ConfigManager::GetGlobalConfig().ForceHideBody.GetValue())
+                                ->OnValueChanged([](const bool val)
+                                {
+                                    Config::ConfigManager::GetGlobalConfig().ForceHideBody.SetValue(val);
+                                    Config::ConfigManager::GetGlobalConfig().Save();
+                                })
+                                ->AsShared()
+                        })
+                    })
+                },
             })
             ->OnActiveChanged([this](const int tab)
             {
-                const std::vector opts = { "Calibration", "Hands", "Face", "VMC", "VRIK", "Mirror", "Lighting", "Wind" };
+                const std::vector opts = { "Calibration", "Hands", "Face", "VMC", "VRIK", "Mirror", "Lighting", "Wind", "Exp" };
                 selectedTab = opts[tab];
                 if(selectedTab == "Hands")
                     selectedTab = handTab;
@@ -354,6 +405,12 @@ namespace VRMQavatars::UI::ViewControllers {
             goto setButton;
         }
         if(selectedTab == "Wind")
+        {
+            interactable = false;
+            toUse = globalSprite;
+            goto setButton;
+        }
+        if(selectedTab == "Exp")
         {
             interactable = false;
             toUse = globalSprite;

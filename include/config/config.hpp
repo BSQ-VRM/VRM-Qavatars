@@ -211,6 +211,11 @@ DECLARE_CONFIG(GlobalConfig,
 
     CONFIG_VALUE(CalibrationType, int, "Calibration Type", 1);
     CONFIG_VALUE(FixedScale, float, "Fixed Scale", 1.0f);
+
+    CONFIG_VALUE(UncannyLongArmsFunnyUnderscoresReference, bool, "UncannyLongArmsFunnyUnderscoresReference", false);
+    CONFIG_VALUE(ForceHair, bool, "ForceHair", false);
+    CONFIG_VALUE(ForceHead, bool, "ForceHead", false);
+    CONFIG_VALUE(ForceHideBody, bool, "ForceHideBody", false);
 )
 
 //Avatar Specific + Config Items

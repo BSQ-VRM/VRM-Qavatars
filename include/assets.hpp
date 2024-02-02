@@ -19,11 +19,11 @@ struct IncludedAsset {
     }
 
     operator std::string_view() const {
-        return { reinterpret_cast<char*>(array->values), array->get_Length() };
+        return { reinterpret_cast<char*>(array->_values), array->get_Length() };
     }
     
     operator std::span<uint8_t>() const {
-        return { array->values, array->get_Length() };
+        return { array->_values, array->get_Length() };
     }
 
     void init() const {
@@ -44,6 +44,7 @@ struct IncludedAsset {
 namespace IncludedAssets {
 
 	DECLARE_FILE(VMC_png)
+	DECLARE_FILE(Wallsocket_Album_Cover_jpeg)
 	DECLARE_FILE(avatar_png)
 	DECLARE_FILE(cd_png)
 	DECLARE_FILE(global_png)

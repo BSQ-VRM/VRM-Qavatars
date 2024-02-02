@@ -56,7 +56,7 @@
     },
     {
       "id": "custom-types",
-      "versionRange": "*",
+      "versionRange": "0.16.16",
       "additionalData": {}
     },
     {

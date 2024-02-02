@@ -31,7 +31,7 @@ namespace VRMQavatars
 
         TPoseHelper::LoadPose();
 
-        auto armScale = Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue();
+        auto armScale = Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue() * (Config::ConfigManager::GetGlobalConfig().UncannyLongArmsFunnyUnderscoresReference.GetValue() ? 5.0f : 1.0f);
         auto legScale = Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.GetValue();
 
         auto hips = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::Hips);
@@ -40,8 +40,8 @@ namespace VRMQavatars
         auto LLeg = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
         auto RLeg = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperLeg);
 
-        LArm->set_localScale({armScale, armScale, armScale});
-        RArm->set_localScale({armScale, armScale, armScale});
+        LArm->set_localScale({armScale, LArm->localScale.y, LArm->localScale.z});
+        RArm->set_localScale({armScale, RArm->localScale.y, RArm->localScale.z});
         LLeg->set_localScale({legScale, legScale, legScale});
         RLeg->set_localScale({legScale, legScale, legScale});
 

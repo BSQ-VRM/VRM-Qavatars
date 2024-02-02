@@ -144,6 +144,7 @@ namespace VRMQavatars
         quad->set_layer(firstPersonAvatar);
 
         const auto material = UnityEngine::Material::New_ctor(mirrorShader.ptr());
+        material->set_renderQueue(3000);
         material->set_mainTexture(renderTex);
 
         const auto renderer = quad->GetComponent<UnityEngine::MeshRenderer*>();
