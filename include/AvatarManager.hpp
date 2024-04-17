@@ -3,8 +3,6 @@
 #include <chatplex-sdk-bs/shared/CP_SDK/Utils/Delegate.hpp>
 #include <chatplex-sdk-bs/shared/CP_SDK/Utils/Event.hpp>
 
-#include "customTypes/WristTwistFix.hpp"
-
 #include "main.hpp"
 #include "AssetLib/structure/VRM/VRMmodelContext.hpp"
 
@@ -12,8 +10,8 @@
 
 #include "utils/structs/OffsetPose.hpp"
 
-#include "RootMotion/FinalIK/VRIK.hpp"
-#include "RootMotion/FinalIK/IKSolverVR.hpp"
+#include "customTypes/FinalIK/VRIK.hpp"
+#include "customTypes/FinalIK/IKSolverVR.hpp"
 
 namespace VRMQavatars {
     class AvatarManager
@@ -32,11 +30,8 @@ namespace VRMQavatars {
 
         static CP_SDK::Utils::Event<> OnLoad;
 
-        private:
-        static WristTwistFix* _wristTwistFix;
-
         public:
-        static RootMotion::FinalIK::VRIK* vrik;
+        static FinalIK::VRIK* vrik;
         static TargetManager* targetManager;
     };
 };

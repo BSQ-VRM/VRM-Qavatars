@@ -6,7 +6,7 @@
 #include "beatsaber-hook/shared/utils/il2cpp-functions.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 
-Logger& getLogger();
+constexpr auto VRMLogger = Paper::ConstLoggerContext("vrm-qavatars");
 #ifndef GET_FIND_METHOD
 #define GET_FIND_METHOD(mPtr) il2cpp_utils::il2cpp_type_check::MetadataGetter<mPtr>::methodInfo()
 #endif

@@ -25,8 +25,8 @@
 #include "UnityEngine/Animator.hpp"
 #include "UnityEngine/HumanBodyBones.hpp"
 
-#include "RootMotion/FinalIK/VRIK.hpp"
-#include "RootMotion/FinalIK/IKSolverVR.hpp"
+#include "customTypes/FinalIK/VRIK.hpp"
+#include "customTypes/FinalIK/IKSolverVR.hpp"
 
 #include "assimp/shared/assimp/postprocess.h"
 #include "assimp/shared/assimp/Importer.hpp"

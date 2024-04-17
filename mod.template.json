@@ -11,12 +11,7 @@
   "dependencies": [],
   "modFiles": [],
   "libraryFiles": ["libOVRLipSync.so"],
-  "fileCopies": [
-    {
-      "name": "shaders.sbund",
-      "destination": "/sdcard/ModData/shaders.sbund"
-    }
-  ],
+  "fileCopies": [],
   "copyExtensions": [{
     "extension": "vrm",
     "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/VRMQavatars/Avatars"

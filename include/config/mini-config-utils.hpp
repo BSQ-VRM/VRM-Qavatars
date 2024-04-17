@@ -17,7 +17,7 @@ DECLARE_JSON_CLASS(name##_t, \
         try { \
             ReadFromFile(__config_path, GetInstance()); \
         } catch (const std::exception& err) { \
-            ConfigUtils::getLogger().error("Error reading config: %s (from %s)", err.what(), __config_path.c_str()); \
+            ConfigUtils::Logger.error("Error reading config: %s (from %s)", err.what(), __config_path.c_str()); \
         } \
 		Save(); \
     } \
@@ -26,13 +26,13 @@ DECLARE_JSON_CLASS(name##_t, \
     } \
     static void Save() { \
         if (__config_path.empty()) { \
-            ConfigUtils::getLogger().error("Config was not initialized!"); \
+            ConfigUtils::Logger.error("Config was not initialized!"); \
             return; \
         } \
         try { \
             WriteToFile(__config_path, GetInstance()); \
         } catch (const std::exception& err) { \
-            ConfigUtils::getLogger().error("Error saving config: %s (to %s)", err.what(), __config_path.c_str()); \
+            ConfigUtils::Logger.error("Error saving config: %s (to %s)", err.what(), __config_path.c_str()); \
         } \
     } \
 ) \
@@ -48,11 +48,7 @@ ConfigUtils::ConfigValue<type> name = {&this->Save, &__##name, jsonName, def __V
 
 namespace ConfigUtils {
 
-    inline Logger& getLogger() {
-        static auto info = modloader::ModInfo("config-utils", "1.1.0", 0);
-        static Logger* logger = new Logger(info, LoggerOptions(false, true));
-        return *logger;
-    }
+    static constexpr auto Logger = Paper::ConstLoggerContext("config-utils");
 
     template <typename ValueType>
     struct Specialization {

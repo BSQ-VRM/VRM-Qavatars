@@ -14,8 +14,8 @@
 #include "UnityEngine/Quaternion.hpp"
 #include "UnityEngine/Matrix4x4.hpp"
 
-#include "RootMotion/FinalIK/VRIK.hpp"
-#include "RootMotion/FinalIK/IKSolverVR.hpp"
+#include "customTypes/FinalIK/VRIK.hpp"
+#include "customTypes/FinalIK/IKSolverVR.hpp"
 
 #include "GlobalNamespace/OVRPlugin.hpp"
 #include "GlobalNamespace/OVRPose.hpp"

@@ -27,34 +27,34 @@ namespace VRMQavatars::OVRLipSync
 
     void OVRLipSync::Awake()
     {
-        getLogger().info("ovr x1");
+        VRMLogger.info("ovr x1");
         if(!sInstance)
         {
-            getLogger().info("ovr x2");
+            VRMLogger.info("ovr x2");
             sInstance = this;
             if(IsInitialized() != ovrLipSyncSuccess)
             {
-                getLogger().info("ovr x3");
+                VRMLogger.info("ovr x3");
                 sInitialized = Initialize();
-                getLogger().info("ovr x4");
+                VRMLogger.info("ovr x4");
                 if(IsInitialized() != ovrLipSyncSuccess)
                 {
-                    getLogger().info("ovr x5");
-                    getLogger().error("OvrLipSync Awake: Failed to init Speech Rec library");
+                    VRMLogger.info("ovr x5");
+                    VRMLogger.error("OvrLipSync Awake: Failed to init Speech Rec library");
                 }
-                getLogger().info("ovr x6");
+                VRMLogger.info("ovr x6");
             }
-            getLogger().info("ovr x7");
+            VRMLogger.info("ovr x7");
             return;
         }
-        getLogger().error("OVRLipSync Awake: Only one instance of OVRPLipSync can exist in the scene.");
+        VRMLogger.error("OVRLipSync Awake: Only one instance of OVRPLipSync can exist in the scene.");
     }
 
     void OVRLipSync::OnDestroy()
     {
         if (sInstance.ptr() != this)
         {
-            getLogger().error("OVRLipSync OnDestroy: This is not the correct OVRLipSync instance.");
+            VRMLogger.error("OVRLipSync OnDestroy: This is not the correct OVRLipSync instance.");
         }
     }
 
@@ -83,7 +83,7 @@ namespace VRMQavatars::OVRLipSync
         int num2;
         static auto buildHumanoid = il2cpp_utils::resolve_icall<void, int&, int&>("UnityEngine.AudioSettings::GetDSPBufferSize");
         buildHumanoid(num, num2);
-        getLogger().info("OvrLipSync Awake: Queried SampleRate: %d BufferSize: %d", outputSampleRate, num);
+        VRMLogger.info("OvrLipSync Awake: Queried SampleRate: %d BufferSize: %d", outputSampleRate, num);
         sInitialized = ovrLipSyncDll_Initialize(1024, num);
         return sInitialized;
     }

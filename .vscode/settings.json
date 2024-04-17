@@ -117,6 +117,7 @@
         "format": "cpp",
         "ranges": "cpp",
         "stop_token": "cpp",
-        "__std_stream": "cpp"
+        "__std_stream": "cpp",
+        "__verbose_abort": "cpp"
     }
 }

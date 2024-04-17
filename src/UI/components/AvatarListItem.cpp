@@ -21,7 +21,7 @@ namespace VRMQavatars::UI::Components {
 
     void AvatarListItem::OnShow()
     {
-        static auto cdsprite = BSML::Utilities::LoadSpriteRaw(IncludedAssets::cd_png);
+        static auto cdsprite = BSML::Utilities::LoadSpriteRaw(Assets::cd_png);
         const auto l_TextListCell = GetCellAsClassOf<AvatarListCell*>();
         if (!l_TextListCell)
             return;

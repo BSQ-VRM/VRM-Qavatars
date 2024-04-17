@@ -32,7 +32,7 @@ namespace VRMQavatars::UI::Components {
 
     void AvatarListCell::Build_Impl()
     {
-        static auto sprite = BSML::Utilities::LoadSpriteRaw(IncludedAssets::cd_png);
+        static auto sprite = BSML::Utilities::LoadSpriteRaw(Assets::cd_png);
         CP_SDK::XUI::XUIHLayout::Make({
             CP_SDK::XUI::XUIImage::Make()
                 ->Bind(&Image)

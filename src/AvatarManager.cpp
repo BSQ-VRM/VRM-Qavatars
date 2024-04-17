@@ -12,9 +12,8 @@
 namespace VRMQavatars {
 
     AssetLib::Structure::VRM::VRMModelContext* AvatarManager::currentContext;
-    RootMotion::FinalIK::VRIK* AvatarManager::vrik;
+    FinalIK::VRIK* AvatarManager::vrik;
     TargetManager* AvatarManager::targetManager;
-    WristTwistFix* AvatarManager::_wristTwistFix;
     CP_SDK::Utils::Event<> AvatarManager::OnLoad;
 
     void AvatarManager::StartupLoad()
@@ -23,7 +22,7 @@ namespace VRMQavatars {
         if(globcon.hasSelected.GetValue())
         {
             const auto path = globcon.selectedFileName.GetValue();
-            getLogger().info("%s", (std::string(vrm_path) + "/" + path).c_str());
+            VRMLogger.info("%s", (std::string(vrm_path) + "/" + path).c_str());
             if(fileexists(std::string(vrm_path) + "/" + path))
             {
                 const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
@@ -54,9 +53,8 @@ namespace VRMQavatars {
 
         const auto root = currentContext->rootGameObject;
 
-        vrik = root->GetComponent<RootMotion::FinalIK::VRIK*>();
+        vrik = root->GetComponent<FinalIK::VRIK*>();
         targetManager = root->GetComponent<TargetManager*>();
-        _wristTwistFix = root->GetComponent<WristTwistFix*>();
 
         const auto blendShapeMaster = root->GetComponent<BlendShape::BlendShapeController*>();
         blendShapeMaster->Init();

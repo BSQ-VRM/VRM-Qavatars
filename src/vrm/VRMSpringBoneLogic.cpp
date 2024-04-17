@@ -29,6 +29,10 @@ namespace VRMQavatars
 		trans->set_rotation(ApplyRotation(nextTailVec));
 	}
 
+	float SqrMagnitude(Sombrero::FastVector3 vector) {
+		return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
+	}
+
 	Sombrero::FastVector3 VRMSpringBoneLogic::Collision(const std::vector<SphereColliderLogic>& colliders, const Sombrero::FastVector3 nextTail)
 	{
 		UnityEngine::Vector3 ret = nextTail;
@@ -36,7 +40,7 @@ namespace VRMQavatars
 		{
 			auto collider = colliders[i];
 			const auto r = radius + collider.Radius;
-			if (Sombrero::FastVector3::SqrMagnitude(nextTail - collider.Position) <= (r * r))
+			if (SqrMagnitude(nextTail - collider.Position) <= (r * r))
 			{
 				// ヒット。Colliderの半径方向に押し出す
 				auto normal = (nextTail - collider.Position).get_normalized();

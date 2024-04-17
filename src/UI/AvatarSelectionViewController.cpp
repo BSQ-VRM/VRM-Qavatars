@@ -39,7 +39,7 @@ namespace VRMQavatars::UI::ViewControllers {
         descriptor.author = "No avatar";
 
         UnityEngine::Texture2D* texture = UnityEngine::Texture2D::New_ctor(0, 0, UnityEngine::TextureFormat::RGBA32, false, false);
-        UnityEngine::ImageConversion::LoadImage(texture, IncludedAssets::none_png, false);
+        UnityEngine::ImageConversion::LoadImage(texture, Assets::none_png, false);
 
         descriptor.thumbnail = texture;
 
@@ -59,7 +59,7 @@ namespace VRMQavatars::UI::ViewControllers {
 
         if(filesize((vrm_path + std::string("/") + path).c_str()) < 1)
         {
-            getLogger().info("die");
+            VRMLogger.info("die");
             descriptor.valid = false;
             return descriptor;
         }
@@ -69,7 +69,7 @@ namespace VRMQavatars::UI::ViewControllers {
         binFile.seekg(12); //Skip past the 12 byte header, to the json header
         uint32_t jsonLength;
         binFile.read(reinterpret_cast<char*>(&jsonLength), sizeof(uint32_t)); //Read the length of the json file from it's header
-        getLogger().info("%u", jsonLength);
+        VRMLogger.info("%u", jsonLength);
         std::string jsonStr;
         jsonStr.resize(jsonLength);
         binFile.seekg(20); // Skip the rest of the JSON header to the start of the string
@@ -82,7 +82,7 @@ namespace VRMQavatars::UI::ViewControllers {
         }
         catch (nlohmann::json::parse_error& ex)
         {
-            getLogger().error("parse error at byte %zu", ex.byte);
+            VRMLogger.error("parse error at byte %zu", ex.byte);
             descriptor.valid = false;
             return descriptor;
         }

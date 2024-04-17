@@ -32,30 +32,30 @@ namespace VRMQavatars::VMC
 
     void VMCClient::InitClient()
     {
-        //getLogger().info("x1");
+        //VRMLogger.info("x1");
         if(socket)
         {
-            //getLogger().info("x2");
+            //VRMLogger.info("x2");
             socket.shutdown();
         }
         const auto config = Config::ConfigManager::GetVMCSettings();
-        //getLogger().info("x3");
+        //VRMLogger.info("x3");
         if(config.enableSender)
         {
-            //getLogger().info("x4, %s, %d", config.destIP.c_str(), to_int(config.destPort.c_str()));
+            //VRMLogger.info("x4, %s, %d", config.destIP.c_str(), to_int(config.destPort.c_str()));
             socket = kissnet::udp_socket(kissnet::endpoint(config.destIP, IntUtil::to_int(config.destPort.c_str())));
         }
     }
 
     void VMCClient::SendHeadsetPos(const UnityEngine::Vector3 pos, const UnityEngine::Quaternion rot)
     {
-        //getLogger().info("Send hmd pos");
+        //VRMLogger.info("Send hmd pos");
         const auto config = Config::ConfigManager::GetVMCSettings();
         if(config.enableSender)
         {
-            //getLogger().info("hmd enabled");
+            //VRMLogger.info("hmd enabled");
             if(!socket || socket.get_status() != kissnet::socket_status::valid) return;
-            //getLogger().info("hmd active socket");
+            //VRMLogger.info("hmd active socket");
             kissnet::buffer<8192> sendBuffer;
             const size_t packetSize = makePacket(sendBuffer.data(),
                                                  sendBuffer.size(),
@@ -69,13 +69,13 @@ namespace VRMQavatars::VMC
 
     void VMCClient::SendControllerPos(const UnityEngine::Vector3 pos, const UnityEngine::Quaternion rot, const int idx)
     {
-        //getLogger().info("Send con pos");
+        //VRMLogger.info("Send con pos");
         const auto config = Config::ConfigManager::GetVMCSettings();
         if(config.enableSender)
         {
-            //getLogger().info("con enabled");
+            //VRMLogger.info("con enabled");
             if(!socket || socket.get_status() != kissnet::socket_status::valid) return;
-            //getLogger().info("con active socket");
+            //VRMLogger.info("con active socket");
             kissnet::buffer<8192> sendBuffer;
             const size_t packetSize = makePacket(sendBuffer.data(),
                                                  sendBuffer.size(),

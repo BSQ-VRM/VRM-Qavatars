@@ -21,6 +21,8 @@
 #include "VMC/VMCClient.hpp"
 #include "VMC/VMCServer.hpp"
 
+#include "paper/shared/utfcpp/source/utf8.h"
+
 namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSettingsViewController);
 
@@ -48,8 +50,8 @@ namespace VRMQavatars::UI::ViewControllers {
 
     void AvatarSettingsViewController::DidActivate()
     {
-        globalSprite = BSML::Utilities::LoadSpriteRaw(IncludedAssets::global_png);
-        avatarSprite = BSML::Utilities::LoadSpriteRaw(IncludedAssets::avatar_png);
+        globalSprite = BSML::Utilities::LoadSpriteRaw(Assets::global_png);
+        avatarSprite = BSML::Utilities::LoadSpriteRaw(Assets::avatar_png);
 
         CP_SDK::XUI::Templates::FullRectLayout({
             CP_SDK::XUI::XUIHLayout::Make({
@@ -164,7 +166,7 @@ namespace VRMQavatars::UI::ViewControllers {
                 { u"Wind", BuildWindTab() },
                 { u"Exp", CP_SDK::XUI::XUIVLayout::Make({
                         CP_SDK::XUI::XUIHLayout::Make({
-                            CP_SDK::XUI::XUIImage::Make(BSML::Utilities::LoadSpriteRaw(IncludedAssets::Wallsocket_Album_Cover_jpeg))
+                            CP_SDK::XUI::XUIImage::Make(BSML::Utilities::LoadSpriteRaw(Assets::Wallsocket_Album_Cover_jpeg))
                                 ->SetWidth(8.0f)
                                 ->SetHeight(8.0f)
                                 ->AsShared(),
@@ -326,8 +328,8 @@ namespace VRMQavatars::UI::ViewControllers {
             helperScreen->get_gameObject()->SetActive(true);
         }
 
-        globalSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::global_png);
-        avatarSprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::avatar_png);*/
+        globalSprite = QuestUI::BeatSaberUI::ArrayToSprite(Assets::global_png);
+        avatarSprite = QuestUI::BeatSaberUI::ArrayToSprite(Assets::avatar_png);*/
         RefreshButton();
     }
 
@@ -339,11 +341,11 @@ namespace VRMQavatars::UI::ViewControllers {
 
     void AvatarSettingsViewController::RefreshButton()
     {
-        globalSprite = BSML::Utilities::LoadSpriteRaw(IncludedAssets::global_png);
-        avatarSprite = BSML::Utilities::LoadSpriteRaw(IncludedAssets::avatar_png);
+        globalSprite = BSML::Utilities::LoadSpriteRaw(Assets::global_png);
+        avatarSprite = BSML::Utilities::LoadSpriteRaw(Assets::avatar_png);
 
         bool interactable = false;
-        UnityEngine::Sprite* toUse = BSML::Utilities::LoadSpriteRaw(IncludedAssets::none_png);
+        UnityEngine::Sprite* toUse = BSML::Utilities::LoadSpriteRaw(Assets::none_png);
         if(selectedTab == "Calibration")
         {
             interactable = false;
@@ -684,7 +686,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                     ->SetInteractable(AvatarManager::currentContext != nullptr)
                                     ->OnValueChanged([](const int idx, const std::u16string_view val) {
                                         auto settings = Config::ConfigManager::GetBlendshapeSettings();
-                                        settings.neutralExpression = to_utf8(val);
+                                        settings.neutralExpression = utf8::utf16to8(val);
                                         Config::ConfigManager::SetBlendshapeSettings(settings);
                                     })
                                     ->AsShared(),
@@ -753,7 +755,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                         ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
-                                            settings.Y = to_utf8(val);
+                                            settings.Y = utf8::utf16to8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
                                         })
                                         ->AsShared()
@@ -767,7 +769,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                         ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
-                                            settings.X = to_utf8(val);
+                                            settings.X = utf8::utf16to8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
                                         })
                                         ->AsShared()
@@ -781,7 +783,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                         ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
-                                            settings.B = to_utf8(val);
+                                            settings.B = utf8::utf16to8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
                                         })
                                         ->AsShared()
@@ -795,7 +797,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                         ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
-                                            settings.A = to_utf8(val);
+                                            settings.A = utf8::utf16to8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
                                         })
                                         ->AsShared()
@@ -814,7 +816,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                         ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
-                                            settings.LGrip = to_utf8(val);
+                                            settings.LGrip = utf8::utf16to8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
                                         })
                                         ->AsShared()
@@ -828,7 +830,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                         ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
-                                            settings.RGrip = to_utf8(val);
+                                            settings.RGrip = utf8::utf16to8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
                                         })
                                         ->AsShared()
@@ -842,7 +844,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                         ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
-                                            settings.LTrigger = to_utf8(val);
+                                            settings.LTrigger = utf8::utf16to8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
                                         })
                                         ->AsShared()
@@ -856,7 +858,7 @@ namespace VRMQavatars::UI::ViewControllers {
                                         ->OnValueChanged([](int, const std::u16string_view val)
                                         {
                                             auto settings = Config::ConfigManager::GetControllerTriggerSettings();
-                                            settings.RTrigger = to_utf8(val);
+                                            settings.RTrigger = utf8::utf16to8(val);
                                             Config::ConfigManager::SetControllerTriggerSettings(settings);
                                         })
                                         ->AsShared()
@@ -935,41 +937,41 @@ namespace VRMQavatars::UI::ViewControllers {
             const auto blendShapeController = AvatarManager::currentContext->rootGameObject->GetComponent<BlendShape::BlendShapeController*>();
             for (auto const& [key, val] : blendShapeController->blendShapeMappings)
             {
-                options.push_back(to_utf16(val.name));
+                options.push_back(utf8::utf8to16(val.name));
             }
         }
         const auto config = Config::ConfigManager::GetControllerTriggerSettings();
 
         ATriggerDropdown->SetOptions(options);
-        ATriggerDropdown->SetValue(to_utf16(config.A));
+        ATriggerDropdown->SetValue(utf8::utf8to16(config.A));
         ATriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
 
         BTriggerDropdown->SetOptions(options);
-        BTriggerDropdown->SetValue(to_utf16(config.B));
+        BTriggerDropdown->SetValue(utf8::utf8to16(config.B));
         BTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
 
         XTriggerDropdown->SetOptions(options);
-        XTriggerDropdown->SetValue(to_utf16(config.X));
+        XTriggerDropdown->SetValue(utf8::utf8to16(config.X));
         XTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
 
         YTriggerDropdown->SetOptions(options);
-        YTriggerDropdown->SetValue(to_utf16(config.Y));
+        YTriggerDropdown->SetValue(utf8::utf8to16(config.Y));
         YTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
 
         LGripTriggerDropdown->SetOptions(options);
-        LGripTriggerDropdown->SetValue(to_utf16(config.LGrip));
+        LGripTriggerDropdown->SetValue(utf8::utf8to16(config.LGrip));
         LGripTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
 
         RGripTriggerDropdown->SetOptions(options);
-        RGripTriggerDropdown->SetValue(to_utf16(config.RGrip));
+        RGripTriggerDropdown->SetValue(utf8::utf8to16(config.RGrip));
         RGripTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
 
         LTriggerTriggerDropdown->SetOptions(options);
-        LTriggerTriggerDropdown->SetValue(to_utf16(config.LTrigger));
+        LTriggerTriggerDropdown->SetValue(utf8::utf8to16(config.LTrigger));
         LTriggerTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
 
         RTriggerTriggerDropdown->SetOptions(options);
-        RTriggerTriggerDropdown->SetValue(to_utf16(config.RTrigger));
+        RTriggerTriggerDropdown->SetValue(utf8::utf8to16(config.RTrigger));
         RTriggerTriggerDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
 
     }
@@ -982,7 +984,7 @@ namespace VRMQavatars::UI::ViewControllers {
             const auto blendShapeController = AvatarManager::currentContext->rootGameObject->GetComponent<BlendShape::BlendShapeController*>();
             for (auto const& [key, val] : blendShapeController->blendShapeMappings)
             {
-                options.push_back(to_utf16(val.name));
+                options.push_back(utf8::utf8to16(val.name));
             }
         }
 
@@ -992,7 +994,7 @@ namespace VRMQavatars::UI::ViewControllers {
         mockEyeMovementToggle->SetValue(config.mockEyeMovement);
 
         neutralExpressionDropdown->SetOptions(options);
-        neutralExpressionDropdown->SetValue(to_utf16(config.neutralExpression));
+        neutralExpressionDropdown->SetValue(utf8::utf8to16(config.neutralExpression));
         neutralExpressionDropdown->SetInteractable(AvatarManager::currentContext != nullptr);
     }
 
@@ -1020,11 +1022,11 @@ namespace VRMQavatars::UI::ViewControllers {
 
                         CP_SDK::XUI::XUIText::Make(u"VMC Receiver Port"),
                         CP_SDK::XUI::XUITextInput::Make(u"39539")
-                            ->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().recvPort))
+                            ->SetValue(utf8::utf8to16(Config::ConfigManager::GetVMCSettings().recvPort))
                             ->OnValueChanged([](const std::u16string_view str)
                             {
                                 auto settings = Config::ConfigManager::GetVMCSettings();
-                                settings.recvPort = to_utf8(str);
+                                settings.recvPort = utf8::utf16to8(str);
                                 Config::ConfigManager::SetVMCSettings(settings);
                                 VMC::VMCServer::InitServer();
                             })
@@ -1048,11 +1050,11 @@ namespace VRMQavatars::UI::ViewControllers {
 
                         CP_SDK::XUI::XUIText::Make(u"VMC Destination IP Adress"),
                         CP_SDK::XUI::XUITextInput::Make(u"127.0.0.1")
-                            ->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().destIP))
+                            ->SetValue(utf8::utf8to16(Config::ConfigManager::GetVMCSettings().destIP))
                             ->OnValueChanged([](const std::u16string_view str)
                             {
                                 auto settings = Config::ConfigManager::GetVMCSettings();
-                                settings.destIP = to_utf8(str);
+                                settings.destIP = utf8::utf16to8(str);
                                 Config::ConfigManager::SetVMCSettings(settings);
                                 VMC::VMCClient::InitClient();
                             })
@@ -1060,11 +1062,11 @@ namespace VRMQavatars::UI::ViewControllers {
 
                         CP_SDK::XUI::XUIText::Make(u"VMC Destination Port"),
                         CP_SDK::XUI::XUITextInput::Make(u"39540")
-                            ->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().destPort))
+                            ->SetValue(utf8::utf8to16(Config::ConfigManager::GetVMCSettings().destPort))
                             ->OnValueChanged([](const std::u16string_view str)
                             {
                                 auto settings = Config::ConfigManager::GetVMCSettings();
-                                settings.destPort = to_utf8(str);
+                                settings.destPort = utf8::utf16to8(str);
                                 Config::ConfigManager::SetVMCSettings(settings);
                                 VMC::VMCClient::InitClient();
                             })
@@ -1098,13 +1100,13 @@ namespace VRMQavatars::UI::ViewControllers {
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
                                     auto settings = Config::ConfigManager::GetVMCSettings();
-                                    settings.waistTracker = to_utf8(val);
+                                    settings.waistTracker = utf8::utf16to8(val);
                                     Config::ConfigManager::SetVMCSettings(settings);
                                     AvatarManager::UpdateVRIK();
                                 })
                                 ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
                                 {
-                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().waistTracker));
+                                    dropdown->SetValue(utf8::utf8to16(Config::ConfigManager::GetVMCSettings().waistTracker));
                                 })
                                 ->AsShared(),
                             CP_SDK::XUI::XUIText::Make(u"Chest"),
@@ -1112,13 +1114,13 @@ namespace VRMQavatars::UI::ViewControllers {
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
                                     auto settings = Config::ConfigManager::GetVMCSettings();
-                                    settings.chestTracker = to_utf8(val);
+                                    settings.chestTracker = utf8::utf16to8(val);
                                     Config::ConfigManager::SetVMCSettings(settings);
                                     AvatarManager::UpdateVRIK();
                                 })
                                 ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
                                 {
-                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().chestTracker));
+                                    dropdown->SetValue(utf8::utf8to16(Config::ConfigManager::GetVMCSettings().chestTracker));
                                 })
                                 ->AsShared()
                         }),
@@ -1129,13 +1131,13 @@ namespace VRMQavatars::UI::ViewControllers {
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
                                     auto settings = Config::ConfigManager::GetVMCSettings();
-                                    settings.leftFoot = to_utf8(val);
+                                    settings.leftFoot = utf8::utf16to8(val);
                                     Config::ConfigManager::SetVMCSettings(settings);
                                     AvatarManager::UpdateVRIK();
                                 })
                                 ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
                                 {
-                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().leftFoot));
+                                    dropdown->SetValue(utf8::utf8to16(Config::ConfigManager::GetVMCSettings().leftFoot));
                                 })
                                 ->AsShared(),
                             CP_SDK::XUI::XUIText::Make(u"Left Knee"),
@@ -1143,13 +1145,13 @@ namespace VRMQavatars::UI::ViewControllers {
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
                                     auto settings = Config::ConfigManager::GetVMCSettings();
-                                    settings.leftKnee = to_utf8(val);
+                                    settings.leftKnee = utf8::utf16to8(val);
                                     Config::ConfigManager::SetVMCSettings(settings);
                                     AvatarManager::UpdateVRIK();
                                 })
                                 ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
                                 {
-                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().leftKnee));
+                                    dropdown->SetValue(utf8::utf8to16(Config::ConfigManager::GetVMCSettings().leftKnee));
                                 })
                                 ->AsShared()
                         }),
@@ -1160,13 +1162,13 @@ namespace VRMQavatars::UI::ViewControllers {
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
                                     auto settings = Config::ConfigManager::GetVMCSettings();
-                                    settings.rightFoot = to_utf8(val);
+                                    settings.rightFoot = utf8::utf16to8(val);
                                     Config::ConfigManager::SetVMCSettings(settings);
                                     AvatarManager::UpdateVRIK();
                                 })
                                 ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
                                 {
-                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().rightFoot));
+                                    dropdown->SetValue(utf8::utf8to16(Config::ConfigManager::GetVMCSettings().rightFoot));
                                 })
                                 ->AsShared(),
                             CP_SDK::XUI::XUIText::Make(u"Right Knee"),
@@ -1174,13 +1176,13 @@ namespace VRMQavatars::UI::ViewControllers {
                                 ->OnValueChanged([](int idx, const std::u16string_view val)
                                 {
                                     auto settings = Config::ConfigManager::GetVMCSettings();
-                                    settings.rightKnee = to_utf8(val);
+                                    settings.rightKnee = utf8::utf16to8(val);
                                     Config::ConfigManager::SetVMCSettings(settings);
                                     AvatarManager::UpdateVRIK();
                                 })
                                 ->OnReady([](CP_SDK::UI::Components::CDropdown* dropdown)
                                 {
-                                    dropdown->SetValue(to_utf16(Config::ConfigManager::GetVMCSettings().rightKnee));
+                                    dropdown->SetValue(utf8::utf8to16(Config::ConfigManager::GetVMCSettings().rightKnee));
                                 })
                                 ->AsShared()
                         }),
@@ -1273,34 +1275,6 @@ namespace VRMQavatars::UI::ViewControllers {
                             AvatarManager::UpdateVRIK();
                         })
                         ->AsShared()
-                    /*CP_SDK::XUI::XUIText::Make(u"Wrist Twist Fix Amount"),
-                    CP_SDK::XUI::XUISlider::Make()
-                        ->SetIncrements(80.0f)
-                        ->SetMinValue(0.0f)
-                        ->SetMaxValue(0.8f)
-                        ->SetValue(Config::ConfigManager::GetIKSettings().wristTwistFixAmount)
-                        ->Bind(&wristTwistFixSlider)
-                        ->OnValueChanged([](const float val) {
-                            auto settings = Config::ConfigManager::GetIKSettings();
-                            settings.wristTwistFixAmount = val;
-                            Config::ConfigManager::SetIKSettings(settings);
-                            AvatarManager::UpdateVRIK();
-                        })
-                        ->AsShared(),
-                    CP_SDK::XUI::XUIText::Make(u"Shoulder Twist Fix Amount"),
-                    CP_SDK::XUI::XUISlider::Make()
-                        ->SetIncrements(80.0f)
-                        ->SetMinValue(0.0f)
-                        ->SetMaxValue(0.8f)
-                        ->SetValue(Config::ConfigManager::GetIKSettings().shoulderTwistFixAmount)
-                        ->Bind(&shoulderTwistFixSlider)
-                        ->OnValueChanged([](const float val) {
-                            auto settings = Config::ConfigManager::GetIKSettings();
-                            settings.shoulderTwistFixAmount = val;
-                            Config::ConfigManager::SetIKSettings(settings);
-                            AvatarManager::UpdateVRIK();
-                        })
-                        ->AsShared()*/
                 }),
             }
         );
@@ -1313,8 +1287,6 @@ namespace VRMQavatars::UI::ViewControllers {
         bodyStiffnessSlider->SetValue(Config::ConfigManager::GetIKSettings().bodyStiffness);
         groundOffsetSlider->SetValue(Config::ConfigManager::GetIKSettings().groundOffset);
         shoulderRotationWeightSlider->SetValue(Config::ConfigManager::GetIKSettings().shoulderRotationWeight);
-        //wristTwistFixSlider->SetValue(Config::ConfigManager::GetIKSettings().wristTwistFixAmount);
-        //shoulderTwistFixSlider->SetValue(Config::ConfigManager::GetIKSettings().shoulderTwistFixAmount);
     }
 
     std::shared_ptr<CP_SDK::XUI::XUISlider> AvatarSettingsViewController::BuildFingerSlider(const int finger)
@@ -1346,7 +1318,7 @@ namespace VRMQavatars::UI::ViewControllers {
                         u"???",
                         CP_SDK::XUI::XUIHLayout::Make({
                             CP_SDK::XUI::XUIImage::Make()
-                                ->SetSprite(BSML::Utilities::LoadSpriteRaw(IncludedAssets::human_hand_png))
+                                ->SetSprite(BSML::Utilities::LoadSpriteRaw(Assets::human_hand_png))
                                 ->SetWidth(45)
                                 ->SetHeight(45)
                                 ->AsShared(),

@@ -3,7 +3,6 @@
 #include <bsml/shared/Helpers/utilities.hpp>
 
 #include "customTypes/GroundOffsetObject.hpp"
-#include "customTypes/WristTwistFix.hpp"
 
 #include "chatplex-sdk-bs/shared/CP_SDK/ChatPlexSDK.hpp"
 

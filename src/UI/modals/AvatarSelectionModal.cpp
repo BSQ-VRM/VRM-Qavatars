@@ -9,6 +9,8 @@
 #include "UI/AvatarSelectionViewController.hpp"
 #include "UI/AvatarSettingsViewController.hpp"
 
+#include "paper/shared/utfcpp/source/utf8.h"
+
 namespace VRMQavatars::UI::Modals {
 
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSelectionModal);
@@ -107,7 +109,7 @@ namespace VRMQavatars::UI::Modals {
                 {
                     CP_SDK::XUI::XUIText::Make(u"Who can use this avatar?"),
                     CP_SDK::XUI::XUIText::Make(u"<b>Everyone")
-                        ->SetText(to_utf16("<b>" + usage.usage))
+                        ->SetText(utf8::utf8to16("<b>" + usage.usage))
                         ->Bind(&usageText)
                         ->AsShared()
                 })
@@ -120,7 +122,7 @@ namespace VRMQavatars::UI::Modals {
                 {
                     CP_SDK::XUI::XUIText::Make(u"Perform Violent Acts?"),
                     CP_SDK::XUI::XUIText::Make(u"<b>Disallow")
-                        ->SetText(to_utf16("<b>" + usage.violent))
+                        ->SetText(utf8::utf8to16("<b>" + usage.violent))
                         ->Bind(&violentText)
                         ->AsShared()
                 }),
@@ -128,7 +130,7 @@ namespace VRMQavatars::UI::Modals {
                 {
                     CP_SDK::XUI::XUIText::Make(u"Perform Sexual Acts?"),
                     CP_SDK::XUI::XUIText::Make(u"<b>Disallow")
-                        ->SetText(to_utf16("<b>" + usage.sexual))
+                        ->SetText(utf8::utf8to16("<b>" + usage.sexual))
                         ->Bind(&sexualText)
                         ->AsShared()
                 }),
@@ -136,22 +138,23 @@ namespace VRMQavatars::UI::Modals {
                 {
                     CP_SDK::XUI::XUIText::Make(u"Allow Commerical Use?"),
                     CP_SDK::XUI::XUIText::Make(u"<b>Disallow")
-                        ->SetText(to_utf16("<b>" + usage.commercial))
+                        ->SetText(utf8::utf8to16("<b>" + usage.commercial))
                         ->Bind(&commericalText)
                         ->AsShared()
                 }),
                 CP_SDK::XUI::XUIHLayout::Make(
                 {
+                    //TODO: FIX THESE
                     CP_SDK::XUI::XUIPrimaryButton::Make(u"<b>Read More: License")
                         ->OnClick([this]
                         {
-                            UnityEngine::Application::OpenURL(activeDescriptor.vrm0.value().meta.otherLicenseUrl);
+                            //UnityEngine::Application::OpenURL(activeDescriptor.vrm0.value().meta.otherLicenseUrl);
                         })
                         ->AsShared(),
                     CP_SDK::XUI::XUIPrimaryButton::Make(u"<b>Read More: Permissions")
                         ->OnClick([this]
                         {
-                            UnityEngine::Application::OpenURL(activeDescriptor.vrm0.value().meta.otherPermissionUrl);
+                            //UnityEngine::Application::OpenURL(activeDescriptor.vrm0.value().meta.otherPermissionUrl);
                         })
                         ->AsShared(),
                     CP_SDK::XUI::XUIPrimaryButton::Make(u"<b><color=#d65c64>Close")
@@ -187,10 +190,10 @@ namespace VRMQavatars::UI::Modals {
             auto usage = usageInfo();
             usage.load(activeDescriptor);
 
-            usageText->SetText(to_utf16(usage.usage));
-            violentText->SetText(to_utf16(usage.violent));
-            sexualText->SetText(to_utf16(usage.sexual));
-            commericalText->SetText(to_utf16(usage.commercial));
+            usageText->SetText(utf8::utf8to16(usage.usage));
+            violentText->SetText(utf8::utf8to16(usage.violent));
+            sexualText->SetText(utf8::utf8to16(usage.sexual));
+            commericalText->SetText(utf8::utf8to16(usage.commercial));
         }
     }
 }

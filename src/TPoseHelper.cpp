@@ -1,7 +1,5 @@
 #include "TPoseHelper.hpp"
 
-#include "UnityEngine/HumanPoseHandler.hpp"
-
 #include "json.hpp"
 
 namespace VRMQavatars

@@ -15,6 +15,7 @@
 #include "UnityEngine/Mesh.hpp"
 #include "UnityEngine/Bounds.hpp"
 #include "UnityEngine/Random.hpp"
+#include "UnityEngine/Mathf.hpp"
 
 #include "GlobalNamespace/OVRInput.hpp"
 

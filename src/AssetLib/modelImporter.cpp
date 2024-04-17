@@ -151,7 +151,7 @@ AssetLib::Structure::InterMeshData LoadMesh(aiMesh* mesh, AssetLib::Structure::M
         auto animMesh = mesh->mAnimMeshes[k];
 
         std::string name = animMesh->mName.C_Str();
-        getLogger().info("blendshape %s", name.c_str());
+        VRMLogger.info("blendshape %s", name.c_str());
         auto names = meshData.morphTargetNames;
         auto find = std::find(names.begin(), names.end(), name);
 
@@ -354,7 +354,7 @@ int test = 0;
 void logTransform(UnityEngine::Transform* trans, const int depth = 1)
 {
     test++;
-    getLogger().info("%d %s%s", test, std::string(depth, '-').c_str(), static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
+    VRMLogger.info("%d %s%s", test, std::string(depth, '-').c_str(), static_cast<std::string>(trans->get_gameObject()->get_name()).c_str());
     for (size_t i = 0; i < trans->get_childCount(); i++)
     {
         logTransform(trans->GetChild(i), depth + 1);
@@ -634,14 +634,14 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
 
     modelContext->rootGameObject->AddComponent<VRMQavatars::BlendShape::BlendShapeController*>();
 
-    auto vrik = modelContext->rootGameObject->AddComponent<RootMotion::FinalIK::VRIK*>();
+    auto vrik = modelContext->rootGameObject->AddComponent<VRMQavatars::FinalIK::VRIK*>();
 
     auto targetManager = modelContext->rootGameObject->AddComponent<VRMQavatars::TargetManager*>();
     targetManager->vrik = vrik;
     targetManager->Initialize();
 
     auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Neck);
-    getLogger().info("headBone %s", static_cast<std::string>(headBone->get_gameObject()->get_name()).c_str());
+    VRMLogger.info("headBone %s", static_cast<std::string>(headBone->get_gameObject()->get_name()).c_str());
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
         if(const auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)

@@ -19,7 +19,7 @@ namespace VRMQavatars
         for (const auto springBone : rootGameObject->GetComponentsInChildren<VRMSpringBone*>())
             springBone->set_enabled(false);
 
-        const auto vrik = rootGameObject->GetComponent<RootMotion::FinalIK::VRIK*>();
+        const auto vrik = rootGameObject->GetComponent<FinalIK::VRIK*>();
         vrik->set_enabled(false);
 
         rootGameObject->set_position({0.0f, 0.0f, 0.0f});
@@ -90,7 +90,7 @@ namespace VRMQavatars
 
     float GetCalibrateScale(const std::optional<float> baseScale)
     {
-        getLogger().info("scale: %d %f", baseScale.has_value(), baseScale.has_value() ? baseScale.value() : 0.0f);
+        VRMLogger.info("scale: %d %f", baseScale.has_value(), baseScale.has_value() ? baseScale.value() : 0.0f);
         const auto type = Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue();
         if(type == 0)
         {
@@ -99,7 +99,7 @@ namespace VRMQavatars
             const float avatarHandDist = baseScale.has_value() ? baseScale.value() : GetAvatarHandDist();
             const float readDist = UnityEngine::Vector3::Distance(leftHandPos, rightHandPos);
             const float scale = readDist / avatarHandDist;
-            getLogger().info("%f %f %f", readDist, avatarHandDist, scale);
+            VRMLogger.info("%f %f %f", readDist, avatarHandDist, scale);
             return scale * 0.85f;
         }
         if(type == 1)
@@ -109,7 +109,7 @@ namespace VRMQavatars
             const float avatarHandAverageY = baseScale.has_value() ? baseScale.value() : GetAvatarHandHeight();
             const float readHandAverageY = (leftHandPos.y + rightHandPos.y) / 2.0f;
             const float scale = readHandAverageY / avatarHandAverageY;
-            getLogger().info("%f %f %f", readHandAverageY, avatarHandAverageY, scale);
+            VRMLogger.info("%f %f %f", readHandAverageY, avatarHandAverageY, scale);
             return scale;
         }
         return Config::ConfigManager::GetGlobalConfig().FixedScale.GetValue();
@@ -125,7 +125,7 @@ namespace VRMQavatars
         PrepareContextForCalibration();
 
         const float calibScale = scale.has_value() ? scale.value() : GetCalibrateScale(std::nullopt);
-        getLogger().info("calibration scale %f", calibScale);
+        VRMLogger.info("calibration scale %f", calibScale);
 
         auto& avaConfig = Config::ConfigManager::GetAvatarConfig();
         avaConfig.HasCalibrated.SetValue(true);
@@ -145,9 +145,6 @@ namespace VRMQavatars
 
         for (const auto springBone : rootGameObject->GetComponentsInChildren<VRMSpringBone*>())
             springBone->set_enabled(true);
-
-        if(rootGameObject->GetComponent<WristTwistFix*>() == nullptr)
-            rootGameObject->get_gameObject()->AddComponent<WristTwistFix*>()->SetVRIK(vrik);
     }
 
     custom_types::Helpers::Coroutine CalibrationHelper::StartCalibrationProc()

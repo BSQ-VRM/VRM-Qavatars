@@ -25,6 +25,7 @@ namespace VRMQavatars
         {
             obj->AddComponent<GroundOffsetObject*>();
         }
+
         co_return;
     }
 

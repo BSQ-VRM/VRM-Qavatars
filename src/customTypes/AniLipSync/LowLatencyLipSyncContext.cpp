@@ -22,7 +22,7 @@ namespace VRMQavatars::AniLipSync
     {
         if (Microphone::get_devices().size() == 0)
         {
-            getLogger().error("No mic device");
+            VRMLogger.error("No mic device");
             return;
         }
         microphoneBuffer = ArrayW<float>(samplingFrequency);
@@ -80,7 +80,7 @@ namespace VRMQavatars::AniLipSync
     {
         if (OVRLipSync::OVRLipSync::IsInitialized() != ovrLipSyncSuccess)
         {
-            getLogger().error("OVRLipSync is not initialized");
+            VRMLogger.error("OVRLipSync is not initialized");
             set_enabled(false);
             return;
         }
