@@ -139,11 +139,11 @@ extern "C" void late_load() {
     custom_types::Register::AutoRegister(); 
     VRMLogger.info("load3");
     VRMLogger.info("load4");
-    //INSTALL_HOOK(VRMLogger, MainMenuUIHook);
-    //INSTALL_HOOK(VRMLogger, MainCameraHook);
-    //INSTALL_HOOK(VRMLogger, SceneManager_Internal_ActiveSceneChanged);
-    //INSTALL_HOOK(VRMLogger, SaberPatch);
-    //INSTALL_HOOK(VRMLogger, BloomHook);
+    INSTALL_HOOK(VRMLogger, MainMenuUIHook);
+    INSTALL_HOOK(VRMLogger, MainCameraHook);
+    INSTALL_HOOK(VRMLogger, SceneManager_Internal_ActiveSceneChanged);
+    INSTALL_HOOK(VRMLogger, SaberPatch);
+    INSTALL_HOOK(VRMLogger, BloomHook);
     BSML::Register::RegisterMainMenu<FlowCoordinators::AvatarsFlowCoordinator*>("Avatars", "VRM Custom Avatars");
     VRMLogger.info("load5");
 }

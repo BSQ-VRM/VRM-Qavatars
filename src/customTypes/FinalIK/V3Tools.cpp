@@ -1,5 +1,3 @@
-#pragma once
-
 #include "customTypes/FinalIK/V3Tools.hpp"
 
 namespace VRMQavatars::FinalIK::V3Tools {

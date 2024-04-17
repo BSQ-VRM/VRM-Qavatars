@@ -1,5 +1,3 @@
-#pragma once 
-
 #include "customTypes/FinalIK/AxisTools.hpp"
 
 namespace VRMQavatars::FinalIK::AxisTools {

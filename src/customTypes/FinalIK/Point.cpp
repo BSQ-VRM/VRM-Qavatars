@@ -1,5 +1,3 @@
-#pragma once
-
 #include "customTypes/FinalIK/Point.hpp"
 
 namespace VRMQavatars::FinalIK {

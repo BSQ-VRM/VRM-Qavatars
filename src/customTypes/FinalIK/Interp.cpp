@@ -1,5 +1,3 @@
-#pragma once
-
 #include "customTypes/FinalIK/Interp.hpp"
 #include <cmath>
 #include <limits>
