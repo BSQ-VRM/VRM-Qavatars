@@ -157,7 +157,7 @@ namespace VRMQavatars::FinalIK {
     
     void Spine::CalculateChestTargetRotation(VirtualBone* rootBone, std::vector<Arm*> arms) {
         chestTargetRotation = headRotation * chestRelativeRotation;
-        AdjustChestByHands(chestTargetRotation, arms);
+        AdjustChestByHands(chestTargetRotation, std::move(arms));
         faceDirection = Sombrero::FastVector3(Sombrero::FastVector3::Cross(anchorRotation * Sombrero::FastVector3::right(), rootBone->readRotation * Sombrero::FastVector3::up())) + anchorRotation * Sombrero::FastVector3::forward();
     }
     
@@ -172,7 +172,7 @@ namespace VRMQavatars::FinalIK {
     void Spine::InverseTranslateToHead(std::vector<Leg*> legs, bool limited, bool useCurrentLegMag, Sombrero::FastVector3 offset, float w) {
         Sombrero::FastVector3 vector = (headPosition + offset - head()->solverPosition) * w;
         Sombrero::FastVector3 vector2 = pelvis()->solverPosition + vector;
-        MovePosition(limited ? LimitPelvisPosition(legs, vector2, useCurrentLegMag, 2) : vector2);
+        MovePosition(limited ? LimitPelvisPosition(std::move(legs), vector2, useCurrentLegMag, 2) : vector2);
     }
     
     Sombrero::FastVector3 Spine::LimitPelvisPosition(std::vector<Leg*> legs, Sombrero::FastVector3 pelvisPosition, bool useCurrentLegMag, int it) {

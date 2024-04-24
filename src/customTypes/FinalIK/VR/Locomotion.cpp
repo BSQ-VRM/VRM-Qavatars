@@ -1,9 +1,11 @@
 #include "customTypes/FinalIK/VR/Locomotion.hpp"
+#include "UnityEngine/zzzz__AnimationCurve_def.hpp"
 #include "customTypes/FinalIK/V3Tools.hpp"
 #include "UnityEngine/RaycastHit.hpp"
 #include "UnityEngine/Random.hpp"
 #include "UnityEngine/Time.hpp"
 #include "UnityEngine/Physics.hpp"
+#include "main.hpp"
 #include "sombrero/shared/QuaternionUtils.hpp"
 #include <limits>
 
@@ -190,10 +192,24 @@ namespace VRMQavatars::FinalIK {
         rightFootPosition = footsteps[1]->position;
         leftFootPosition = V3Tools::PointToPlane(leftFootPosition, leftLeg->lastBone()->readPosition, vector);
         rightFootPosition = V3Tools::PointToPlane(rightFootPosition, rightLeg->lastBone()->readPosition, vector);
-        leftFootOffset = stepHeight->Evaluate(footsteps[0]->stepProgress);
-        rightFootOffset = stepHeight->Evaluate(footsteps[1]->stepProgress);
-        leftHeelOffset = heelHeight->Evaluate(footsteps[0]->stepProgress);
-        rightHeelOffset = heelHeight->Evaluate(footsteps[1]->stepProgress);
+        VRMLogger.info("{} {} {} 1 ", leftFootPosition.x, leftFootPosition.y, leftFootPosition.z);
+        VRMLogger.info("{} {} {} 2 ", leftLeg->lastBone()->readPosition.x, leftLeg->lastBone()->readPosition.y, leftLeg->lastBone()->readPosition.z);
+
+        auto evaluate = [](float progress)
+        {
+            float progNew = progress < 0.5f ? 4.0f * progress * progress * progress : 1.0f - std::pow(-2.0f * progress + 2.0f, 3.0f) / 2.0f;
+            //Before half way point
+            if(progNew < 0.5f) {
+                return std::lerp(0.0f, 0.03f, progNew * 2.0f);
+            } else { //Past half way point
+                return std::lerp(0.03f, 0.0f, (progNew - 0.5f) * 2.0f);
+            }
+        };
+
+        leftFootOffset = evaluate(footsteps[0]->stepProgress);
+        rightFootOffset = evaluate(footsteps[1]->stepProgress);
+        leftHeelOffset = evaluate(footsteps[0]->stepProgress);
+        rightHeelOffset = evaluate(footsteps[1]->stepProgress);
         leftFootRotation = footsteps[0]->rotation;
         rightFootRotation = footsteps[1]->rotation;
     }
@@ -216,14 +232,9 @@ namespace VRMQavatars::FinalIK {
     }
 
     bool Locomotion::CanStep() {
-        for (auto footstep : footsteps)
-        {
-            if (footstep->get_isStepping() && footstep->stepProgress < 0.8f)
-            {
-                return false;
-            }
-        }
-        return true;
+        return std::ranges::all_of(footsteps, [](auto footstep) {
+            return !footstep->get_isStepping() || footstep->stepProgress >= 0.8f;
+        });
     }
 
     bool GetLineSphereCollision(Sombrero::FastVector3 lineStart, Sombrero::FastVector3 lineEnd, Sombrero::FastVector3 sphereCenter, float sphereRadius) {

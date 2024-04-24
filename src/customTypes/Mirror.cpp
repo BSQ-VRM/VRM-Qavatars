@@ -3,6 +3,7 @@
 #include <chatplex-sdk-bs/shared/CP_SDK/ChatPlexSDK.hpp>
 #include <UnityEngine/Camera.hpp>
 
+#include "AvatarManager.hpp"
 #include "SceneEventManager.hpp"
 #include "config/ConfigManager.hpp"
 

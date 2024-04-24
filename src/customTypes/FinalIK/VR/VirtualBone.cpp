@@ -1,4 +1,6 @@
 #include "customTypes/FinalIK/VR/VirtualBone.hpp"
+#include "sombrero/shared/QuaternionUtils.hpp"
+#include <cmath>
 #include <cstddef>
 #include <limits>
 
@@ -88,20 +90,20 @@ namespace VRMQavatars::FinalIK {
         float num = std::sqrt(sqrMagnitude);
         float sqrMagnitude2 = (bones[second]->solverPosition - bones[first]->solverPosition).sqrMagnitude();
         float sqrMagnitude3 = (bones[third]->solverPosition - bones[second]->solverPosition).sqrMagnitude();
-        auto vector2 = Sombrero::FastVector3::Cross(vector, bendNormal);
-        auto directionToBendPoint = VirtualBone::GetDirectionToBendPoint(vector, num, vector2, sqrMagnitude2, sqrMagnitude3);
+        Sombrero::FastVector3 vector2 = Sombrero::FastVector3::Cross(vector, bendNormal);
+        auto directionToBendPoint = GetDirectionToBendPoint(vector, num, vector2, sqrMagnitude2, sqrMagnitude3);
         Sombrero::FastQuaternion quaternion = Sombrero::FastQuaternion::FromToRotation(bones[second]->solverPosition - bones[first]->solverPosition, directionToBendPoint);
         if (weight < 1.0f)
         {
             quaternion = Sombrero::FastQuaternion::Lerp(Sombrero::FastQuaternion::identity(), quaternion, weight);
         }
-        VirtualBone::RotateAroundPoint(bones, first, bones[first]->solverPosition, quaternion);
+        RotateAroundPoint(bones, first, bones[first]->solverPosition, quaternion);
         Sombrero::FastQuaternion quaternion2 = Sombrero::FastQuaternion::FromToRotation(bones[third]->solverPosition - bones[second]->solverPosition, targetPosition - bones[second]->solverPosition);
         if (weight < 1.0f)
         {
             quaternion2 = Sombrero::FastQuaternion::Lerp(Sombrero::FastQuaternion::identity(), quaternion2, weight);
         }
-        VirtualBone::RotateAroundPoint(bones, second, bones[second]->solverPosition, quaternion2);
+        RotateAroundPoint(bones, second, bones[second]->solverPosition, quaternion2);
     }
     
     Sombrero::FastVector3 VirtualBone::GetDirectionToBendPoint(Sombrero::FastVector3 direction, float directionMag, Sombrero::FastVector3 bendDirection, float sqrMag1, float sqrMag2) {
@@ -153,6 +155,6 @@ namespace VRMQavatars::FinalIK {
     }
     
     Sombrero::FastVector3 VirtualBone::SolveFABRIKJoint(Sombrero::FastVector3 pos1, Sombrero::FastVector3 pos2, float length) {
-        return pos2 + (pos1 - pos2).normalized * length;
+        return pos2 + ((pos1 - pos2).normalized * length);
     }
 }

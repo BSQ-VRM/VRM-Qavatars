@@ -17,19 +17,6 @@
 #include "customTypes/FinalIK/MathUtil.hpp"
 
 namespace VRMQavatars::FinalIK {
-    UnityEngine::Transform* IKSolverVR::ContainsDuplicateBone(std::vector<Bone*> bones) {
-        for (int i = 0; i < bones.size(); i++)
-        {
-            for (int j = 0; j < bones.size(); j++)
-            {
-                if (i != j && bones[i]->transform == bones[j]->transform)
-                {
-                    return bones[i]->transform;
-                }
-            }
-        }
-        return nullptr;
-    }
 
     void IKSolverVR::FixTransforms() {
         if (!initiated)
@@ -68,16 +55,16 @@ namespace VRMQavatars::FinalIK {
         return root;
     }
 
-    void IKSolverVR::Initiate(UnityEngine::Transform* root) {
+    void IKSolverVR::Initiate(UnityEngine::Transform* _root) {
         if (OnPreInitiate != nullptr)
         {
             OnPreInitiate();
         }
-        if (root == nullptr)
+        if (_root == nullptr)
         {
             VRMLogger.error("Initiating IKSolver with null root Transform.");
         }
-        root = root;
+        this->root = _root;
         initiated = false;
         std::string empty;
         if (!IsValid(empty))
@@ -104,31 +91,6 @@ namespace VRMQavatars::FinalIK {
 	    Read(readPositions, readRotations, hasChest, hasNeck, hasShoulders, hasToes, hasLegs);
     }
 
-    float IKSolverVR::PreSolveBones(std::vector<Bone*>& bones) {
-        float num = 0.0f;
-        for (int i = 0; i < bones.size(); i++)
-        {
-            bones[i]->solverPosition = bones[i]->transform->position;
-            bones[i]->solverRotation = bones[i]->transform->rotation;
-        }
-        for (int j = 0; j < bones.size(); j++)
-        {
-            if (j < bones.size() - 1)
-            {
-                bones[j]->sqrMag = (bones[j + 1]->solverPosition - bones[j]->solverPosition).sqrMagnitude();
-                bones[j]->length = std::sqrt(bones[j]->sqrMag);
-                num += bones[j]->length;
-                bones[j]->axis = Sombrero::FastQuaternion(Sombrero::FastQuaternion::Inverse(bones[j]->solverRotation)) * (bones[j + 1]->solverPosition - bones[j]->solverPosition);
-            }
-            else
-            {
-                bones[j]->sqrMag = 0.0f;
-                bones[j]->length = 0.0f;
-            }
-        }
-        return num;
-    }
-
     void IKSolverVR::SetIKPosition(Sombrero::FastVector3 position) {
         IKPosition = position;
     }
@@ -138,6 +100,7 @@ namespace VRMQavatars::FinalIK {
     }
 
     void IKSolverVR::Update() {
+        VRMLogger.info("IKSolverVR Update");
         if (OnPreUpdate)
         {
             OnPreUpdate();
@@ -154,31 +117,6 @@ namespace VRMQavatars::FinalIK {
         if (OnPostUpdate)
         {
             OnPostUpdate();
-        }
-    }
-
-    void IKSolverVR::DefaultAnimationCurves() {
-        if (this->locomotion->stepHeight == nullptr)
-        {
-            this->locomotion->stepHeight = UnityEngine::AnimationCurve::New_ctor();
-        }
-        if (this->locomotion->heelHeight == nullptr)
-        {
-            this->locomotion->heelHeight = UnityEngine::AnimationCurve::New_ctor();
-        }
-        if (this->locomotion->stepHeight->length == 0)
-        {
-            auto frames = GetSineKeyframes(0.03f);
-            for (auto frame : frames) {
-                this->locomotion->stepHeight->AddKey(frame.m_Time, frame.m_Value);
-            }
-        }
-        if (this->locomotion->heelHeight->length == 0)
-        {
-            auto frames = GetSineKeyframes(0.03f);
-            for (auto frame : frames) {
-                this->locomotion->heelHeight->AddKey(frame.m_Time, frame.m_Value);
-            }
         }
     }
 
@@ -234,17 +172,6 @@ namespace VRMQavatars::FinalIK {
 
     Sombrero::FastQuaternion IKSolverVR::GetRotation(int index) {
         return solvedRotations[index];
-    }
-
-    std::vector<UnityEngine::Keyframe> IKSolverVR::GetSineKeyframes(float mag) {
-        std::vector<UnityEngine::Keyframe> array = std::vector<UnityEngine::Keyframe>(3);
-        array[0].m_Time = 0.0f;
-        array[0].m_Value = 0.0f;
-        array[1].m_Time = 0.5f;
-        array[1].m_Value = mag;
-        array[2].m_Time = 1.0f;
-        array[2].m_Value = 0.0f;
-        return array;
     }
 
     void IKSolverVR::GuessHandOrientations(References* references, bool onlyIfZero) {
@@ -353,11 +280,14 @@ namespace VRMQavatars::FinalIK {
                 bool flag = false;
                 if (lastLOD != LOD && lastLOD == 2)
                 {
+                    VRMLogger.info("OnUpdate X1");
                     spine->faceDirection = rootBone->readRotation * Sombrero::FastVector3::forward();
                     if (hasLegs)
                     {
+                        VRMLogger.info("OnUpdate X2");
                         if (locomotion->weight > 0.0f)
                         {
+                            VRMLogger.info("OnUpdate X3");
                             root->position = {spine->headTarget->position.x, root->position.y, spine->headTarget->position.z};
                             auto faceDirection = spine->faceDirection;
                             faceDirection.y = 0.0f;
@@ -446,13 +376,12 @@ namespace VRMQavatars::FinalIK {
         hasLegs = solverTransforms[14] != nullptr;
         readPositions = std::vector<Sombrero::FastVector3>(solverTransforms.size());
         readRotations = std::vector<Sombrero::FastQuaternion>(solverTransforms.size());
-        DefaultAnimationCurves();
         GuessHandOrientations(references, true);
     }
 
     void IKSolverVR::Solve() {
         spine->SetLOD(LOD);
-        auto array = arms;
+        auto& array = arms;
         for (int i = 0; i < array.size(); i++)
         {
             array[i]->SetLOD(LOD);
@@ -523,7 +452,7 @@ namespace VRMQavatars::FinalIK {
         }
         if (hasLegs)
         {
-            auto array2 = legs;
+            auto& array2 = legs;
             for (int i = 0; i < array2.size(); i++)
             {
                 array2[i]->ApplyOffsets();
@@ -575,7 +504,7 @@ namespace VRMQavatars::FinalIK {
         spine->ResetOffsets();
         if (hasLegs)
         {
-            auto array2 = legs;
+            auto& array2 = legs;
             for (int i = 0; i < array2.size(); i++)
             {
                 array2[i]->ResetOffsets();

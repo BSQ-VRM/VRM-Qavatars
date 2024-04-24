@@ -17,6 +17,7 @@ namespace VRMQavatars
 
     custom_types::Helpers::Coroutine ShaderLoader::LoadBund()
     {
+        VRMLogger.info("Loading shaders...");
         UnityEngine::AssetBundle* ass;
         co_yield coro(ShaderLoader::LoadBundleFromMemoryAsync(Assets::shaders_sbund, ass));
         if (!ass)
@@ -24,6 +25,7 @@ namespace VRMQavatars
             VRMLogger.error("Couldn't load bundle from file, dieing...");
             co_return;
         }
+        VRMLogger.info("Loaded Bundle");
 
         VRMData::ShaderSO* data = nullptr;
         co_yield coro(ShaderLoader::LoadAssetFromBundleAsync(ass, "Assets/shaders.asset", csTypeOf(VRMData::ShaderSO*), reinterpret_cast<UnityEngine::Object*&>(data)));
@@ -33,11 +35,12 @@ namespace VRMQavatars
             co_return;
         }
         ass->Unload(false);
+        VRMLogger.info("Loaded asset");
 
         AssetLib::ModelImporter::mtoon = data->mToonShader;
         MirrorManager::mirrorShader = data->mirrorShader;
         shaders = data;
-
+        VRMLogger.info("Finished Loading assets");
         co_return;
     }
 

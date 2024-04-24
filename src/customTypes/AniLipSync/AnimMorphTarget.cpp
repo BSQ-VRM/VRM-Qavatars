@@ -102,7 +102,7 @@ namespace VRMQavatars::AniLipSync
         VRMLogger.info("x13");
         num2 = std::clamp(num2 * 3.0f, 0.0f, 1.0f);
         int num3 = num - 10;
-        VRMLogger.info("viseme: %d", num3);
+        VRMLogger.info("viseme: {}", num3);
         controller->SetBlendshape(viseme2BlendShape[num3], num2 * 100.0f);
     }
 

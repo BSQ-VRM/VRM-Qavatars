@@ -22,7 +22,7 @@ namespace VRMQavatars {
         if(globcon.hasSelected.GetValue())
         {
             const auto path = globcon.selectedFileName.GetValue();
-            VRMLogger.info("%s", (std::string(vrm_path) + "/" + path).c_str());
+            VRMLogger.info("{}", (std::string(vrm_path) + "/" + path).c_str());
             if(fileexists(std::string(vrm_path) + "/" + path))
             {
                 const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());

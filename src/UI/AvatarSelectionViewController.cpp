@@ -3,6 +3,7 @@
 #include <string_view>
 #include <UnityEngine/WaitForEndOfFrame.hpp>
 
+#include "AvatarManager.hpp"
 #include "assets.hpp"
 #include "CalibrationHelper.hpp"
 #include "TPoseHelper.hpp"
@@ -69,7 +70,7 @@ namespace VRMQavatars::UI::ViewControllers {
         binFile.seekg(12); //Skip past the 12 byte header, to the json header
         uint32_t jsonLength;
         binFile.read(reinterpret_cast<char*>(&jsonLength), sizeof(uint32_t)); //Read the length of the json file from it's header
-        VRMLogger.info("%u", jsonLength);
+        VRMLogger.info("{}", jsonLength);
         std::string jsonStr;
         jsonStr.resize(jsonLength);
         binFile.seekg(20); // Skip the rest of the JSON header to the start of the string
@@ -82,7 +83,7 @@ namespace VRMQavatars::UI::ViewControllers {
         }
         catch (nlohmann::json::parse_error& ex)
         {
-            VRMLogger.error("parse error at byte %zu", ex.byte);
+            VRMLogger.error("parse error at byte {}", ex.byte);
             descriptor.valid = false;
             return descriptor;
         }

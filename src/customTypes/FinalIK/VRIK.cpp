@@ -25,14 +25,18 @@ namespace VRMQavatars::FinalIK
     }
 
     void VRIK::FindAnimatorRecursive(UnityEngine::Transform* t, bool findInChildren) {
+        VRMLogger.info("FindAnimatorRecursive {}", t->name);
         if (isAnimated())
         {
+            VRMLogger.info("isAnimated");
             return;
         }
         animator = t->GetComponent<UnityEngine::Animator*>();
         legacy = t->GetComponent<UnityEngine::Animation*>();
+        VRMLogger.info("animator: {}", fmt::ptr(animator));
         if (isAnimated())
         {
+            VRMLogger.info("isAnimated 2");
             return;
         }
         if (animator == nullptr && findInChildren)
@@ -43,8 +47,10 @@ namespace VRMQavatars::FinalIK
         {
             legacy = t->GetComponentInChildren<UnityEngine::Animation*>();
         }
+        VRMLogger.info("animator: {}", fmt::ptr(animator));
         if (!isAnimated() && t->parent != nullptr)
         {
+            VRMLogger.info("Going to parent");
             FindAnimatorRecursive(t->parent, false);
         }
     }
@@ -72,6 +78,7 @@ namespace VRMQavatars::FinalIK
     }
 
     void VRIK::LateUpdate() {
+        VRMLogger.info("LateUpdate {} {}", skipSolverUpdate, animatePhysics());
         if (skipSolverUpdate)
         {
             return;
@@ -133,6 +140,7 @@ namespace VRMQavatars::FinalIK
         {
             return;
         }
+        VRMLogger.info("IK_UpdateSolver");
         GetIKSolver()->Update();
     }
 
@@ -172,11 +180,16 @@ namespace VRMQavatars::FinalIK
             enabled = false;
             return;
         }
+        VRMLogger.info("VRIK_UpdateSolver");
         IK_UpdateSolver();
     }
 
     void VRIK::UpdateSolverExternal() {
-        //TODO: check this;
+        if(!enabled)
+        {
+            return;
+        }
+        skipSolverUpdate = true;
         VRIK_UpdateSolver();
     }
 

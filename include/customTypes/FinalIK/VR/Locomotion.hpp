@@ -16,7 +16,7 @@
 namespace VRMQavatars::FinalIK {
     class Locomotion {
     public:
-        Locomotion();
+        Locomotion() = default;
 
         void Initiate(std::vector<Sombrero::FastVector3> positions, std::vector<Sombrero::FastQuaternion> rotations, bool hasToes);
         void Reset(std::vector<Sombrero::FastVector3> positions, std::vector<Sombrero::FastQuaternion> rotations);
@@ -44,18 +44,18 @@ namespace VRMQavatars::FinalIK {
         UnityEngine::AnimationCurve* heelHeight;
         float relaxLegTwistMinAngle = 20.0f;
         float relaxLegTwistSpeed = 400.0f;
-        InterpolationMode stepInterpolation = (InterpolationMode)3;
-        Sombrero::FastVector3 offset;
-        bool blockingEnabled;
+        InterpolationMode stepInterpolation = InterpolationMode::InOutSine;
+        Sombrero::FastVector3 offset = Sombrero::FastVector3::zero();
+        bool blockingEnabled = false;
         UnityEngine::LayerMask blockingLayers;
         float raycastRadius = 0.2f;
         float raycastHeight = 0.2f;
-        Sombrero::FastVector3 centerOfMass;
+        Sombrero::FastVector3 centerOfMass = Sombrero::FastVector3::zero();
         std::vector<Footstep*> footsteps = std::vector<Footstep*>();
-        Sombrero::FastVector3 lastComPosition;
-        Sombrero::FastVector3 comVelocity;
-        int leftFootIndex;
-        int rightFootIndex;
+        Sombrero::FastVector3 lastComPosition = Sombrero::FastVector3::zero();
+        Sombrero::FastVector3 comVelocity = Sombrero::FastVector3::zero();
+        int leftFootIndex = 0;
+        int rightFootIndex = 0;
     };
 
     bool GetLineSphereCollision(Sombrero::FastVector3 lineStart, Sombrero::FastVector3 lineEnd, Sombrero::FastVector3 sphereCenter, float sphereRadius);

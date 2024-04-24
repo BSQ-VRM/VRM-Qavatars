@@ -18,7 +18,7 @@ namespace VRMQavatars
         //Start with ingame being false and check later
         inGame = false;
         const std::string name = scene.get_name();
-        VRMLogger.info("%s", name.c_str());
+        VRMLogger.info("{}", name.c_str());
 
         if(name == "QuestInit" || name == "ShaderWarmup")
         {

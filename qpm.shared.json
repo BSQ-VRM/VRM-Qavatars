@@ -52,7 +52,7 @@
       },
       {
         "id": "bs-cordl",
-        "versionRange": "3600.*",
+        "versionRange": "^3601.0.0",
         "additionalData": {}
       },
       {
@@ -67,7 +67,7 @@
       },
       {
         "id": "bsml",
-        "versionRange": "*",
+        "versionRange": "^0.4.0",
         "additionalData": {}
       },
       {
@@ -111,13 +111,17 @@
     {
       "dependency": {
         "id": "bsml",
-        "versionRange": "=0.5.0",
+        "versionRange": "=0.4.26",
         "additionalData": {
+          "soLink": "https://github.com/RedBrumbler/Quest-BSML/releases/download/v0.4.26/libbsml.so",
+          "debugSoLink": "https://github.com/RedBrumbler/Quest-BSML/releases/download/v0.4.26/debug_libbsml.so",
           "overrideSoName": "libbsml.so",
+          "modLink": "https://github.com/RedBrumbler/Quest-BSML/releases/download/v0.4.26/BSML.qmod",
+          "branchName": "version/v0_4_26",
           "cmake": true
         }
       },
-      "version": "0.5.0"
+      "version": "0.4.26"
     },
     {
       "dependency": {
@@ -250,10 +254,10 @@
     {
       "dependency": {
         "id": "bs-cordl",
-        "versionRange": "=3600.0.0",
+        "versionRange": "=3601.0.0",
         "additionalData": {
           "headersOnly": true,
-          "branchName": "version/v3600_0_0",
+          "branchName": "version/v3601_0_0",
           "compileOptions": {
             "includePaths": [
               "include"
@@ -268,7 +272,7 @@
           }
         }
       },
-      "version": "3600.0.0"
+      "version": "3601.0.0"
     },
     {
       "dependency": {

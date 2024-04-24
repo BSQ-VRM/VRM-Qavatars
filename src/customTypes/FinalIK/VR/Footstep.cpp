@@ -3,6 +3,7 @@
 #include "UnityEngine/Mathf.hpp"
 #include "UnityEngine/Time.hpp"
 #include <limits>
+#include "main.hpp"
 #include "sombrero/shared/QuaternionUtils.hpp"
 
 namespace VRMQavatars::FinalIK {
@@ -39,6 +40,8 @@ namespace VRMQavatars::FinalIK {
         }
         stepProgress = UnityEngine::Mathf::MoveTowards(stepProgress, 1.0f, UnityEngine::Time::get_deltaTime() * stepSpeed);
         float num2 = Interp::Float(stepProgress, interpolation);
+        VRMLogger.info("{}", num2);
+        VRMLogger.info("{} {} {}", stepTo.x, stepTo.y, stepTo.z);
         position = Sombrero::FastVector3::Lerp(stepFrom, stepTo, num2);
         rotation = Sombrero::FastQuaternion::Lerp(stepFromRot, stepToRot, num2);
     }

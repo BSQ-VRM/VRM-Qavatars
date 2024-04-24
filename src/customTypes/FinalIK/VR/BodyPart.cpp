@@ -1,5 +1,6 @@
 #include "customTypes/FinalIK/VR/BodyPart.hpp"
 #include "customTypes/FinalIK/QuaTools.hpp"
+#include "main.hpp"
 
 namespace VRMQavatars::FinalIK {
 
@@ -18,7 +19,7 @@ namespace VRMQavatars::FinalIK {
     }
 
     void BodyPart::Read(std::vector<Sombrero::FastVector3> positions, std::vector<Sombrero::FastQuaternion> rotations, bool hasChest, bool hasNeck, bool hasShoulders, bool hasToes, bool hasLegs, int rootIndex, int index) {
-    	index = index;
+        this->index = index;
         rootPosition = positions[rootIndex];
         rootRotation = rotations[rootIndex];
         OnRead(positions, rotations, hasChest, hasNeck, hasShoulders, hasToes, hasLegs, rootIndex, index);

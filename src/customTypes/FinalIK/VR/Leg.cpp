@@ -1,5 +1,6 @@
 #include "customTypes/FinalIK/VR/Leg.hpp"
 #include "customTypes/FinalIK/QuaTools.hpp"
+#include "main.hpp"
 #include "sombrero/shared/QuaternionUtils.hpp"
 #include "sombrero/shared/Vector3Utils.hpp"
 
@@ -84,7 +85,7 @@ namespace VRMQavatars::FinalIK {
         auto quaternion4 = rotations[index + 3];
         if (!initiated)
         {
-            hasToes = hasToes;
+            this->hasToes = hasToes;
             bones = std::vector<VirtualBone*>(hasToes ? 4 : 3);
             if (hasToes)
             {
@@ -167,6 +168,7 @@ namespace VRMQavatars::FinalIK {
     }
 
     void Leg::Solve(bool stretch) {
+        VRMLogger.info("Leg::Solve {}", hasToes > 0 ? "has toes" : "no toes");
         if (stretch && LOD < 1)
         {
             Stretching();
@@ -201,7 +203,7 @@ namespace VRMQavatars::FinalIK {
             }
         }
         float num2 = thigh()->solverPosition.Distance(footPosition) / num;
-        float num3 = stretchCurve->Evaluate(num2) * positionWeight;
+        float num3 = 0.0f * positionWeight;
         vector = (calf()->solverPosition - thigh()->solverPosition) * num3;
         vector2 = (foot()->solverPosition - calf()->solverPosition) * num3;
         calf()->solverPosition += vector;

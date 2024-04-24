@@ -42,7 +42,7 @@ namespace VRMQavatars::VMC
         //VRMLogger.info("x3");
         if(config.enableSender)
         {
-            //VRMLogger.info("x4, %s, %d", config.destIP.c_str(), to_int(config.destPort.c_str()));
+            //VRMLogger.info("x4, {}, {}", config.destIP.c_str(), to_int(config.destPort.c_str()));
             socket = kissnet::udp_socket(kissnet::endpoint(config.destIP, IntUtil::to_int(config.destPort.c_str())));
         }
     }

@@ -28,6 +28,7 @@
 
 #include "UI/AvatarsFlowCoordinator.hpp"
 
+#include "AvatarManager.hpp"
 #include "LightManager.hpp"
 #include "SceneEventManager.hpp"
 #include "GroundOffsetManager.hpp"
@@ -45,21 +46,27 @@
 modloader::ModInfo modInfo{MOD_ID, VERSION, GIT_COMMIT};
 
 custom_types::Helpers::Coroutine Setup() {
-    VRMLogger.info("x1");
+
+    if(UnityEngine::Resources::FindObjectsOfTypeAll<VRMQavatars::LightManager*>().size() == 0)
+    {
+        auto lightManager = UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
+        lightManager->gameObject->AddComponent<VRMQavatars::PPRender*>();
+    }
+
     if(!VRMQavatars::ShaderLoader::shaders)
     {
         co_yield custom_types::Helpers::CoroutineHelper::New(VRMQavatars::ShaderLoader::LoadBund());
-    }
-
-    if(VRMQavatars::AvatarManager::currentContext == nullptr)
-    {
-        VRMQavatars::AvatarManager::StartupLoad();
     }
 
     VRMQavatars::VMC::VMCClient::InitClient();
     VRMQavatars::VMC::VMCServer::InitServer();
     VRMQavatars::GroundOffsetManager::Init();
     VRMQavatars::MirrorManager::CreateMainMirror();
+
+    if(VRMQavatars::AvatarManager::currentContext == nullptr)
+    {
+        VRMQavatars::AvatarManager::StartupLoad();
+    }
     co_return;
 }
  

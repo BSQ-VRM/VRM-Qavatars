@@ -83,7 +83,7 @@ namespace VRMQavatars::OVRLipSync
         int num2;
         static auto buildHumanoid = il2cpp_utils::resolve_icall<void, int&, int&>("UnityEngine.AudioSettings::GetDSPBufferSize");
         buildHumanoid(num, num2);
-        VRMLogger.info("OvrLipSync Awake: Queried SampleRate: %d BufferSize: %d", outputSampleRate, num);
+        VRMLogger.info("OvrLipSync Awake: Queried SampleRate: {} BufferSize: {}", outputSampleRate, num);
         sInitialized = ovrLipSyncDll_Initialize(1024, num);
         return sInitialized;
     }

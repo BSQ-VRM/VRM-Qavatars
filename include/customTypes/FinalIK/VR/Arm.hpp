@@ -16,7 +16,7 @@ namespace VRMQavatars::FinalIK {
     class Arm : public BodyPart {
     public:
         virtual ~Arm() = default;
-        Arm();
+        Arm() = default;
         
         void ApplyOffsets() override;
         float DamperValue(float value, float min, float max, float weight = 1.0f);
@@ -39,28 +39,27 @@ namespace VRMQavatars::FinalIK {
         float armLengthMlp = 1.f;
         float positionWeight = 1.f;
         float rotationWeight = 1.f;
-        ShoulderRotationMode shoulderRotationMode;
+        ShoulderRotationMode shoulderRotationMode = ShoulderRotationMode::YawPitch;
         float shoulderRotationWeight = 1.f;
         float shoulderTwistWeight = 1.f;
-        float bendGoalWeight;
-        float swivelOffset;
+        float bendGoalWeight = 0;
+        float swivelOffset = 0;
         Sombrero::FastVector3 wristToPalmAxis = Sombrero::FastVector3::zero();
         Sombrero::FastVector3 palmToThumbAxis = Sombrero::FastVector3::zero();
-        UnityEngine::AnimationCurve* stretchCurve;
-        Sombrero::FastVector3 IKPosition;
+        Sombrero::FastVector3 IKPosition = Sombrero::FastVector3::zero();
         Sombrero::FastQuaternion IKRotation = Sombrero::FastQuaternion::identity();
         Sombrero::FastVector3 bendDirection = Sombrero::FastVector3::back();
-        Sombrero::FastVector3 handPositionOffset;
-        Sombrero::FastVector3 position;
-        Sombrero::FastQuaternion rotation;
-        bool hasShoulder;
-        Sombrero::FastVector3 chestForwardAxis;
-        Sombrero::FastVector3 chestUpAxis;
+        Sombrero::FastVector3 handPositionOffset = Sombrero::FastVector3::zero();
+        Sombrero::FastVector3 position = Sombrero::FastVector3::zero();
+        Sombrero::FastQuaternion rotation = Sombrero::FastQuaternion::identity();
+        bool hasShoulder = false;
+        Sombrero::FastVector3 chestForwardAxis = Sombrero::FastVector3::zero();
+        Sombrero::FastVector3 chestUpAxis = Sombrero::FastVector3::zero();
         Sombrero::FastQuaternion chestRotation = Sombrero::FastQuaternion::identity();
-        Sombrero::FastVector3 chestForward;
-        Sombrero::FastVector3 chestUp;
+        Sombrero::FastVector3 chestForward = Sombrero::FastVector3::zero();
+        Sombrero::FastVector3 chestUp = Sombrero::FastVector3::zero();
         Sombrero::FastQuaternion forearmRelToUpperArm = Sombrero::FastQuaternion::identity();
-        Sombrero::FastVector3 upperArmBendAxis;
+        Sombrero::FastVector3 upperArmBendAxis = Sombrero::FastVector3::zero();
         const float yawOffsetAngle = 45.f;
         const float pitchOffsetAngle = -30.f;
     };

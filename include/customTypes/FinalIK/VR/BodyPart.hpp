@@ -5,7 +5,7 @@
 namespace VRMQavatars::FinalIK {
     class BodyPart {
     public:
-        BodyPart();
+        BodyPart() = default;
 
         virtual void ApplyOffsets() = 0;
         void MovePosition(Sombrero::FastVector3 position);

@@ -15,16 +15,17 @@ namespace VRMQavatars::FinalIK
         CP_SDK_IL2CPP_INHERIT("VRMQavatars", VRIK, UnityEngine::MonoBehaviour);
         CP_SDK_IL2CPP_DECLARE_CTOR(VRIK);
         CP_SDK_IL2CPP_DECLARE_DTOR_MONOBEHAVIOUR(VRIK);
+        
+        DECLARE_INSTANCE_METHOD(void, OnDisable);
+        DECLARE_INSTANCE_METHOD(void, Start);
+        DECLARE_INSTANCE_METHOD(void, Update);
+        DECLARE_INSTANCE_METHOD(void, LateUpdate);
+        DECLARE_INSTANCE_METHOD(void, FixedUpdate);
     public:
         //Solver Manager
         void Disable();
         void FindAnimatorRecursive(UnityEngine::Transform* t, bool findInChildren);
-        void FixedUpdate();
         void Initiate();
-        void LateUpdate();
-        void OnDisable();
-        void Start();
-        void Update();
         bool animatePhysics();
         bool isAnimated();
 
@@ -47,8 +48,8 @@ namespace VRMQavatars::FinalIK
         void UpdateSolverExternal();
         void FixTransforms() const;
 
-        References* references;
-        IKSolverVR* solver;
+        References* references = new References();;
+        IKSolverVR* solver = new IKSolverVR();
     };
 }
 

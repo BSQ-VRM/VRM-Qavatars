@@ -219,7 +219,7 @@ namespace VRM::Mappings
             }
             catch(const std::exception& e)
             {
-                VRMLogger.error("%s", e.what());
+                VRMLogger.error("{}", e.what());
             }
             return nullptr;
         }
@@ -442,7 +442,7 @@ namespace VRM::Mappings
             }
             catch(const std::exception& e)
             {
-                VRMLogger.error("%s", e.what());
+                VRMLogger.error("{}", e.what());
             }
             return nullptr;
         }

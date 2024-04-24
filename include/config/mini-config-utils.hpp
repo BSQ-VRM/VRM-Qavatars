@@ -17,7 +17,7 @@ DECLARE_JSON_CLASS(name##_t, \
         try { \
             ReadFromFile(__config_path, GetInstance()); \
         } catch (const std::exception& err) { \
-            ConfigUtils::Logger.error("Error reading config: %s (from %s)", err.what(), __config_path.c_str()); \
+            ConfigUtils::Logger.error("Error reading config: {} (from {})", err.what(), __config_path.c_str()); \
         } \
 		Save(); \
     } \
@@ -32,7 +32,7 @@ DECLARE_JSON_CLASS(name##_t, \
         try { \
             WriteToFile(__config_path, GetInstance()); \
         } catch (const std::exception& err) { \
-            ConfigUtils::Logger.error("Error saving config: %s (to %s)", err.what(), __config_path.c_str()); \
+            ConfigUtils::Logger.error("Error saving config: {} (to {})", err.what(), __config_path.c_str()); \
         } \
     } \
 ) \

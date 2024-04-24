@@ -4,9 +4,11 @@
 #include "customTypes/FinalIK/InterpolationMode.hpp"
 #include "customTypes/FinalIK/V3Tools.hpp"
 #include "customTypes/FinalIK/QuaTools.hpp"
+#include "main.hpp"
 #include "sombrero/shared/QuaternionUtils.hpp"
 
 #include "customTypes/FinalIK/MathUtil.hpp"
+#include <algorithm>
 
 namespace VRMQavatars::FinalIK {
 
@@ -124,6 +126,7 @@ namespace VRMQavatars::FinalIK {
     }
 
     void Arm::Solve(bool isLeft) {
+        VRMLogger.info("Arm::Solve {}", hasShoulder ? "has shoulder" : "no shoulder");
         chestRotation = Sombrero::FastQuaternion::LookRotation(rootRotation * chestForwardAxis, rootRotation * chestUpAxis);
         chestForward = chestRotation * Sombrero::FastVector3::forward();
         chestUp = chestRotation * Sombrero::FastVector3::up();
@@ -233,27 +236,10 @@ namespace VRMQavatars::FinalIK {
     }
 
     void Arm::Stretching() {
-        float num = upperArm()->length + forearm()->length;
-        Sombrero::FastVector3 vector = Sombrero::FastVector3::zero();
-        Sombrero::FastVector3 vector2 = Sombrero::FastVector3::zero();
-        if (armLengthMlp != 1.0f)
-        {
-            num *= armLengthMlp;
-            vector = (forearm()->solverPosition - upperArm()->solverPosition) * (armLengthMlp - 1.0f);
-            vector2 = (hand()->solverPosition - forearm()->solverPosition) * (armLengthMlp - 1.0f);
-            forearm()->solverPosition += vector;
-            hand()->solverPosition += vector + vector2;
-        }
-        float num2 = upperArm()->solverPosition.Distance(position) / num;
-        float num3 = stretchCurve->Evaluate(num2);
-        num3 *= positionWeight;
-        vector = (forearm()->solverPosition - upperArm()->solverPosition) * num3;
-        vector2 = (hand()->solverPosition - forearm()->solverPosition) * num3;
-        forearm()->solverPosition += vector;
-        hand()->solverPosition += vector + vector2;
     }
 
     void Arm::Write(std::vector<Sombrero::FastVector3>& positions, std::vector<Sombrero::FastQuaternion>& rotations) {
+        VRMLogger.info("Arm::Write {}", hasShoulder ? "has shoulder" : "no shoulder");
         if (hasShoulder)
         {
             positions[index] = shoulder()->solverPosition;

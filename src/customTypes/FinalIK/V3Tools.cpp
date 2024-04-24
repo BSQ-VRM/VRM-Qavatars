@@ -35,9 +35,9 @@ namespace VRMQavatars::FinalIK::V3Tools {
     }
 
     Sombrero::FastVector3 PointToPlane(Sombrero::FastVector3 point, Sombrero::FastVector3 planePosition, Sombrero::FastVector3 planeNormal) {
-        if (planeNormal == Sombrero::FastVector3::up())
+        if (planeNormal.Equals(Sombrero::FastVector3::up()))
         {
-            return {point.x, planePosition.y, point.z};
+            return {point.x, planePosition.y, point.z}; 
         }
         UnityEngine::Vector3 vector = point - planePosition;
         UnityEngine::Vector3 vector2 = planeNormal;

@@ -4,6 +4,8 @@
 
 #include "config/ConfigManager.hpp"
 
+#include "UnityEngine/Transform.hpp"
+
 namespace VRMQavatars
 {
     CP_SDK_IL2CPP_INHERIT_INIT(GroundOffsetObject);

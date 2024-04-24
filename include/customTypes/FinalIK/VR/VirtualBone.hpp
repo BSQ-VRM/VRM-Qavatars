@@ -19,12 +19,12 @@ namespace VRMQavatars::FinalIK {
         static void SolveFABRIK(std::vector<VirtualBone*> bones, Sombrero::FastVector3 startPosition, Sombrero::FastVector3 targetPosition, float weight, float minNormalizedTargetDistance, int iterations, float length, Sombrero::FastVector3 startOffset);
         static Sombrero::FastVector3 SolveFABRIKJoint(Sombrero::FastVector3 pos1, Sombrero::FastVector3 pos2, float length);
 
-        Sombrero::FastVector3 readPosition;
-        Sombrero::FastQuaternion readRotation;
-        Sombrero::FastVector3 solverPosition;
-        Sombrero::FastQuaternion solverRotation;
-        float length;
-        float sqrMag;
-        Sombrero::FastVector3 axis;
+        Sombrero::FastVector3 readPosition = Sombrero::FastVector3::zero();
+        Sombrero::FastQuaternion readRotation = Sombrero::FastQuaternion::identity();
+        Sombrero::FastVector3 solverPosition = Sombrero::FastVector3::zero();
+        Sombrero::FastQuaternion solverRotation = Sombrero::FastQuaternion::identity();
+        float length = 0;
+        float sqrMag = 0;
+        Sombrero::FastVector3 axis = Sombrero::FastVector3::zero();
     };
 }

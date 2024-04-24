@@ -1,5 +1,7 @@
 #include "config/ConfigManager.hpp"
 
+#include "AvatarManager.hpp"
+
 #include "utils/FileUtils.hpp"
 
 namespace VRMQavatars::Config
