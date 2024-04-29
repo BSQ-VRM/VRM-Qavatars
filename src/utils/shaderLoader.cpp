@@ -47,7 +47,7 @@ namespace VRMQavatars
     custom_types::Helpers::Coroutine ShaderLoader::LoadBundleFromMemoryAsync(ArrayW<uint8_t> bytes, UnityEngine::AssetBundle*& out)
     {
         using AssetBundle_LoadFromMemoryAsync = function_ptr_t<UnityEngine::AssetBundleCreateRequest*, ArrayW<uint8_t>, int>;
-        static AssetBundle_LoadFromMemoryAsync assetBundle_LoadFromMemoryAsync = reinterpret_cast<AssetBundle_LoadFromMemoryAsync>(il2cpp_functions::resolve_icall("UnityEngine.AssetBundle::LoadFromMemoryAsync_Internal"));
+        static auto assetBundle_LoadFromMemoryAsync = reinterpret_cast<AssetBundle_LoadFromMemoryAsync>(il2cpp_functions::resolve_icall("UnityEngine.AssetBundle::LoadFromMemoryAsync_Internal"));
 
         auto req = assetBundle_LoadFromMemoryAsync(bytes, 0);
         req->set_allowSceneActivation(true);
@@ -55,6 +55,7 @@ namespace VRMQavatars
             co_yield nullptr;
 
         out = req->get_assetBundle();
+        UnityEngine::Object::DontDestroyOnLoad(out);
         co_return;
     }
 
@@ -66,7 +67,7 @@ namespace VRMQavatars
             co_yield nullptr;
 
         out = req->get_asset();
-
+        UnityEngine::Object::DontDestroyOnLoad(out);
         co_return;
     }
 }

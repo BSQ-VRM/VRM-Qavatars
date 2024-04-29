@@ -8,7 +8,12 @@
 #include "customTypes/AniLipSync/LowLatencyLipSyncContext.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
 
+#include "main.hpp"
+#include "paper/shared/Profiler.hpp"
+
 SafePtrUnity<UnityEngine::Shader> AssetLib::ModelImporter::mtoon;
+
+static Paper::Profiler VRMProfiler;
 
 //Used for debugging armatures
 void AddSphere(UnityEngine::Transform* obj)
@@ -380,6 +385,7 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     Assimp::Importer importer;
 
     const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_PopulateArmatureData | aiProcess_MakeLeftHanded);
+    VRMProfiler.mark("Assimp import finished");
     modelContext->originalScene = scene;
     const auto Root = UnityEngine::GameObject::New_ctor("ROOT");
     UnityEngine::GameObject::DontDestroyOnLoad(Root);
@@ -390,15 +396,19 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
     modelContext->rootGameObject = Root;
     modelContext->armature = Structure::Armature();
 
+    VRMProfiler.mark("Creating Node Tree");
+
     //STEP ONE: Create initial node tree
 
     IterateNode(scene->mRootNode, nullptr, modelContext);
     modelContext->rootNode->gameObject = Root;
     modelContext->rootNode->processed = true;
+    VRMProfiler.mark("Node Tree Created");
     //STEP TWO: Create gameobjects for each node
 
     CreateNodeTreeObject(modelContext->rootNode);
-    logTransform(Root->get_transform());
+
+    VRMProfiler.mark("Created GameObjects");
 
     //STEP THREE: Load in armature
     Structure::Node* armatureNode = nullptr;
@@ -415,6 +425,8 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
         }
     }
     modelContext->armature.value().rootBone = armatureNode;
+
+    VRMProfiler.mark("Loaded Armature");
     //STEP FOUR: Load in meshes
 
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
@@ -437,6 +449,8 @@ AssetLib::Structure::ModelContext* AssetLib::ModelImporter::Load(const std::stri
             ConstructUnityMesh(node, modelContext);
         }
     }
+
+    VRMProfiler.mark("Constructed Meshes");
 
     return modelContext;
 }
@@ -465,7 +479,11 @@ void SetXLocalRot(UnityEngine::Transform* trans, const float x)
 //TODO: Figure out 1.0.0 support
 AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(const std::string& filename, UnityEngine::Shader* mtoon)
 {
+    VRMLogger.info("Loading VRM Model: {}", filename.c_str());
+    VRMProfiler.startTimer();
+    VRMProfiler.mark("Start");
     const auto originalContext = Load(filename, false);
+    VRMProfiler.mark("Finished initial Load");
 
     //Load inital data to post process
     const auto modelContext = new Structure::VRM::VRMModelContext(std::move(*originalContext));//Don't load materials because we are replacing them with VRM materials
@@ -504,6 +522,8 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
         modelContext->vrm1 = vrm1;
     }
 
+    VRMProfiler.mark("Parsed VRM data");
+
     //Generate Textures
 
     std::vector<UnityEngine::Texture2D*> textures;
@@ -511,6 +531,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     {
         textures.push_back(VRMQavatars::gLTFImageReader::ReadImageIndex(jsonLength, binFile, i));
     }
+    VRMProfiler.mark("Generated Textures");
 
     //Generate VRM Materials
 
@@ -596,6 +617,7 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             }
         }
     }
+    VRMProfiler.mark("Created materials");
     VRMQavatars::MaterialTracker::UpdateMaterials();
     for (size_t i = 0; i < modelContext->nodes.size(); i++)
     {
@@ -612,14 +634,18 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             renderer->set_sharedMaterials(matArray);
         }
     }
+    VRMProfiler.mark("Set materials");
 
     //modelContext->rootGameObject->AddComponent<VRMQavatars::OVRLipSync::OVRLipSync*>();
 
     modelContext->blendShapeMaster = vrm.has_value() ? Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm.value()) : Structure::VRM::VRMBlendShapeMaster::LoadFromVRM1(vrm1.value());;
+    VRMProfiler.mark("Setup Blendshapes");
     auto avatar = vrm.has_value() ? VRM::Mappings::AvatarMappings::CreateAvatar(vrm.value(), modelContext->nodes, modelContext->armature.value().rootBone->gameObject) :  VRM::Mappings::AvatarMappings::CreateAvatar(vrm1.value(), modelContext->nodes, modelContext->armature.value().rootBone->gameObject);
+    VRMProfiler.mark("Setup Avatar Object");
     auto anim = modelContext->rootGameObject->AddComponent<UnityEngine::Animator*>();
     anim->set_cullingMode(UnityEngine::AnimatorCullingMode::AlwaysAnimate);
     anim->set_avatar(avatar);
+
     //Fix crossed legs
 
     auto LUleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
@@ -639,6 +665,8 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
     auto targetManager = modelContext->rootGameObject->AddComponent<VRMQavatars::TargetManager*>();
     targetManager->vrik = vrik;
     targetManager->Initialize();
+
+    VRMProfiler.mark("Target Manager Initialized");
 
     auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Neck);
     VRMLogger.info("headBone {}", static_cast<std::string>(headBone->get_gameObject()->get_name()).c_str());
@@ -678,6 +706,8 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             }
         }
     }
+
+    VRMProfiler.mark("Seperated First & Third Person Meshes");
 
     auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
     secondary->get_transform()->SetParent(modelContext->rootGameObject->get_transform());
@@ -806,6 +836,9 @@ AssetLib::Structure::VRM::VRMModelContext* AssetLib::ModelImporter::LoadVRM(cons
             springBone->rootBones = list2;
         }*/
     }
-    
+
+    VRMProfiler.mark("Created Springbones");
+    VRMProfiler.endTimer();
+    VRMProfiler.printMarks();
     return modelContext;
 }

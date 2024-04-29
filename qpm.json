@@ -36,7 +36,10 @@
       "tomb": [
         "pwsh ./scripts/pull-tombstone.ps1"
       ]
-    }
+    },
+    "qmodIncludeDirs": [],
+    "qmodIncludeFiles": [],
+    "qmodOutput": null
   },
   "dependencies": [
     {
@@ -102,6 +105,11 @@
     {
       "id": "paper",
       "versionRange": "^3.6.3",
+      "additionalData": {}
+    },
+    {
+      "id": "lapiz",
+      "versionRange": "^0.2.9",
       "additionalData": {}
     }
   ]

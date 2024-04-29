@@ -33,7 +33,6 @@
 #include "SceneEventManager.hpp"
 #include "GroundOffsetManager.hpp"
 #include "MaterialTracker.hpp"
-#include "customTypes/PPRender.hpp"
 #include "MirrorManager.hpp"
 
 #include "config/ConfigManager.hpp"
@@ -42,41 +41,12 @@
 #include "VMC/VMCServer.hpp"
 
 #include "customTypes/FinalIK/VRIK.hpp"
+#include "customTypes/Installers/MenuInstaller.hpp"
+
+#include "lapiz/shared/zenject/Zenjector.hpp"
+#include "lapiz/shared/zenject/Location.hpp"
 
 modloader::ModInfo modInfo{MOD_ID, VERSION, GIT_COMMIT};
-
-custom_types::Helpers::Coroutine Setup() {
-
-    if(UnityEngine::Resources::FindObjectsOfTypeAll<VRMQavatars::LightManager*>().size() == 0)
-    {
-        auto lightManager = UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
-        lightManager->gameObject->AddComponent<VRMQavatars::PPRender*>();
-    }
-
-    if(!VRMQavatars::ShaderLoader::shaders)
-    {
-        co_yield custom_types::Helpers::CoroutineHelper::New(VRMQavatars::ShaderLoader::LoadBund());
-    }
-
-    VRMQavatars::VMC::VMCClient::InitClient();
-    VRMQavatars::VMC::VMCServer::InitServer();
-    VRMQavatars::GroundOffsetManager::Init();
-    VRMQavatars::MirrorManager::CreateMainMirror();
-
-    if(VRMQavatars::AvatarManager::currentContext == nullptr)
-    {
-        VRMQavatars::AvatarManager::StartupLoad();
-    }
-    co_return;
-}
- 
-MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidActivate, void, GlobalNamespace::MainMenuViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
-    MainMenuUIHook(self, firstActivation, addedToHierarchy, screenSystemEnabling);
-    if(firstActivation)
-    {
-        self->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(Setup()));
-    }
-}
 
 // FP/TP stuff should be in its own mod...
 MAKE_HOOK_MATCH(MainCameraHook, &GlobalNamespace::MainCamera::Awake, void, GlobalNamespace::MainCamera* self)
@@ -137,20 +107,21 @@ extern "C" void setup(CModInfo* info) {
 }
 
 extern "C" void late_load() {
-    VRMLogger.info("load");
     il2cpp_functions::Init();
-    VRMLogger.info("load1");
+
     mkpath(vrm_path);
     mkpath(avaconfig_path);
-    VRMLogger.info("load2");
+
     custom_types::Register::AutoRegister(); 
-    VRMLogger.info("load3");
-    VRMLogger.info("load4");
-    INSTALL_HOOK(VRMLogger, MainMenuUIHook);
+
     INSTALL_HOOK(VRMLogger, MainCameraHook);
     INSTALL_HOOK(VRMLogger, SceneManager_Internal_ActiveSceneChanged);
     INSTALL_HOOK(VRMLogger, SaberPatch);
     INSTALL_HOOK(VRMLogger, BloomHook);
+
+    auto zenjeqtor = Lapiz::Zenject::Zenjector::Get();
+
+    zenjeqtor->Install<VRMQavatars::MenuInstaller*>(Lapiz::Zenject::Location::Menu);
+
     BSML::Register::RegisterMainMenu<FlowCoordinators::AvatarsFlowCoordinator*>("Avatars", "VRM Custom Avatars");
-    VRMLogger.info("load5");
 }

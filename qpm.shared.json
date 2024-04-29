@@ -37,7 +37,10 @@
         "tomb": [
           "pwsh ./scripts/pull-tombstone.ps1"
         ]
-      }
+      },
+      "qmodIncludeDirs": [],
+      "qmodIncludeFiles": [],
+      "qmodOutput": null
     },
     "dependencies": [
       {
@@ -103,6 +106,11 @@
       {
         "id": "paper",
         "versionRange": "^3.6.3",
+        "additionalData": {}
+      },
+      {
+        "id": "lapiz",
+        "versionRange": "^0.2.9",
         "additionalData": {}
       }
     ]
@@ -290,6 +298,21 @@
         }
       },
       "version": "5.3.3"
+    },
+    {
+      "dependency": {
+        "id": "lapiz",
+        "versionRange": "=0.2.9",
+        "additionalData": {
+          "soLink": "https://github.com/raineio/Lapiz/releases/download/v0.2.9/liblapiz.so",
+          "debugSoLink": "https://github.com/raineio/Lapiz/releases/download/v0.2.9/debug_liblapiz.so",
+          "overrideSoName": "liblapiz.so",
+          "modLink": "https://github.com/raineio/Lapiz/releases/download/v0.2.9/Lapiz.qmod",
+          "branchName": "version/v0_2_9",
+          "cmake": true
+        }
+      },
+      "version": "0.2.9"
     },
     {
       "dependency": {
