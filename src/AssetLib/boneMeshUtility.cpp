@@ -1,6 +1,6 @@
-#include "utils/boneMeshUtility.hpp"
+#include "AssetLib/boneMeshUtility.hpp"
 
-namespace VRMQavatars
+namespace AssetLib
 {
 	UnityEngine::Mesh* BoneMeshUtility::CreateErasedMesh(UnityEngine::Mesh* src, const std::vector<int>& eraseBoneIndices)
 	{

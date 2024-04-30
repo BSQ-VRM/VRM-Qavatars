@@ -25,13 +25,15 @@ namespace VRMQavatars {
             VRMLogger.info("{}", (std::string(vrm_path) + "/" + path).c_str());
             if(fileexists(std::string(vrm_path) + "/" + path))
             {
-                const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
-                SetContext(ctx);
-                auto& avaConfig = Config::ConfigManager::GetAvatarConfig();
-                if(avaConfig.HasCalibrated.GetValue())
+                AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, [](AssetLib::Structure::VRM::VRMModelContext* ctx)
                 {
-                    CalibrationHelper::Calibrate(avaConfig.CalibratedScale.GetValue());
-                }
+                    SetContext(ctx);
+                    auto& avaConfig = Config::ConfigManager::GetAvatarConfig();
+                    if(avaConfig.HasCalibrated.GetValue())
+                    {
+                        CalibrationHelper::Calibrate(avaConfig.CalibratedScale.GetValue());
+                    }
+                });
             }
         }
     }

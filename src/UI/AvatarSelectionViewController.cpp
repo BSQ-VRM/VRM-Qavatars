@@ -1,14 +1,15 @@
 #include "UI/AvatarSelectionViewController.hpp"
 
 #include <string_view>
-#include <UnityEngine/WaitForEndOfFrame.hpp>
+#include "UnityEngine/WaitForEndOfFrame.hpp"
+#include "UnityEngine/TextureFormat.hpp"
 
 #include "AvatarManager.hpp"
 #include "assets.hpp"
 #include "CalibrationHelper.hpp"
 #include "TPoseHelper.hpp"
 #include "AssetLib/modelImporter.hpp"
-#include "AssetLib/mappings/gLTFImageReader.hpp"
+#include "AssetLib/gLTFImageReader.hpp"
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/Templates.hpp"
 #include "config/ConfigManager.hpp"
 #include "UI/components/AvatarListCell.hpp"
@@ -103,7 +104,7 @@ namespace VRMQavatars::UI::ViewControllers {
             descriptor.vrm1 = vrm;
         }
 
-        descriptor.thumbnail = gLTFImageReader::ReadImageIndex(jsonLength, binFile, descriptor.vrm0.has_value() ? descriptor.vrm0.value().meta.texture : descriptor.vrm1.value().meta.thumbnailImage);
+        descriptor.thumbnail = AssetLib::gLTFImageReader::ReadImageIndex(jsonLength, binFile, descriptor.vrm0.has_value() ? descriptor.vrm0.value().meta.texture : descriptor.vrm1.value().meta.thumbnailImage);
         descriptor.filePath = path;
 
         if(descriptor.vrm0.has_value())
@@ -172,8 +173,10 @@ namespace VRMQavatars::UI::ViewControllers {
             }
             if(fileexists(std::string(vrm_path) + "/" + path))
             {
-                const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
-                AvatarManager::SetContext(ctx);
+                AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, [](AssetLib::Structure::VRM::VRMModelContext* ctx)
+                {
+                    AvatarManager::SetContext(ctx);
+                });
             }
             globcon.hasSelected.SetValue(true);
             globcon.selectedFileName.SetValue(path);

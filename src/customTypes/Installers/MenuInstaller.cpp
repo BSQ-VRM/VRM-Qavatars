@@ -33,9 +33,9 @@ namespace VRMQavatars
             co_yield nullptr;
         }
 
-        if(!VRMQavatars::ShaderLoader::shaders)
+        if(!AssetLib::ShaderLoader::shaders)
         {
-            co_yield custom_types::Helpers::CoroutineHelper::New(VRMQavatars::ShaderLoader::LoadBund());
+            co_yield custom_types::Helpers::CoroutineHelper::New(AssetLib::ShaderLoader::LoadBund());
         }
 
         VRMQavatars::MirrorManager::CreateMainMirror();

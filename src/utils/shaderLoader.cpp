@@ -9,7 +9,7 @@
 
 #include "assets.hpp"
 
-namespace VRMQavatars
+namespace AssetLib
 {
     #define coro(...) custom_types::Helpers::CoroutineHelper::New(__VA_ARGS__)
 
@@ -38,7 +38,7 @@ namespace VRMQavatars
         VRMLogger.info("Loaded asset");
 
         AssetLib::ModelImporter::mtoon = data->mToonShader;
-        MirrorManager::mirrorShader = data->mirrorShader;
+        VRMQavatars::MirrorManager::mirrorShader = data->mirrorShader;
         shaders = data;
         VRMLogger.info("Finished Loading assets");
         co_return;

@@ -5,7 +5,7 @@
 
 #include "UnityEngine/AssetBundle.hpp"
 
-namespace VRMQavatars
+namespace AssetLib
 {
     class ShaderLoader
     {

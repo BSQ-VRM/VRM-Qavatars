@@ -9,7 +9,7 @@
 #include "UnityEngine/BoneWeight.hpp"
 #include "UnityEngine/MeshTopology.hpp"
 
-#include "AssetLib/skinTypes/boneWeightProxy.hpp"
+#include "AssetLib/structure/boneWeightProxy.hpp"
 
 #include "sombrero/shared/FastVector3.hpp"
 #include "sombrero/shared/FastVector2.hpp"

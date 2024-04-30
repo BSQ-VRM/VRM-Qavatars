@@ -4,42 +4,9 @@
 
 #include "structure/modelContext.hpp"
 #include "structure/VRM/VRMmodelContext.hpp"
-#include "mappings/avatarMappings.hpp"
 #include "customTypes/TargetManager.hpp"
 
-#include "UnityEngine/GameObject.hpp"
-#include "UnityEngine/PrimitiveType.hpp"
-#include "UnityEngine/Transform.hpp"
-#include "UnityEngine/Mesh.hpp"
-#include "UnityEngine/SkinnedMeshRenderer.hpp"
-#include "UnityEngine/MeshRenderer.hpp"
-#include "UnityEngine/MeshFilter.hpp"
-#include "UnityEngine/Rendering/IndexFormat.hpp"
-#include "UnityEngine/Matrix4x4.hpp"
-#include "UnityEngine/Texture2D.hpp"
-#include "UnityEngine/TextureFormat.hpp"
-#include "UnityEngine/TextureWrapMode.hpp"
-#include "UnityEngine/ImageConversion.hpp"
-#include "UnityEngine/Material.hpp"
 #include "UnityEngine/Shader.hpp"
-#include "UnityEngine/Animator.hpp"
-#include "UnityEngine/HumanBodyBones.hpp"
-
-#include "customTypes/FinalIK/VRIK.hpp"
-#include "customTypes/FinalIK/IKSolverVR.hpp"
-
-#include "assimp/shared/assimp/postprocess.h"
-#include "assimp/shared/assimp/Importer.hpp"
-#include "assimp/shared/assimp/scene.h"
-
-#include "vrm/vrmIncludes.hpp"
-#include "arrayUtils.hpp"
-#include "utils/boneMeshUtility.hpp"
-#include "AssetLib/mappings/gLTFImageReader.hpp"
-
-#include "customTypes/VRMSpringBone.hpp"
-
-#include "AssetLib/structure/VRM/VRMBlendShapeMaster.hpp"
 
 namespace AssetLib
 {
@@ -48,9 +15,9 @@ namespace AssetLib
         public:
         //Should work with any file type that assimp supports
         //Also works with VRM files but will not parse out springbones and other stuff
-        static Structure::ModelContext* Load(const std::string& filename, bool loadMaterials);
+        static void Load(const std::string& filename, bool loadMaterials, const std::function<void(Structure::ModelContext*)>& onFinish);
         //Use ONLY for vrm files
-        static Structure::VRM::VRMModelContext* LoadVRM(const std::string& filename, UnityEngine::Shader* mtoon);
+        static void LoadVRM(const std::string& filename, const std::function<void(Structure::VRM::VRMModelContext*)>& onFinish);
 
         static SafePtrUnity<UnityEngine::Shader> mtoon;
     };
