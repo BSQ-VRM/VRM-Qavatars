@@ -1,5 +1,6 @@
 #pragma once
 #include "beatsaber-hook/shared/config/config-utils.hpp"
+#include "main.hpp"
 #include "rapidjson-macros/shared/macros.hpp"
 
 #define DECLARE_CONFIG(name, ...) \

@@ -8,14 +8,6 @@
 
 namespace AssetLib::Generators
 {
-    AvatarGenerator::AvatarGenerator()
-    {
-    }
-
-    AvatarGenerator::~AvatarGenerator()
-    {
-    }
-
     //Mecanim names
     inline static const std::vector<std::string> names = {
         "Hips",

@@ -100,7 +100,6 @@ namespace VRMQavatars::FinalIK {
     }
 
     void IKSolverVR::Update() {
-        VRMLogger.info("IKSolverVR Update");
         if (OnPreUpdate)
         {
             OnPreUpdate();
@@ -280,14 +279,11 @@ namespace VRMQavatars::FinalIK {
                 bool flag = false;
                 if (lastLOD != LOD && lastLOD == 2)
                 {
-                    VRMLogger.info("OnUpdate X1");
                     spine->faceDirection = rootBone->readRotation * Sombrero::FastVector3::forward();
                     if (hasLegs)
                     {
-                        VRMLogger.info("OnUpdate X2");
                         if (locomotion->weight > 0.0f)
                         {
-                            VRMLogger.info("OnUpdate X3");
                             root->position = {spine->headTarget->position.x, root->position.y, spine->headTarget->position.z};
                             auto faceDirection = spine->faceDirection;
                             faceDirection.y = 0.0f;

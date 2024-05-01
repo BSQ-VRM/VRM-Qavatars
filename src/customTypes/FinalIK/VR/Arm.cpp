@@ -126,7 +126,6 @@ namespace VRMQavatars::FinalIK {
     }
 
     void Arm::Solve(bool isLeft) {
-        VRMLogger.info("Arm::Solve {}", hasShoulder ? "has shoulder" : "no shoulder");
         chestRotation = Sombrero::FastQuaternion::LookRotation(rootRotation * chestForwardAxis, rootRotation * chestUpAxis);
         chestForward = chestRotation * Sombrero::FastVector3::forward();
         chestUp = chestRotation * Sombrero::FastVector3::up();
@@ -239,7 +238,6 @@ namespace VRMQavatars::FinalIK {
     }
 
     void Arm::Write(std::vector<Sombrero::FastVector3>& positions, std::vector<Sombrero::FastQuaternion>& rotations) {
-        VRMLogger.info("Arm::Write {}", hasShoulder ? "has shoulder" : "no shoulder");
         if (hasShoulder)
         {
             positions[index] = shoulder()->solverPosition;

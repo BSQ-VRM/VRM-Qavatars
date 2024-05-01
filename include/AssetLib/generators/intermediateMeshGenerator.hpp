@@ -9,8 +9,8 @@ namespace AssetLib::Generators
     class IntermediateMeshGenerator
     {
         public:
-        IntermediateMeshGenerator();
-        ~IntermediateMeshGenerator();
+        IntermediateMeshGenerator() = default;
+        ~IntermediateMeshGenerator() = default;
 
         AssetLib::Structure::InterMeshData Generate(aiMesh* mesh, AssetLib::Structure::ModelContext* context, std::optional<AssetLib::Structure::InterMeshData> existingMesh = std::nullopt);
     };

@@ -12,7 +12,7 @@
 
 namespace AssetLib::Generators
 {
-    void TextureGenerator::Generate(ArrayW<uint8_t>* textures, int num, const std::function<void(UnityEngine::Texture2D**)>& onFinish)
+    UnityEngine::Texture2D** TextureGenerator::Generate(ArrayW<uint8_t>* textures, int num)
     {   
         auto** retTextures = new UnityEngine::Texture2D*[num];
 
@@ -22,6 +22,6 @@ namespace AssetLib::Generators
             UnityEngine::ImageConversion::LoadImage(retTextures[i], textures[i], false);
         }
 
-        onFinish(retTextures);
+        return retTextures;
     }
 }

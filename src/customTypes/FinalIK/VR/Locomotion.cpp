@@ -192,8 +192,6 @@ namespace VRMQavatars::FinalIK {
         rightFootPosition = footsteps[1]->position;
         leftFootPosition = V3Tools::PointToPlane(leftFootPosition, leftLeg->lastBone()->readPosition, vector);
         rightFootPosition = V3Tools::PointToPlane(rightFootPosition, rightLeg->lastBone()->readPosition, vector);
-        VRMLogger.info("{} {} {} 1 ", leftFootPosition.x, leftFootPosition.y, leftFootPosition.z);
-        VRMLogger.info("{} {} {} 2 ", leftLeg->lastBone()->readPosition.x, leftLeg->lastBone()->readPosition.y, leftLeg->lastBone()->readPosition.z);
 
         auto evaluate = [](float progress)
         {

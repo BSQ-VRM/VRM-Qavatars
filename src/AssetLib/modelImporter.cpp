@@ -13,7 +13,9 @@
 #include "paper/shared/Profiler.hpp"
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
+#include <assimp/scene.h>
 #include <functional>
+#include <future>
 #include <thread>
 
 #include "AssetLib/gLTFImageReader.hpp"
@@ -22,6 +24,9 @@
 #include "AssetLib/generators/intermediateMeshGenerator.hpp"
 #include "AssetLib/generators/textureGenerator.hpp"
 #include "AssetLib/generators/materialGenerator.hpp"
+#include "AssetLib/generators/springBoneGenerator.hpp"
+
+#include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 
 #include "AssetLib/boneMeshUtility.hpp"
 
@@ -34,17 +39,13 @@ static Paper::Profiler VRMProfiler;
 namespace AssetLib
 {
     static Assimp::Importer* importer;
-    void LoadScene(std::string const& fileName, std::function<void(aiScene const*)> const& onFinished) {
-        std::thread([](const std::string& fileName, const std::function<void(aiScene const*)>& onFinished){
+    std::future<aiScene const*> LoadScene(std::string const& fileName) {
+        return std::async(std::launch::async, [fileName](){
             static auto importer = Assimp::Importer();
             auto scene = importer.ReadFile(fileName, aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_PopulateArmatureData | aiProcess_MakeLeftHanded);
-            if (!scene) {
-                onFinished(nullptr);
-                return;
-            }
-            
-            BSML::MainThreadScheduler::Schedule(std::bind(onFinished, scene));
-        }, fileName, onFinished).detach();
+            VRMLogger.info("Loaded scene: {}", scene != nullptr ? "true" : "false");
+            return scene;
+        });
     }
 
     bool anyChildMeshesAssimp(aiNode* node)
@@ -122,106 +123,131 @@ namespace AssetLib
         }
     }
 
-    void ModelImporter::Load(const std::string& filename, bool loadMaterials, const std::function<void(Structure::ModelContext*)>& onFinish)
+    std::future<Structure::ModelContext*> ModelImporter::Load(const std::string& filename, bool loadMaterials)
     {
-        LoadScene(filename, [&onFinish, filename](const aiScene* scene) {
-            if (!scene)
-            {
-                onFinish(nullptr);
-                return;
-            }
+        return std::async(std::launch::async, [filename](){
+            VRMLogger.info("Loading model: {}", filename.c_str());
+            auto load = LoadScene(filename);
+            load.wait();
+            auto scene = load.get();
+            VRMLogger.info("Loaded scene {}", scene != nullptr ? "true" : "false");
 
-            logAssimpNode(scene->mRootNode, 0);
-
-            const auto modelContext = new Structure::ModelContext();
+            auto modelContext = new Structure::ModelContext();
             modelContext->fileName = filename;
             modelContext->originalScene = scene;
 
-            const auto Root = UnityEngine::GameObject::New_ctor("ROOT");
-            UnityEngine::GameObject::DontDestroyOnLoad(Root);
-            Root->get_transform()->set_position(Sombrero::FastVector3(0.0f, 0.0f, 0.0f));
-            Root->get_transform()->set_rotation(UnityEngine::Quaternion::Euler(0.0f, 0.0f, 0.0f));
-            Root->get_transform()->set_localScale(Sombrero::FastVector3(1.0f, 1.0f, 1.0f));
-            modelContext->rootGameObject = Root;
-
-            modelContext->armature = Structure::Armature();
-
-            VRMProfiler.mark("Creating Node Tree");
-
-            //STEP ONE: Create initial node tree
-
-            IterateNode(scene->mRootNode, nullptr, modelContext);
-            modelContext->rootNode->gameObject = Root;
-            modelContext->rootNode->processed = true;
-
-            VRMProfiler.mark("Node Tree Created");
-
-            //STEP TWO: Create gameobjects for each node
-
-            CreateNodeTreeObject(modelContext->rootNode);
-
-            VRMProfiler.mark("Created GameObjects");
-
-            //STEP THREE: Load in armature
-
-            Structure::Node* armatureNode = nullptr;
-
-            //TODO: perform this how the assimp docs say to (i'm lazy)
-            for (size_t i = 1; i < modelContext->nodes.size(); i++)
+            if (!scene)
             {
-                const auto node = modelContext->nodes[i];
-                if(node->children.size() > 0 && !anyChildMeshes(node))
-                {
-                    modelContext->isSkinned = true;
-                    armatureNode = node;
-                    break;
-                }
+                modelContext = nullptr;
+                return modelContext;
             }
-            modelContext->armature.value().rootBone = armatureNode;
 
-            VRMProfiler.mark("Loaded Armature");
+            bool finishedMeshes = false;
+            BSML::MainThreadScheduler::Schedule([modelContext, &finishedMeshes, scene, filename](){
+                VRMLogger.info("moving to mainthread...");
+                const auto Root = UnityEngine::GameObject::New_ctor("ROOT");
+                UnityEngine::GameObject::DontDestroyOnLoad(Root);
+                Root->get_transform()->set_position(Sombrero::FastVector3(0.0f, 0.0f, 0.0f));
+                Root->get_transform()->set_rotation(UnityEngine::Quaternion::Euler(0.0f, 0.0f, 0.0f));
+                Root->get_transform()->set_localScale(Sombrero::FastVector3(1.0f, 1.0f, 1.0f));
+                modelContext->rootGameObject = Root;
 
-            //STEP FOUR: Load in meshes
+                modelContext->armature = Structure::Armature();
 
-            auto intermediateMeshGenerator = Generators::IntermediateMeshGenerator();
-            auto meshGenerator = Generators::MeshGenerator();
+                VRMProfiler.mark("Creating Node Tree");
 
-            for (size_t i = 0; i < modelContext->nodes.size(); i++)
-            {
-                const auto node = modelContext->nodes[i];
-                if(node->originalNode->mNumMeshes > 0)
+                //STEP ONE: Create initial node tree
+
+                IterateNode(scene->mRootNode, nullptr, modelContext);
+                modelContext->rootNode->gameObject = Root;
+                modelContext->rootNode->processed = true;
+
+                VRMProfiler.mark("Node Tree Created");
+
+                //STEP TWO: Create gameobjects for each node
+
+                CreateNodeTreeObject(modelContext->rootNode);
+
+                VRMProfiler.mark("Created GameObjects");
+
+                //STEP THREE: Load in armature
+
+                Structure::Node* armatureNode = nullptr;
+
+                //TODO: perform this how the assimp docs say to (i'm lazy)
+                for (size_t i = 1; i < modelContext->nodes.size(); i++)
                 {
-                    node->isBone = false;
-                    for (size_t x = 0; x < node->originalNode->mNumMeshes; x++)
+                    const auto node = modelContext->nodes[i];
+                    if(node->children.size() > 0 && !anyChildMeshes(node))
                     {
-                        if(x == 0)
+                        modelContext->isSkinned = true;
+                        armatureNode = node;
+                        break;
+                    }
+                }
+                modelContext->armature.value().rootBone = armatureNode;
+
+                VRMProfiler.mark("Loaded Armature");
+
+                //STEP FOUR: Load in meshes
+
+                auto intermediateMeshGenerator = Generators::IntermediateMeshGenerator();
+                auto meshGenerator = Generators::MeshGenerator();
+
+                for (size_t i = 0; i < modelContext->nodes.size(); i++)
+                {
+                    const auto node = modelContext->nodes[i];
+                    if(node->originalNode->mNumMeshes > 0)
+                    {
+                        node->isBone = false;
+                        for (size_t x = 0; x < node->originalNode->mNumMeshes; x++)
                         {
-                            node->mesh = intermediateMeshGenerator.Generate(scene->mMeshes[node->originalNode->mMeshes[x]], modelContext);
-                        }
-                        else
-                        {
-                            node->mesh = intermediateMeshGenerator.Generate(scene->mMeshes[node->originalNode->mMeshes[x]], modelContext, node->mesh);
+                            if(x == 0)
+                            {
+                                node->mesh = intermediateMeshGenerator.Generate(scene->mMeshes[node->originalNode->mMeshes[x]], modelContext);
+                            }
+                            else
+                            {
+                                node->mesh = intermediateMeshGenerator.Generate(scene->mMeshes[node->originalNode->mMeshes[x]], modelContext, node->mesh);
+                            }
                         }
                     }
                 }
-            }
 
-            VRMProfiler.mark("Constructed Intermediate Meshes");
+                VRMProfiler.mark("Constructed Intermediate Meshes");
 
-            //STEP FIVE: Generate Unity meshes
+                //STEP FIVE: Generate Unity meshes
 
-            for (size_t i = 0; i < modelContext->nodes.size(); i++)
-            {
-                const auto node = modelContext->nodes[i];
-                if(node->originalNode->mNumMeshes > 0)
+                for (size_t i = 0; i < modelContext->nodes.size(); i++)
                 {
-                    meshGenerator.Generate(node, modelContext);
+                    const auto node = modelContext->nodes[i];
+                    if(node->originalNode->mNumMeshes > 0)
+                    {
+                        meshGenerator.Generate(node, modelContext);
+                    }
                 }
+
+                finishedMeshes = true;
+
+                VRMLogger.info("Finished loading model: {}", filename.c_str());
+            });
+
+            VRMLogger.info("hi");
+
+            while(!finishedMeshes)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
+
+            VRMLogger.info("hi2");
 
             VRMProfiler.mark("Generated Unity Meshes");
 
-            onFinish(modelContext);
+            logAssimpNode(scene->mRootNode, 0);
+
+            VRMLogger.info("hi3");
+
+            return modelContext;
         });
     }
 
@@ -246,21 +272,25 @@ namespace AssetLib
         trans->set_localRotation(UnityEngine::Quaternion::Euler(x, rot.y, rot.z));
     }
 
-    void ModelImporter::LoadVRM(const std::string& filename, const std::function<void(Structure::VRM::VRMModelContext*)>& onFinish)
+    std::future<Structure::VRM::VRMModelContext*> ModelImporter::LoadVRM(const std::string& filename)
     {
-        //Don't load materials because we are replacing them with VRM materials
-        Load(filename, false, [onFinish, filename](Structure::ModelContext* originalContext){
+        return il2cpp_utils::il2cpp_async(std::launch::async, [filename](){
+            Structure::VRM::VRMModelContext* modelContext = nullptr;
+
+            auto load = Load(filename, false);
+            load.wait();
+            auto originalContext = load.get();
             if (!originalContext)
             {
-                onFinish(nullptr);
-                return;
+                return modelContext;
             }
+            VRMLogger.info("Loaded model");
 
             VRMProfiler.printMarks();
 
             VRMProfiler.mark("Finished initial Load");
 
-            const auto modelContext = new Structure::VRM::VRMModelContext(std::move(*originalContext));//Don't load materials because we are replacing them with VRM materials
+            modelContext = new Structure::VRM::VRMModelContext(std::move(*originalContext));//Don't load materials because we are replacing them with VRM materials
 
             //Load in binary to parse out VRM data
 
@@ -297,170 +327,179 @@ namespace AssetLib
             }
 
             VRMProfiler.mark("Parsed VRM data");
+            VRMLogger.info("Parsed VRM data");
 
-            //Generate Textures
+            bool finishedLoading = false;
 
-            std::vector<UnityEngine::Texture2D*> textures;
-            for (size_t i = 0; i < doc["images"].size(); i++)
+            auto images = doc["images"];
+            auto bufferViews = doc["bufferViews"];
+
+            auto* textures = new ArrayW<uint8_t>[doc["images"].size()];
+            for (int i = 0; i < doc["images"].size(); i++)
             {
-                textures.push_back(AssetLib::gLTFImageReader::ReadImageIndex(jsonLength, binFile, i));
+                //WHY DO PEOPLE DO THIS OH MY GOD IT IS NOT THAT HARD TO INCLUDE A THUMBNAIL AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                if(i == -1) textures[i] = ArrayW<uint8_t>::Empty();
+
+                auto img = images[i];
+                auto bufferView = bufferViews[img["bufferView"].get<uint32_t>()];
+
+                const uint32_t size = bufferView["byteLength"].get<uint32_t>();
+                const uint32_t start = bufferView["byteOffset"].get<uint32_t>();
+                std::string thing;
+                thing.resize(size);
+                binFile.seekg(28 + jsonLength + start);
+                binFile.read(thing.data(), size);
+
+                const auto data = thing.data();
+                auto ret = ArrayW<uint8_t>(thing.size());
+                for (size_t x = 0; x < thing.size(); x++)
+                {
+                    ret[x] = data[x];
+                }
+
+                textures[i] = ret;
             }
 
-            //Generate VRM Materials
+            BSML::MainThreadScheduler::Schedule([doc, jsonLength, &binFile, modelContext, vrm, vrm1, textures, &finishedLoading](){
+                VRMLogger.info("Moving to mainthread 2...");
+                //Generate Textures
 
-            std::vector<UnityEngine::Material*> materials;
+                auto textureGenerator = Generators::TextureGenerator();
+                UnityEngine::Texture2D** unityTextures = textureGenerator.Generate(textures, doc["images"].size());
 
-            VRMQavatars::MaterialTracker::materials.clear();
-            for (size_t i = 0; i < vrm.value().materialProperties.size(); i++)
-            {
-                auto [name, shader, renderQueue, floatProperties, vectorProperties, textureProperties, keywordMap, tagMap] = vrm.value().materialProperties[i];
-                
-                auto mat = UnityEngine::Material::New_ctor(ModelImporter::mtoon.ptr());
+                delete[] textures;
 
-                for (const auto & [ key, value ] : floatProperties )
+                //Generate VRM Materials
+
+                std::vector<UnityEngine::Material*> materials;
+
+                VRMQavatars::MaterialTracker::materials.clear();
+
+                auto materialGenerator = Generators::MaterialGenerator();
+                for (size_t i = 0; i < vrm.value().materialProperties.size(); i++)
                 {
-                    mat->SetFloat(key.c_str(), value);
+                    auto mat = materialGenerator.Generate(vrm.value(), i, unityTextures);
+
+                    materials.push_back(mat);
+                    VRMQavatars::MaterialTracker::materials.push_back(mat);
                 }
-
-                for (const auto & [ key, value ] : keywordMap )
+                VRMQavatars::MaterialTracker::UpdateMaterials();
+                for (size_t i = 0; i < modelContext->nodes.size(); i++)
                 {
-                    if(value)
+                    if(auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)
                     {
-                        mat->EnableKeyword(key.c_str());
-                    }
-                    else
-                    {
-                        mat->DisableKeyword(key.c_str());
-                    }
-
-                }
-
-                for (const auto & [ key, value ] : textureProperties )
-                {
-                    mat->SetTexture(key.c_str(), textures[value]);
-                }
-
-                for (const auto & [ key, value ] : vectorProperties )
-                {
-                    mat->SetColor(key.c_str(), Sombrero::FastColor(value[0], value[1], value[2], value[3]));
-                }
-
-                for (const auto & [ key, value ] : tagMap )
-                {
-                    mat->SetOverrideTag(key, value);
-                }
-
-                mat->set_renderQueue(renderQueue);
-
-                materials.push_back(mat);
-                VRMQavatars::MaterialTracker::materials.push_back(mat);
-            }
-            VRMQavatars::MaterialTracker::UpdateMaterials();
-            for (size_t i = 0; i < modelContext->nodes.size(); i++)
-            {
-                if(auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)
-                {
-                    auto mesh = node->mesh.value();
-                    ArrayW<UnityEngine::Material*> matArray = ArrayW<UnityEngine::Material*>(mesh.materialIdxs.size());
-                    for (size_t k = 0; k < mesh.materialIdxs.size(); k++)
-                    {
-                        matArray[k] = materials[mesh.materialIdxs[k]];
-                    }
-                    
-                    auto renderer = node->gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
-                    renderer->set_sharedMaterials(matArray);
-                }
-            }
-
-            //modelContext->rootGameObject->AddComponent<VRMQavatars::OVRLipSync::OVRLipSync*>();
-
-            modelContext->blendShapeMaster = vrm.has_value() ? Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm.value()) : Structure::VRM::VRMBlendShapeMaster::LoadFromVRM1(vrm1.value());
-
-            VRMProfiler.mark("Setup Blendshapes");
-
-            auto avatarGenerator = Generators::AvatarGenerator();
-            auto avatar = vrm.has_value() ? avatarGenerator.Generate(vrm.value(), modelContext->nodes, modelContext->armature.value().rootBone->gameObject) : avatarGenerator.Generate(vrm1.value(), modelContext->nodes, modelContext->armature.value().rootBone->gameObject);
-            
-            VRMProfiler.mark("Setup Avatar Object");
-            
-            auto anim = modelContext->rootGameObject->AddComponent<UnityEngine::Animator*>();
-            anim->set_cullingMode(UnityEngine::AnimatorCullingMode::AlwaysAnimate);
-            anim->set_avatar(avatar);
-
-            //Fix crossed legs
-
-            auto LUleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
-            auto RUleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperLeg);
-            auto LLleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::LeftLowerLeg);
-            auto RLleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::RightLowerLeg);
-
-            SetXLocalRot(LUleg, -4.0f);
-            SetXLocalRot(RUleg, -4.0f);
-            SetXLocalRot(LLleg, 4.0f);
-            SetXLocalRot(RLleg, 4.0f);
-
-            modelContext->rootGameObject->AddComponent<VRMQavatars::BlendShape::BlendShapeController*>();
-
-            auto vrik = modelContext->rootGameObject->AddComponent<VRMQavatars::FinalIK::VRIK*>();
-
-            auto targetManager = modelContext->rootGameObject->AddComponent<VRMQavatars::TargetManager*>();
-            targetManager->vrik = vrik;
-            targetManager->Initialize();
-
-            VRMProfiler.mark("Target Manager Initialized");
-
-            auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Neck);
-            VRMLogger.info("headBone {}", static_cast<std::string>(headBone->get_gameObject()->get_name()).c_str());
-            for (size_t i = 0; i < modelContext->nodes.size(); i++)
-            {
-                if(const auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)
-                {
-                    auto gameObject = modelContext->nodes[i]->gameObject;
-                    if(!VRMQavatars::Config::ConfigManager::GetGlobalConfig().ForceHideBody.GetValue())
-                    {
-                        auto skinnedRenderer = gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
-
-                        std::vector<int> toErase;
-
-                        for (size_t j = 0; j < modelContext->nodes.size(); j++)
+                        auto mesh = node->mesh.value();
+                        auto matArray = ArrayW<UnityEngine::Material*>(mesh.materialIdxs.size());
+                        for (size_t k = 0; k < mesh.materialIdxs.size(); k++)
                         {
-                            auto bone = modelContext->nodes[j];
-                            if(bone->isBone)
+                            matArray[k] = materials[mesh.materialIdxs[k]];
+                        }
+                        
+                        auto renderer = node->gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
+                        renderer->set_sharedMaterials(matArray);
+                    }
+                }
+
+                //modelContext->rootGameObject->AddComponent<VRMQavatars::OVRLipSync::OVRLipSync*>();
+
+                modelContext->blendShapeMaster = vrm.has_value() ? Structure::VRM::VRMBlendShapeMaster::LoadFromVRM0(vrm.value()) : Structure::VRM::VRMBlendShapeMaster::LoadFromVRM1(vrm1.value());
+
+                VRMProfiler.mark("Setup Blendshapes");
+
+                auto avatarGenerator = Generators::AvatarGenerator();
+                auto avatar = vrm.has_value() ? avatarGenerator.Generate(vrm.value(), modelContext->nodes, modelContext->armature.value().rootBone->gameObject) : avatarGenerator.Generate(vrm1.value(), modelContext->nodes, modelContext->armature.value().rootBone->gameObject);
+                
+                VRMProfiler.mark("Setup Avatar Object");
+                
+                auto anim = modelContext->rootGameObject->AddComponent<UnityEngine::Animator*>();
+                anim->set_cullingMode(UnityEngine::AnimatorCullingMode::AlwaysAnimate);
+                anim->set_avatar(avatar);
+
+                //Fix crossed legs
+
+                auto LUleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
+                auto RUleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperLeg);
+                auto LLleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::LeftLowerLeg);
+                auto RLleg = anim->GetBoneTransform(UnityEngine::HumanBodyBones::RightLowerLeg);
+
+                SetXLocalRot(LUleg, -4.0f);
+                SetXLocalRot(RUleg, -4.0f);
+                SetXLocalRot(LLleg, 4.0f);
+                SetXLocalRot(RLleg, 4.0f);
+
+                modelContext->rootGameObject->AddComponent<VRMQavatars::BlendShape::BlendShapeController*>();
+
+                auto vrik = modelContext->rootGameObject->AddComponent<VRMQavatars::FinalIK::VRIK*>();
+
+                auto targetManager = modelContext->rootGameObject->AddComponent<VRMQavatars::TargetManager*>();
+                targetManager->vrik = vrik;
+                targetManager->Initialize();
+
+                VRMProfiler.mark("Target Manager Initialized");
+
+                auto headBone = anim->GetBoneTransform(UnityEngine::HumanBodyBones::Neck);
+                VRMLogger.info("headBone {}", static_cast<std::string>(headBone->get_gameObject()->get_name()).c_str());
+                for (size_t i = 0; i < modelContext->nodes.size(); i++)
+                {
+                    if(const auto node = modelContext->nodes[i]; node->mesh.has_value() && node->processed)
+                    {
+                        auto gameObject = modelContext->nodes[i]->gameObject;
+                        if(!VRMQavatars::Config::ConfigManager::GetGlobalConfig().ForceHideBody.GetValue())
+                        {
+                            auto skinnedRenderer = gameObject->GetComponent<UnityEngine::SkinnedMeshRenderer*>();
+
+                            std::vector<int> toErase;
+
+                            for (size_t j = 0; j < modelContext->nodes.size(); j++)
                             {
-                                if(auto ancestors = Ancestors(bone->gameObject->get_transform()); std::find(ancestors.begin(), ancestors.end(), headBone.ptr()) != ancestors.end())
+                                auto bone = modelContext->nodes[j];
+                                if(bone->isBone)
                                 {
-                                    toErase.push_back(j);
+                                    if(auto ancestors = Ancestors(bone->gameObject->get_transform()); std::find(ancestors.begin(), ancestors.end(), headBone.ptr()) != ancestors.end())
+                                    {
+                                        toErase.push_back(j);
+                                    }
                                 }
                             }
+
+                            auto newMesh = AssetLib::BoneMeshUtility::CreateErasedMesh(skinnedRenderer->get_sharedMesh(), toErase);
+                            auto newObj = UnityEngine::GameObject::Instantiate(gameObject, gameObject->get_transform(), false);
+                            newObj->GetComponent<UnityEngine::SkinnedMeshRenderer*>()->set_sharedMesh(newMesh);
+
+                            //SetLayers
+                            newObj->set_layer(6); //First Person
                         }
-
-                        auto newMesh = AssetLib::BoneMeshUtility::CreateErasedMesh(skinnedRenderer->get_sharedMesh(), toErase);
-                        auto newObj = UnityEngine::GameObject::Instantiate(gameObject, gameObject->get_transform(), false);
-                        newObj->GetComponent<UnityEngine::SkinnedMeshRenderer*>()->set_sharedMesh(newMesh);
-
-                        //SetLayers
-                        newObj->set_layer(6); //First Person
-                    }
-                    if(!VRMQavatars::Config::ConfigManager::GetGlobalConfig().ForceHead.GetValue() || VRMQavatars::Config::ConfigManager::GetGlobalConfig().ForceHideBody.GetValue())
-                    {
-                        gameObject->set_layer(3); //Third Person
+                        if(!VRMQavatars::Config::ConfigManager::GetGlobalConfig().ForceHead.GetValue() || VRMQavatars::Config::ConfigManager::GetGlobalConfig().ForceHideBody.GetValue())
+                        {
+                            gameObject->set_layer(3); //Third Person
+                        }
                     }
                 }
+
+                VRMProfiler.mark("Seperated First & Third Person Meshes");
+
+                auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
+                secondary->get_transform()->SetParent(modelContext->rootGameObject->get_transform());
+
+                //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::LowLatencyLipSyncContext*>();
+                //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::AnimMorphTarget*>();
+
+                auto springBoneGenerator = Generators::SpringBoneGenerator();
+                vrm.has_value() ? springBoneGenerator.Generate(vrm.value(), modelContext, secondary) : springBoneGenerator.Generate(vrm1.value(), modelContext, secondary);
+
+                VRMProfiler.mark("Created Springbones");
+                VRMProfiler.endTimer();
+                VRMProfiler.printMarks();
+
+                finishedLoading = true;
+            });
+
+            while(!finishedLoading)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
 
-            VRMProfiler.mark("Seperated First & Third Person Meshes");
-
-            auto secondary = UnityEngine::GameObject::New_ctor("Secondary");
-            secondary->get_transform()->SetParent(modelContext->rootGameObject->get_transform());
-
-            //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::LowLatencyLipSyncContext*>();
-            //modelContext->rootGameObject->AddComponent<VRMQavatars::AniLipSync::AnimMorphTarget*>();
-
-            VRMProfiler.mark("Created Springbones");
-            VRMProfiler.endTimer();
-            VRMProfiler.printMarks();
-
-            onFinish(modelContext);
+            return modelContext;
         });
     }
 }

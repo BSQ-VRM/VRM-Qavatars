@@ -8,6 +8,9 @@ namespace AssetLib::Generators
     class TextureGenerator
     {
         public:
-        static void Generate(ArrayW<uint8_t>* textures, int num, const std::function<void(UnityEngine::Texture2D**)>& onFinish);
+        TextureGenerator() = default;
+        ~TextureGenerator() = default;
+
+        UnityEngine::Texture2D** Generate(ArrayW<uint8_t>* textures, int num);
     };
 };

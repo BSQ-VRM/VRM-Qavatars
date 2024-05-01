@@ -168,7 +168,6 @@ namespace VRMQavatars::FinalIK {
     }
 
     void Leg::Solve(bool stretch) {
-        VRMLogger.info("Leg::Solve {}", hasToes > 0 ? "has toes" : "no toes");
         if (stretch && LOD < 1)
         {
             Stretching();

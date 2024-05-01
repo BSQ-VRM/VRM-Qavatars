@@ -15,9 +15,9 @@ namespace AssetLib
         public:
         //Should work with any file type that assimp supports
         //Also works with VRM files but will not parse out springbones and other stuff
-        static void Load(const std::string& filename, bool loadMaterials, const std::function<void(Structure::ModelContext*)>& onFinish);
+        static std::future<Structure::ModelContext*> Load(const std::string& filename, bool loadMaterials);
         //Use ONLY for vrm files
-        static void LoadVRM(const std::string& filename, const std::function<void(Structure::VRM::VRMModelContext*)>& onFinish);
+        static std::future<Structure::VRM::VRMModelContext*> LoadVRM(const std::string& filename);
 
         static SafePtrUnity<UnityEngine::Shader> mtoon;
     };

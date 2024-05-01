@@ -1,10 +1,13 @@
 #include "AvatarManager.hpp"
 
 #include <HandController.hpp>
+#include <future>
 
+#include "AssetLib/structure/VRM/VRMmodelContext.hpp"
 #include "CalibrationHelper.hpp"
 #include "TPoseHelper.hpp"
 #include "AssetLib/modelImporter.hpp"
+#include "bsml/shared/BSML/MainThreadScheduler.hpp"
 #include "config/ConfigManager.hpp"
 #include "customTypes/VRMWind.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
@@ -25,8 +28,9 @@ namespace VRMQavatars {
             VRMLogger.info("{}", (std::string(vrm_path) + "/" + path).c_str());
             if(fileexists(std::string(vrm_path) + "/" + path))
             {
-                AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, [](AssetLib::Structure::VRM::VRMModelContext* ctx)
-                {
+                std::shared_future<AssetLib::Structure::VRM::VRMModelContext*> future = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path);
+                BSML::MainThreadScheduler::AwaitFuture(future, [future](){
+                    AssetLib::Structure::VRM::VRMModelContext* ctx = future.get();
                     SetContext(ctx);
                     auto& avaConfig = Config::ConfigManager::GetAvatarConfig();
                     if(avaConfig.HasCalibrated.GetValue())
@@ -37,7 +41,7 @@ namespace VRMQavatars {
             }
         }
     }
-
+ 
     void AvatarManager::SetContext(AssetLib::Structure::VRM::VRMModelContext* context)
     {
         if(currentContext != nullptr)

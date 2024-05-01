@@ -2,14 +2,6 @@
 
 namespace AssetLib::Generators
 {
-    IntermediateMeshGenerator::IntermediateMeshGenerator()
-    {
-    }
-
-    IntermediateMeshGenerator::~IntermediateMeshGenerator()
-    {
-    }
-
     //TODO: find something better lmao
     int IndexForName(const char* name, const AssetLib::Structure::ModelContext* context)
     {

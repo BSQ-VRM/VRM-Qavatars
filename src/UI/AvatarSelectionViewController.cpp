@@ -17,6 +17,8 @@
 
 #include "utils/FileUtils.hpp"
 
+#include "bsml/shared/BSML/MainThreadScheduler.hpp"
+
 namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSelectionViewController);
 
@@ -173,23 +175,27 @@ namespace VRMQavatars::UI::ViewControllers {
             }
             if(fileexists(std::string(vrm_path) + "/" + path))
             {
-                AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, [](AssetLib::Structure::VRM::VRMModelContext* ctx)
-                {
+                std::shared_future<AssetLib::Structure::VRM::VRMModelContext*> future = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path);
+                BSML::MainThreadScheduler::AwaitFuture(future, [path, item, future, this](){
+                    AssetLib::Structure::VRM::VRMModelContext* ctx = future.get();
                     AvatarManager::SetContext(ctx);
-                });
-            }
-            globcon.hasSelected.SetValue(true);
-            globcon.selectedFileName.SetValue(path);
 
-            auto& avacon = Config::ConfigManager::GetAvatarConfig();
-            if(!avacon.HasAgreedToTerms.GetValue())
-            {
-                agreementModal->SetInfo(item->descriptor);
-                ShowModal(agreementModal.Ptr());
-            }
-            if(avacon.HasCalibrated.GetValue())
-            {
-                CalibrationHelper::Calibrate(avacon.CalibratedScale.GetValue());
+                    auto& globcon = Config::ConfigManager::GetGlobalConfig();
+
+                    globcon.hasSelected.SetValue(true);
+                    globcon.selectedFileName.SetValue(path);
+
+                    auto& avacon = Config::ConfigManager::GetAvatarConfig();
+                    if(!avacon.HasAgreedToTerms.GetValue())
+                    {
+                        agreementModal->SetInfo(item->descriptor);
+                        ShowModal(agreementModal.Ptr());
+                    }
+                    if(avacon.HasCalibrated.GetValue())
+                    {
+                        CalibrationHelper::Calibrate(avacon.CalibratedScale.GetValue());
+                    }
+                });
             }
         }
     }
