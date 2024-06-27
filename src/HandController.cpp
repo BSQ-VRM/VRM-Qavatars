@@ -4,6 +4,8 @@
 
 #include "UnityEngine/HumanBodyBones.hpp"
 #include "UnityEngine/Transform.hpp"
+#include "UnityEngine/Quaternion.hpp"
+#include "UnityEngine/Vector3.hpp"
 
 std::vector<UnityEngine::HumanBodyBones> fingerBones = {
 	UnityEngine::HumanBodyBones::LeftLittleDistal,

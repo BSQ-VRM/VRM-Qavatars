@@ -17,16 +17,10 @@
 #include "UnityEngine/Keyframe.hpp"
 #include "UnityEngine/AnimationCurve.hpp"
 
-#include "RootMotion/FinalIK/VRIK.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Arm.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Spine.hpp"
-#include "RootMotion/FinalIK/VRIK_References.hpp"
-#include "RootMotion/FinalIK/IKSolver_UpdateDelegate.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Locomotion.hpp"
+#include "customTypes/FinalIK/VRIK.hpp"
+#include "customTypes/FinalIK/IKSolverVR.hpp"
 
 #include "GlobalNamespace/OVRPlugin.hpp"
-#include "GlobalNamespace/OVRPlugin_Node.hpp"
-#include "GlobalNamespace/OVRPlugin_Step.hpp"
 #include "GlobalNamespace/OVRPose.hpp"
 #include "GlobalNamespace/SaberManager.hpp"
 
@@ -60,7 +54,7 @@ namespace VRMQavatars
         UnityEngine::GameObject* rightHandTarget;
 
         UnityEngine::GameObject* headTarget;
-        RootMotion::FinalIK::VRIK* vrik;
+        FinalIK::VRIK* vrik;
         bool intialized;
 
         UnityEngine::Vector3 replayLeftSaberPos;

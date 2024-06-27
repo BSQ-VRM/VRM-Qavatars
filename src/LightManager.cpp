@@ -240,7 +240,7 @@ namespace VRMQavatars {
         {
             UnityEngine::Color color;
             int lightCount = 0;
-            for (auto dirLight : GlobalNamespace::DirectionalLight::get_lights()->items)
+            for (auto dirLight : GlobalNamespace::DirectionalLight::get_lights()->_items)
             {
                 if(lightCount > 4) break;
                 if(dirLight == nullptr) continue;

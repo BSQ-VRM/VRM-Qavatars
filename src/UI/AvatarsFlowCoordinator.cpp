@@ -1,22 +1,21 @@
 #include "UI/AvatarsFlowCoordinator.hpp"
-#include "questui/shared/BeatSaberUI.hpp"
 
-#include "HMUI/ViewController_AnimationType.hpp"
-#include "HMUI/ViewController_AnimationDirection.hpp"
+#include "bsml/shared/Helpers/creation.hpp"
+#include "HMUI/ViewController.hpp"
 
 DEFINE_TYPE(VRMQavatars::UI::FlowCoordinators, AvatarsFlowCoordinator);
 
 namespace VRMQavatars::UI
 {
     void FlowCoordinators::AvatarsFlowCoordinator::Awake() {
-        if (!MirrorViewController || !MirrorViewController->m_CachedPtr.m_value) {
-            MirrorViewController = QuestUI::BeatSaberUI::CreateViewController<ViewControllers::MirrorViewController*>();
+        if (!MirrorViewController || !MirrorViewController->m_CachedPtr) {
+            MirrorViewController = BSML::Helpers::CreateViewController<ViewControllers::MirrorViewController*>();
         }
-        if (!AvatarSelectionViewController ||  !AvatarSelectionViewController->m_CachedPtr.m_value) {
-            AvatarSelectionViewController = QuestUI::BeatSaberUI::CreateViewController<ViewControllers::AvatarSelectionViewController*>();
+        if (!AvatarSelectionViewController ||  !AvatarSelectionViewController->m_CachedPtr) {
+            AvatarSelectionViewController = BSML::Helpers::CreateViewController<ViewControllers::AvatarSelectionViewController*>();
         }
-        if (!AvatarSettingsViewController ||  !AvatarSettingsViewController->m_CachedPtr.m_value) {
-            AvatarSettingsViewController = QuestUI::BeatSaberUI::CreateViewController<ViewControllers::AvatarSettingsViewController*>();
+        if (!AvatarSettingsViewController ||  !AvatarSettingsViewController->m_CachedPtr) {
+            AvatarSettingsViewController = BSML::Helpers::CreateViewController<ViewControllers::AvatarSettingsViewController*>();
         }
     }
 
@@ -29,6 +28,6 @@ namespace VRMQavatars::UI
     }
 
     void FlowCoordinators::AvatarsFlowCoordinator::BackButtonWasPressed(HMUI::ViewController* topViewController) {
-        this->parentFlowCoordinator->DismissFlowCoordinator(this, HMUI::ViewController::AnimationDirection::Horizontal, nullptr, false);
+        this->_parentFlowCoordinator->DismissFlowCoordinator(this, HMUI::ViewController::AnimationDirection::Horizontal, nullptr, false);
     }
 }

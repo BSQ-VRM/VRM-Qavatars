@@ -13,7 +13,7 @@ namespace VRMQavatars
 
 	ArrayW<UnityEngine::Transform*> VRMSpringBone::GetChildren(UnityEngine::Transform* parent)
 	{
-		ArrayW<UnityEngine::Transform*> result = ArrayW<UnityEngine::Transform*>(parent->get_childCount());
+		auto result = ArrayW<UnityEngine::Transform*>(parent->get_childCount());
 		int num;
 		for (int i = 0; i < parent->get_childCount(); i = num)
 		{
@@ -35,13 +35,13 @@ namespace VRMQavatars
 
 	void VRMSpringBone::SetLocalRotationsIdentity()
 	{
-		for(auto& logic : verlet)
+		for(const auto& logic : verlet)
 		{
 			logic->trans->set_localRotation(Sombrero::FastQuaternion::get_identity());
 		}
 	}
 
-	void VRMSpringBone::Setup(bool force)
+	void VRMSpringBone::Setup(const bool force)
 	{
 		if(rootBones)
 		{
@@ -51,14 +51,14 @@ namespace VRMQavatars
 			}
 			else
 			{
-				for (auto& pair : initialLocalRotationMap)
+				for (const auto& [fst, snd] : initialLocalRotationMap)
 				{
-					pair.first->set_localRotation(pair.second);
+					fst->set_localRotation(snd);
 				}
 				initialLocalRotationMap.clear();
 			}
 			verlet.clear();
-			for (auto& boneTrans : rootBones)
+			for (const auto& boneTrans : rootBones)
 			{
 				if(boneTrans != nullptr)
 				{
@@ -78,15 +78,16 @@ namespace VRMQavatars
 		Sombrero::FastVector3 vector2;
 		if (parent->get_childCount() == 0)
 		{
-			const Sombrero::FastVector3 vector3 = parent->get_position() - parent->get_parent()->get_position();
+			const Sombrero::FastVector3 vector3 = UnityEngine::Vector3::op_Subtraction(parent->get_position(), parent->get_parent()->get_position());
 			const float lossyScale = std::max(std::max(parent->get_lossyScale().x, parent->get_lossyScale().y), parent->get_lossyScale().z);
-			const Sombrero::FastVector3 vector4 = parent->get_position() + vector3.get_normalized() * 0.07f * lossyScale;
+			const Sombrero::FastVector3 vector4 = UnityEngine::Vector3::op_Multiply(UnityEngine::Vector3::op_Addition(parent->get_position(), vector3.get_normalized()), 0.07f * lossyScale);
 			vector = parent->get_worldToLocalMatrix().MultiplyPoint(vector4);
 			vector2 = parent->get_lossyScale();
 		}
 		else
 		{
-			UnityEngine::Transform* transform = GetChildren(parent).First();
+			UnityEngine::Transform* transform = GetChildren(parent)->First();
+
 			vector = transform->get_localPosition();
 			vector2 = transform->get_lossyScale();
 		}
@@ -102,26 +103,26 @@ namespace VRMQavatars
 	{
 		if (verlet.size() == 0)
 		{
-			if (rootBones.Length() == 0)
+			if (rootBones.size() == 0)
 			{
 				return;
 			}
 			Setup(false);
 		}
 		std::vector<SphereColliderLogic> colliders;
-		for (auto vrmspringBoneColliderGroup : colliderGroups)
+		for (const auto vrmspringBoneColliderGroup : colliderGroups)
 		{
 			if (vrmspringBoneColliderGroup != nullptr)
 			{
-				for (auto sphereCollider : vrmspringBoneColliderGroup->colliders)
+				for (const auto sphereCollider : vrmspringBoneColliderGroup->colliders)
 				{
 					colliders.push_back(SphereColliderLogic(vrmspringBoneColliderGroup->get_transform(), sphereCollider));
 				}
 			}
 		}
-		float num = stiffnessForce * deltaTime;
-		Sombrero::FastVector3 vector = gravityDir * (gravityPower * deltaTime);
-		for (auto& logic : verlet)
+		const float num = stiffnessForce * deltaTime;
+		const Sombrero::FastVector3 vector = gravityDir * (gravityPower * deltaTime);
+		for (const auto& logic : verlet)
 		{
 			logic->SetRadius(hitRadius);
 			logic->Update(center, num, dragForce, vector, colliders);

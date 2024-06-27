@@ -7,7 +7,7 @@
 #include "UnityEngine/Texture2D.hpp"
 #include "UnityEngine/ImageConversion.hpp"
 
-namespace VRMQavatars
+namespace AssetLib
 {
     class gLTFImageReader 
     {

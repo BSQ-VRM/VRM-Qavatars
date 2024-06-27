@@ -1,5 +1,8 @@
 #include "config/ConfigManager.hpp"
 
+#include "AvatarManager.hpp"
+
+#include "main.hpp"
 #include "utils/FileUtils.hpp"
 
 namespace VRMQavatars::Config
@@ -44,6 +47,7 @@ namespace VRMQavatars::Config
             auto path = TransformVRMPath(AvatarManager::currentContext->fileName);
             if(getAvatarConfig().__config_path != path)
             {
+                VRMLogger.info("Loading Avatar Config: {}", path.c_str());
                 getAvatarConfig().Init(path);
             }
             return true;

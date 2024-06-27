@@ -1,6 +1,6 @@
 #include "customTypes/BlendShape/BlendShapeController.hpp"
 
-#include <GlobalNamespace/OVRInput_Button.hpp>
+#include <GlobalNamespace/OVRInput.hpp>
 #include <UnityEngine/Time.hpp>
 #include <UnityEngine/WaitForSeconds.hpp>
 
@@ -15,6 +15,7 @@
 #include "UnityEngine/Mesh.hpp"
 #include "UnityEngine/Bounds.hpp"
 #include "UnityEngine/Random.hpp"
+#include "UnityEngine/Mathf.hpp"
 
 #include "GlobalNamespace/OVRInput.hpp"
 

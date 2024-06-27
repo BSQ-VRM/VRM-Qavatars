@@ -126,7 +126,6 @@ DECLARE_JSON_CLASS(LightingSettings,
 DECLARE_JSON_CLASS(LocomotionSettings,
     VALUE_DEFAULT(float, footDistance, 0.1f);
     VALUE_DEFAULT(float, stepThreshold, 0.1f);
-    VALUE_DEFAULT(float, stepHeight, 0.02f);
     VALUE_DEFAULT(VectorThree, stepOffset, UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
 )
 
@@ -135,8 +134,6 @@ DECLARE_JSON_CLASS(IKSettings,
     VALUE_DEFAULT(float, armSwivel, 0.0f);
     VALUE_DEFAULT(float, bodyStiffness, 0.75f);
     VALUE_DEFAULT(float, shoulderRotationWeight, 1.0f);
-    VALUE_DEFAULT(float, wristTwistFixAmount, 0.3f);
-    VALUE_DEFAULT(float, shoulderTwistFixAmount, 0.3f);
     VALUE_DEFAULT(float, groundOffset, 0.0f);
 )
 
@@ -212,6 +209,11 @@ DECLARE_CONFIG(GlobalConfig,
 
     CONFIG_VALUE(CalibrationType, int, "Calibration Type", 1);
     CONFIG_VALUE(FixedScale, float, "Fixed Scale", 1.0f);
+
+    CONFIG_VALUE(UncannyLongArmsFunnyUnderscoresReference, bool, "UncannyLongArmsFunnyUnderscoresReference", false);
+    CONFIG_VALUE(ForceHair, bool, "ForceHair", false);
+    CONFIG_VALUE(ForceHead, bool, "ForceHead", false);
+    CONFIG_VALUE(ForceHideBody, bool, "ForceHideBody", false);
 )
 
 //Avatar Specific + Config Items

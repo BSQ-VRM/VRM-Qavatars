@@ -1,5 +1,7 @@
 #include "main.hpp"
 
+#include "scotland2/shared/loader.hpp"
+
 #include <conditional-dependencies/shared/main.hpp>
 #include <GlobalNamespace/Saber.hpp>
 #include <UnityEngine/Resources.hpp>
@@ -15,6 +17,10 @@
 #include "UnityEngine/SceneManagement/SceneManager.hpp"
 #include "UnityEngine/Camera.hpp"
 #include "UnityEngine/QualitySettings.hpp"
+#include "UnityEngine/AssetBundleRequest.hpp"
+#include "UnityEngine/AsyncOperation.hpp"
+#include "UnityEngine/AssetBundleCreateRequest.hpp"
+#include "UnityEngine/QualitySettings.hpp"
 
 #include "AssetLib/shaders/shaderLoader.hpp"
 #include "AssetLib/shaders/ShaderSO.hpp"
@@ -22,6 +28,7 @@
 
 #include "UI/AvatarsFlowCoordinator.hpp"
 
+#include "AvatarManager.hpp"
 #include "LightManager.hpp"
 #include "SceneEventManager.hpp"
 #include "GroundOffsetManager.hpp"
@@ -29,57 +36,17 @@
 #include "MirrorManager.hpp"
 
 #include "config/ConfigManager.hpp"
-#include "customTypes/DynamicShadowProjector/Projector.hpp"
 
 #include "VMC/VMCClient.hpp"
 #include "VMC/VMCServer.hpp"
 
-static ModInfo modInfo;
+#include "customTypes/FinalIK/VRIK.hpp"
+#include "customTypes/Installers/MenuInstaller.hpp"
 
-Logger& getLogger() {
-    static Logger* logger = new Logger(modInfo, LoggerOptions(false, true));
-    return *logger;
-}
+#include "lapiz/shared/zenject/Zenjector.hpp"
+#include "lapiz/shared/zenject/Location.hpp"
 
-custom_types::Helpers::Coroutine Setup() {
-    getLogger().info("x1");
-    if(!VRMQavatars::ShaderLoader::shaders)
-    {
-        getLogger().info("x2");
-        //Womp womp
-        if(UnityEngine::Resources::FindObjectsOfTypeAll<VRMQavatars::LightManager*>().size() == 0)
-        {
-            UnityEngine::GameObject::New_ctor("LightManager")->AddComponent<VRMQavatars::LightManager*>();
-        }
-        getLogger().info("x3");
-        co_yield custom_types::Helpers::CoroutineHelper::New(VRMQavatars::ShaderLoader::LoadBund());
-        getLogger().info("x4");
-    }
-    getLogger().info("x5");
-    if(VRMQavatars::AvatarManager::currentContext == nullptr)
-    {
-        getLogger().info("x6");
-        VRMQavatars::AvatarManager::StartupLoad();
-    }
-    getLogger().info("x7");
-
-    VRMQavatars::VMC::VMCClient::InitClient();
-    VRMQavatars::VMC::VMCServer::InitServer();
-    getLogger().info("x8");
-    VRMQavatars::GroundOffsetManager::Init();
-    getLogger().info("x9");
-    VRMQavatars::MirrorManager::CreateMainMirror();
-    getLogger().info("x10");
-    co_return;
-}
- 
-MAKE_HOOK_MATCH(MainMenuUIHook, &GlobalNamespace::MainMenuViewController::DidActivate, void, GlobalNamespace::MainMenuViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
-    MainMenuUIHook(self, firstActivation, addedToHierarchy, screenSystemEnabling);
-    if(firstActivation)
-    {
-        self->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(Setup()));
-    }
-}
+modloader::ModInfo modInfo{MOD_ID, VERSION, GIT_COMMIT};
 
 // FP/TP stuff should be in its own mod...
 MAKE_HOOK_MATCH(MainCameraHook, &GlobalNamespace::MainCamera::Awake, void, GlobalNamespace::MainCamera* self)
@@ -125,24 +92,21 @@ MAKE_HOOK_MATCH(SaberPatch, &GlobalNamespace::Saber::ManualUpdate, void, GlobalN
 }
 
 MAKE_HOOK_MATCH(BloomHook, &GlobalNamespace::MainEffectContainerSO::Init, void, GlobalNamespace::MainEffectContainerSO* self, GlobalNamespace::MainEffectSO* mainEffect) {
-    getLogger().info("x1");
-    getLogger().info("%d", mainEffect->get_hasPostProcessEffect());
-    getLogger().info("x2");
     BloomHook(self, mainEffect);
     VRMQavatars::MaterialTracker::bloomEnabled = mainEffect->get_hasPostProcessEffect();
     VRMQavatars::MaterialTracker::UpdateMaterials();
-    getLogger().info("x3");
 }
 
-extern "C" void setup(ModInfo& info) {
-    info.id = MOD_ID;
-    info.version = VERSION;
-    modInfo = info;
+extern "C" void setup(CModInfo* info) {
+    info->id = modInfo.id.c_str();
+    info->version = modInfo.version.c_str();
+    info->version_long = modInfo.versionLong;
 
     getGlobalConfig().Init(Configuration::getConfigFilePath(modInfo));
+    VRMLogger.info("hii");
 }
 
-extern "C" void load() {
+extern "C" void late_load() {
     il2cpp_functions::Init();
 
     mkpath(vrm_path);
@@ -150,11 +114,14 @@ extern "C" void load() {
 
     custom_types::Register::AutoRegister(); 
 
-    BSML::Register::RegisterMainMenu<FlowCoordinators::AvatarsFlowCoordinator*>("Avatars", "VRM Custom Avatars");
+    INSTALL_HOOK(VRMLogger, MainCameraHook);
+    INSTALL_HOOK(VRMLogger, SceneManager_Internal_ActiveSceneChanged);
+    INSTALL_HOOK(VRMLogger, SaberPatch);
+    INSTALL_HOOK(VRMLogger, BloomHook);
 
-    INSTALL_HOOK(getLogger(), MainMenuUIHook);
-    INSTALL_HOOK(getLogger(), MainCameraHook);
-    INSTALL_HOOK(getLogger(), SceneManager_Internal_ActiveSceneChanged);
-    INSTALL_HOOK(getLogger(), SaberPatch);
-    INSTALL_HOOK(getLogger(), BloomHook);
+    auto zenjeqtor = Lapiz::Zenject::Zenjector::Get();
+
+    zenjeqtor->Install<VRMQavatars::MenuInstaller*>(Lapiz::Zenject::Location::Menu);
+
+    BSML::Register::RegisterMainMenu<FlowCoordinators::AvatarsFlowCoordinator*>("Avatars", "VRM Custom Avatars");
 }

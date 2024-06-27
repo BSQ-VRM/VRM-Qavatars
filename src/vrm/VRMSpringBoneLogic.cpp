@@ -4,10 +4,10 @@
 
 namespace VRMQavatars
 {
-	UnityEngine::Quaternion VRMSpringBoneLogic::ApplyRotation(const Sombrero::FastVector3 nextTail)
+	Sombrero::FastQuaternion VRMSpringBoneLogic::ApplyRotation(const Sombrero::FastVector3 nextTail)
 	{
-		const UnityEngine::Quaternion quaternion = GetParentRotation() * localRotation;
-		return UnityEngine::Quaternion::FromToRotation(quaternion * boneAxis, nextTail - trans->get_position()) * quaternion;
+		const Sombrero::FastQuaternion quaternion = GetParentRotation() * localRotation;
+		return Sombrero::FastQuaternion(UnityEngine::Quaternion::FromToRotation(quaternion * boneAxis, nextTail - trans->get_position())) * quaternion;
 	}
 
 	void VRMSpringBoneLogic::SetRadius(const float radius)
@@ -29,6 +29,10 @@ namespace VRMQavatars
 		trans->set_rotation(ApplyRotation(nextTailVec));
 	}
 
+	float SqrMagnitude(Sombrero::FastVector3 vector) {
+		return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
+	}
+
 	Sombrero::FastVector3 VRMSpringBoneLogic::Collision(const std::vector<SphereColliderLogic>& colliders, const Sombrero::FastVector3 nextTail)
 	{
 		UnityEngine::Vector3 ret = nextTail;
@@ -36,13 +40,13 @@ namespace VRMQavatars
 		{
 			auto collider = colliders[i];
 			const auto r = radius + collider.Radius;
-			if (Sombrero::FastVector3::SqrMagnitude(nextTail - collider.Position) <= (r * r))
+			if (SqrMagnitude(nextTail - collider.Position) <= (r * r))
 			{
 				// ヒット。Colliderの半径方向に押し出す
 				auto normal = (nextTail - collider.Position).get_normalized();
 				auto posFromCollider = collider.Position + normal * (radius + collider.Radius);
 				// 長さをboneLengthに強制
-				ret = trans->get_position() + (posFromCollider - trans->get_position()).get_normalized() * length;
+				ret = Sombrero::FastVector3(trans->get_position()) + (posFromCollider - trans->get_position()).get_normalized() * length;
 			}
 		}
 		return ret;
@@ -53,11 +57,11 @@ namespace VRMQavatars
 		return trans->get_localToWorldMatrix().MultiplyPoint(boneAxis * length);
 	}
 
-	UnityEngine::Quaternion VRMSpringBoneLogic::GetParentRotation()
+	Sombrero::FastQuaternion VRMSpringBoneLogic::GetParentRotation()
 	{
 		if (trans->get_parent() == nullptr)
 		{
-			return UnityEngine::Quaternion::get_identity();
+			return Sombrero::FastQuaternion::get_identity();
 		}
 		return trans->get_parent()->get_rotation();
 	}

@@ -4,12 +4,12 @@
 #include "UI/components/AvatarListCell.hpp"
 
 #include <chatplex-sdk-bs/shared/CP_SDK/XUI/XUI.hpp>
-#include <questui/shared/BeatSaberUI.hpp>
 
 #include "assets.hpp"
 #include "System/Action_2.hpp"
 
 #include "bsml/shared/Helpers/utilities.hpp"
+#include "bsml/shared/Helpers/getters.hpp"
 
 #include "custom-types/shared/delegate.hpp"
 
@@ -32,7 +32,7 @@ namespace VRMQavatars::UI::Components {
 
     void AvatarListCell::Build_Impl()
     {
-        static auto sprite = QuestUI::BeatSaberUI::ArrayToSprite(IncludedAssets::cd_png);
+        static auto sprite = BSML::Utilities::LoadSpriteRaw(Assets::cd_png);
         CP_SDK::XUI::XUIHLayout::Make({
             CP_SDK::XUI::XUIImage::Make()
                 ->Bind(&Image)
@@ -53,8 +53,8 @@ namespace VRMQavatars::UI::Components {
                     ->OnReady([](CP_SDK::UI::Components::CText* text)
                     {
                         //silly chars are broken on chatplex base font
-                        text->TMProUGUI()->set_font(QuestUI::BeatSaberUI::GetMainTextFont());
-                        text->TMProUGUI()->set_fontMaterial(QuestUI::BeatSaberUI::GetMainUIFontMaterial());
+                        text->TMProUGUI()->set_font(BSML::Helpers::GetMainTextFont());
+                        text->TMProUGUI()->set_fontMaterial(BSML::Helpers::GetMainUIFontMaterial());
                         text->RTransform()->set_sizeDelta(UnityEngine::Vector2::get_zero());
                     })
                     ->SetAlign(TMPro::TextAlignmentOptions::CaplineLeft)
@@ -65,8 +65,8 @@ namespace VRMQavatars::UI::Components {
                     ->OnReady([](CP_SDK::UI::Components::CText* text)
                     {
                         //silly chars are broken on chatplex base font
-                        text->TMProUGUI()->set_font(QuestUI::BeatSaberUI::GetMainTextFont());
-                        text->TMProUGUI()->set_fontMaterial(QuestUI::BeatSaberUI::GetMainUIFontMaterial());
+                        text->TMProUGUI()->set_font(BSML::Helpers::GetMainTextFont());
+                        text->TMProUGUI()->set_fontMaterial(BSML::Helpers::GetMainUIFontMaterial());
                         text->RTransform()->set_sizeDelta(UnityEngine::Vector2::get_zero());
                     })
                     ->SetAlign(TMPro::TextAlignmentOptions::CaplineLeft)
@@ -91,8 +91,8 @@ namespace VRMQavatars::UI::Components {
                     ->OnReady([](CP_SDK::UI::Components::CText* text)
                     {
                         //silly chars are broken on chatplex base font
-                        text->TMProUGUI()->set_font(QuestUI::BeatSaberUI::GetMainTextFont());
-                        text->TMProUGUI()->set_fontMaterial(QuestUI::BeatSaberUI::GetMainUIFontMaterial());
+                        text->TMProUGUI()->set_font(BSML::Helpers::GetMainTextFont());
+                        text->TMProUGUI()->set_fontMaterial(BSML::Helpers::GetMainUIFontMaterial());
                         text->RTransform()->set_sizeDelta(UnityEngine::Vector2::get_zero());
                     })
                     ->SetAlign(TMPro::TextAlignmentOptions::CaplineRight)

@@ -3,8 +3,7 @@
 #include <UnityEngine/Time.hpp>
 #include <UnityEngine/WaitForEndOfFrame.hpp>
 
-#include "GlobalNamespace/OVRPlugin_Node.hpp"
-#include "GlobalNamespace/OVRPlugin_Step.hpp"
+#include "GlobalNamespace/OVRPlugin.hpp"
 #include "AvatarManager.hpp"
 #include "HandController.hpp"
 #include "TPoseHelper.hpp"
@@ -15,12 +14,12 @@ namespace VRMQavatars
 {
     void CalibrationHelper::PrepareContextForCalibration()
     {
-        const auto rootGameObject = AvatarManager::currentContext->rootGameObject->get_transform();
+        auto rootGameObject = AvatarManager::currentContext->rootGameObject->get_transform();
 
         for (const auto springBone : rootGameObject->GetComponentsInChildren<VRMSpringBone*>())
             springBone->set_enabled(false);
 
-        const auto vrik = rootGameObject->GetComponent<RootMotion::FinalIK::VRIK*>();
+        const auto vrik = rootGameObject->GetComponent<FinalIK::VRIK*>();
         vrik->set_enabled(false);
 
         rootGameObject->set_position({0.0f, 0.0f, 0.0f});
@@ -32,17 +31,17 @@ namespace VRMQavatars
 
         TPoseHelper::LoadPose();
 
-        auto armScale = Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue();
+        auto armScale = Config::ConfigManager::GetAvatarConfig().ArmCalibrationScale.GetValue() * (Config::ConfigManager::GetGlobalConfig().UncannyLongArmsFunnyUnderscoresReference.GetValue() ? 5.0f : 1.0f);
         auto legScale = Config::ConfigManager::GetAvatarConfig().LegCalibrationScale.GetValue();
 
-        const auto hips = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::Hips);
-        const auto LArm = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperArm);
-        const auto RArm = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperArm);
-        const auto LLeg = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
-        const auto RLeg = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperLeg);
+        auto hips = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::Hips);
+        auto LArm = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperArm);
+        auto RArm = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperArm);
+        auto LLeg = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftUpperLeg);
+        auto RLeg = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightUpperLeg);
 
-        LArm->set_localScale({armScale, armScale, armScale});
-        RArm->set_localScale({armScale, armScale, armScale});
+        LArm->set_localScale({armScale, LArm->localScale.y, LArm->localScale.z});
+        RArm->set_localScale({armScale, RArm->localScale.y, RArm->localScale.z});
         LLeg->set_localScale({legScale, legScale, legScale});
         RLeg->set_localScale({legScale, legScale, legScale});
 
@@ -60,8 +59,8 @@ namespace VRMQavatars
     float GetAvatarHandHeight()
     {
         const auto vrik = AvatarManager::vrik;
-        const auto avatarRightHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightHand)->get_position();
-        const auto avatarLeftHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftHand)->get_position();
+        auto avatarRightHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightHand)->get_position();
+        auto avatarLeftHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftHand)->get_position();
         const float avatarHandAverageY = (avatarLeftHandPos.y + avatarRightHandPos.y) / 2.0f;
         return avatarHandAverageY;
     }
@@ -69,8 +68,8 @@ namespace VRMQavatars
     float GetAvatarHandDist()
     {
         const auto vrik = AvatarManager::vrik;
-        const auto avatarRightHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightHand)->get_position();
-        const auto avatarLeftHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftHand)->get_position();
+        auto avatarRightHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::RightHand)->get_position();
+        auto avatarLeftHandPos = vrik->animator->GetBoneTransform(UnityEngine::HumanBodyBones::LeftHand)->get_position();
         const float avatarHandDist = UnityEngine::Vector3::Distance(avatarLeftHandPos, avatarRightHandPos);
         return avatarHandDist;
     }
@@ -91,7 +90,7 @@ namespace VRMQavatars
 
     float GetCalibrateScale(const std::optional<float> baseScale)
     {
-        getLogger().info("scale: %d %f", baseScale.has_value(), baseScale.has_value() ? baseScale.value() : 0.0f);
+        VRMLogger.info("scale: {} {}", baseScale.has_value(), baseScale.has_value() ? baseScale.value() : 0.0f);
         const auto type = Config::ConfigManager::GetGlobalConfig().CalibrationType.GetValue();
         if(type == 0)
         {
@@ -100,7 +99,7 @@ namespace VRMQavatars
             const float avatarHandDist = baseScale.has_value() ? baseScale.value() : GetAvatarHandDist();
             const float readDist = UnityEngine::Vector3::Distance(leftHandPos, rightHandPos);
             const float scale = readDist / avatarHandDist;
-            getLogger().info("%f %f %f", readDist, avatarHandDist, scale);
+            VRMLogger.info("{} {} {}", readDist, avatarHandDist, scale);
             return scale * 0.85f;
         }
         if(type == 1)
@@ -110,7 +109,7 @@ namespace VRMQavatars
             const float avatarHandAverageY = baseScale.has_value() ? baseScale.value() : GetAvatarHandHeight();
             const float readHandAverageY = (leftHandPos.y + rightHandPos.y) / 2.0f;
             const float scale = readHandAverageY / avatarHandAverageY;
-            getLogger().info("%f %f %f", readHandAverageY, avatarHandAverageY, scale);
+            VRMLogger.info("{} {} {}", readHandAverageY, avatarHandAverageY, scale);
             return scale;
         }
         return Config::ConfigManager::GetGlobalConfig().FixedScale.GetValue();
@@ -118,7 +117,7 @@ namespace VRMQavatars
 
     void CalibrationHelper::Calibrate(const std::optional<float> scale)
     {
-        const auto rootGameObject = AvatarManager::currentContext->rootGameObject->get_transform();
+        auto rootGameObject = AvatarManager::currentContext->rootGameObject->get_transform();
 
         const auto vrik = AvatarManager::vrik;
         const auto targetManager = AvatarManager::targetManager;
@@ -126,6 +125,7 @@ namespace VRMQavatars
         PrepareContextForCalibration();
 
         const float calibScale = scale.has_value() ? scale.value() : GetCalibrateScale(std::nullopt);
+        VRMLogger.info("calibration scale {}", calibScale);
 
         auto& avaConfig = Config::ConfigManager::GetAvatarConfig();
         avaConfig.HasCalibrated.SetValue(true);
@@ -140,21 +140,17 @@ namespace VRMQavatars
         vrik->solver->rightArm->target = targetManager->rightHandTarget->get_transform();
 
         vrik->Initiate();
-
         targetManager->intialized = true;
         vrik->set_enabled(true);
 
         for (const auto springBone : rootGameObject->GetComponentsInChildren<VRMSpringBone*>())
             springBone->set_enabled(true);
-
-        if(rootGameObject->GetComponent<WristTwistFix*>() == nullptr)
-            rootGameObject->get_gameObject()->AddComponent<WristTwistFix*>()->SetVRIK(vrik);
     }
 
     custom_types::Helpers::Coroutine CalibrationHelper::StartCalibrationProc()
     {
         float time = 0.0f;
-        const auto rootGameObject = AvatarManager::currentContext->rootGameObject->get_transform();
+        auto rootGameObject = AvatarManager::currentContext->rootGameObject->get_transform();
 
         PrepareContextForCalibration();
 
@@ -170,7 +166,7 @@ namespace VRMQavatars
 
             headPos.y = 0.0f;
 
-            const float yRotation = Sombrero::FastQuaternion::LookRotation(rightHandPos - leftHandPos, Sombrero::FastVector3::forward()).get_eulerAngles().y + 90.0f;
+            const float yRotation = Sombrero::FastQuaternion::LookRotation(leftHandPos - rightHandPos, Sombrero::FastVector3::forward()).get_eulerAngles().y + 90.0f;
 
             rootGameObject->set_position(headPos);
             rootGameObject->set_rotation(UnityEngine::Quaternion::Euler(0.0f, yRotation, 0.0f));

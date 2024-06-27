@@ -40,14 +40,14 @@ namespace VRMQavatars
         Sombrero::FastVector3 windForce = {0,0,0};
         for (int i = 0; i < _windItems.size(); i++)
         {
-            const auto x = (_windItems[i]->Orientation * _windItems[i]->CurrentFactor());;
+            const auto x = (_windItems[i]->Orientation * _windItems[i]->CurrentFactor());
             windForce += x;
         }
 
         for (int i = 0; i < _springBones.size(); i++)
         {
             const auto bone = _springBones[i];
-            Sombrero::FastVector3 forceSum = _originalGravityFactors[i] * _originalGravityDirections[i] + windForce;
+            Sombrero::FastVector3 forceSum = _originalGravityDirections[i] * _originalGravityFactors[i] + windForce;
             bone->gravityDir = forceSum.get_normalized();
             bone->gravityPower = forceSum.get_magnitude();
         }

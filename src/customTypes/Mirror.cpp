@@ -3,6 +3,7 @@
 #include <chatplex-sdk-bs/shared/CP_SDK/ChatPlexSDK.hpp>
 #include <UnityEngine/Camera.hpp>
 
+#include "AvatarManager.hpp"
 #include "SceneEventManager.hpp"
 #include "config/ConfigManager.hpp"
 
@@ -67,14 +68,14 @@ namespace VRMQavatars
         if(target)
         {
             //Head bone is placed more at the neck
-            const auto newPosition = target->get_position() + (target->get_up()*0.125f);
-            camera->set_position(newPosition + (target->get_forward() * mirrorSettings.distance));
+            const auto newPosition = UnityEngine::Vector3::op_Addition(target->get_position(), UnityEngine::Vector3::op_Multiply(target->get_up(), 0.125f));
+            camera->set_position(UnityEngine::Vector3::op_Addition(newPosition, UnityEngine::Vector3::op_Multiply(target->get_forward(), mirrorSettings.distance)));
             camera->LookAt(newPosition);
         }
         else
         {
             camera->set_localPosition({0,0,-1});
-            camera->set_localRotation({0,0,0});
+            camera->set_localRotation({0,0,0,0});
         }
 
         const bool shouldShowMenu = SceneEventManager::inMenu && (mirrorSettings.scene == 1);

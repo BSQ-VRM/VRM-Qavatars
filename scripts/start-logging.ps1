@@ -35,21 +35,9 @@ if ($help -eq $true) {
 
 $bspid = adb shell pidof com.beatgames.beatsaber
 $command = "adb logcat "
+$command2 = "adb logcat -c"
 
 if ($all -eq $false) {
-    $loops = 0
-    while ([string]::IsNullOrEmpty($bspid) -and $loops -lt 3) {
-        Start-Sleep -Milliseconds 100
-        $bspid = adb shell pidof com.beatgames.beatsaber
-        $loops += 1
-    }
-
-    if ([string]::IsNullOrEmpty($bspid)) {
-        Write-Output "Could not connect to adb, exiting..."
-        exit 1
-    }
-
-    $command += "--pid $bspid"
 }
 
 if ($all -eq $false) {
@@ -73,4 +61,5 @@ if (![string]::IsNullOrEmpty($file)) {
 }
 
 Write-Output "Logging using Command `"$command`""
+Invoke-Expression $command2
 Invoke-Expression $command

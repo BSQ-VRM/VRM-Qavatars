@@ -1,19 +1,23 @@
 #include "UI/AvatarSelectionViewController.hpp"
 
 #include <string_view>
-#include <UnityEngine/WaitForEndOfFrame.hpp>
+#include "UnityEngine/WaitForEndOfFrame.hpp"
+#include "UnityEngine/TextureFormat.hpp"
 
+#include "AvatarManager.hpp"
 #include "assets.hpp"
 #include "CalibrationHelper.hpp"
 #include "TPoseHelper.hpp"
 #include "AssetLib/modelImporter.hpp"
-#include "AssetLib/mappings/gLTFImageReader.hpp"
+#include "AssetLib/gLTFImageReader.hpp"
 #include "chatplex-sdk-bs/shared/CP_SDK/XUI/Templates.hpp"
 #include "config/ConfigManager.hpp"
 #include "UI/components/AvatarListCell.hpp"
 #include "UI/components/AvatarListItem.hpp"
 
 #include "utils/FileUtils.hpp"
+
+#include "bsml/shared/BSML/MainThreadScheduler.hpp"
 
 namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSelectionViewController);
@@ -39,7 +43,7 @@ namespace VRMQavatars::UI::ViewControllers {
         descriptor.author = "No avatar";
 
         UnityEngine::Texture2D* texture = UnityEngine::Texture2D::New_ctor(0, 0, UnityEngine::TextureFormat::RGBA32, false, false);
-        UnityEngine::ImageConversion::LoadImage(texture, IncludedAssets::none_png, false);
+        UnityEngine::ImageConversion::LoadImage(texture, Assets::none_png, false);
 
         descriptor.thumbnail = texture;
 
@@ -59,7 +63,7 @@ namespace VRMQavatars::UI::ViewControllers {
 
         if(filesize((vrm_path + std::string("/") + path).c_str()) < 1)
         {
-            getLogger().info("die");
+            VRMLogger.info("die");
             descriptor.valid = false;
             return descriptor;
         }
@@ -69,7 +73,7 @@ namespace VRMQavatars::UI::ViewControllers {
         binFile.seekg(12); //Skip past the 12 byte header, to the json header
         uint32_t jsonLength;
         binFile.read(reinterpret_cast<char*>(&jsonLength), sizeof(uint32_t)); //Read the length of the json file from it's header
-        getLogger().info("%u", jsonLength);
+        VRMLogger.info("{}", jsonLength);
         std::string jsonStr;
         jsonStr.resize(jsonLength);
         binFile.seekg(20); // Skip the rest of the JSON header to the start of the string
@@ -82,7 +86,7 @@ namespace VRMQavatars::UI::ViewControllers {
         }
         catch (nlohmann::json::parse_error& ex)
         {
-            getLogger().error("parse error at byte %zu", ex.byte);
+            VRMLogger.error("parse error at byte {}", ex.byte);
             descriptor.valid = false;
             return descriptor;
         }
@@ -102,7 +106,7 @@ namespace VRMQavatars::UI::ViewControllers {
             descriptor.vrm1 = vrm;
         }
 
-        descriptor.thumbnail = gLTFImageReader::ReadImageIndex(jsonLength, binFile, descriptor.vrm0.has_value() ? descriptor.vrm0.value().meta.texture : descriptor.vrm1.value().meta.thumbnailImage);
+        descriptor.thumbnail = AssetLib::gLTFImageReader::ReadImageIndex(jsonLength, binFile, descriptor.vrm0.has_value() ? descriptor.vrm0.value().meta.texture : descriptor.vrm1.value().meta.thumbnailImage);
         descriptor.filePath = path;
 
         if(descriptor.vrm0.has_value())
@@ -171,21 +175,27 @@ namespace VRMQavatars::UI::ViewControllers {
             }
             if(fileexists(std::string(vrm_path) + "/" + path))
             {
-                const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
-                AvatarManager::SetContext(ctx);
-            }
-            globcon.hasSelected.SetValue(true);
-            globcon.selectedFileName.SetValue(path);
+                std::shared_future<AssetLib::Structure::VRM::VRMModelContext*> future = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path);
+                BSML::MainThreadScheduler::AwaitFuture(future, [path, item, future, this](){
+                    AssetLib::Structure::VRM::VRMModelContext* ctx = future.get();
+                    AvatarManager::SetContext(ctx);
 
-            auto& avacon = Config::ConfigManager::GetAvatarConfig();
-            if(!avacon.HasAgreedToTerms.GetValue())
-            {
-                agreementModal->SetInfo(item->descriptor);
-                ShowModal(agreementModal.Ptr());
-            }
-            if(avacon.HasCalibrated.GetValue())
-            {
-                CalibrationHelper::Calibrate(avacon.CalibratedScale.GetValue());
+                    auto& globcon = Config::ConfigManager::GetGlobalConfig();
+
+                    globcon.hasSelected.SetValue(true);
+                    globcon.selectedFileName.SetValue(path);
+
+                    auto& avacon = Config::ConfigManager::GetAvatarConfig();
+                    if(!avacon.HasAgreedToTerms.GetValue())
+                    {
+                        agreementModal->SetInfo(item->descriptor);
+                        ShowModal(agreementModal.Ptr());
+                    }
+                    if(avacon.HasCalibrated.GetValue())
+                    {
+                        CalibrationHelper::Calibrate(avacon.CalibratedScale.GetValue());
+                    }
+                });
             }
         }
     }

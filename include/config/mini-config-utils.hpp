@@ -1,5 +1,6 @@
 #pragma once
 #include "beatsaber-hook/shared/config/config-utils.hpp"
+#include "main.hpp"
 #include "rapidjson-macros/shared/macros.hpp"
 
 #define DECLARE_CONFIG(name, ...) \
@@ -17,7 +18,7 @@ DECLARE_JSON_CLASS(name##_t, \
         try { \
             ReadFromFile(__config_path, GetInstance()); \
         } catch (const std::exception& err) { \
-            ConfigUtils::getLogger().error("Error reading config: %s (from %s)", err.what(), __config_path.c_str()); \
+            ConfigUtils::Logger.error("Error reading config: {} (from {})", err.what(), __config_path.c_str()); \
         } \
 		Save(); \
     } \
@@ -26,13 +27,13 @@ DECLARE_JSON_CLASS(name##_t, \
     } \
     static void Save() { \
         if (__config_path.empty()) { \
-            ConfigUtils::getLogger().error("Config was not initialized!"); \
+            ConfigUtils::Logger.error("Config was not initialized!"); \
             return; \
         } \
         try { \
             WriteToFile(__config_path, GetInstance()); \
         } catch (const std::exception& err) { \
-            ConfigUtils::getLogger().error("Error saving config: %s (to %s)", err.what(), __config_path.c_str()); \
+            ConfigUtils::Logger.error("Error saving config: {} (to {})", err.what(), __config_path.c_str()); \
         } \
     } \
 ) \
@@ -48,10 +49,7 @@ ConfigUtils::ConfigValue<type> name = {&this->Save, &__##name, jsonName, def __V
 
 namespace ConfigUtils {
 
-    inline Logger& getLogger() {
-        static auto logger = new Logger(ModInfo{"config-utils", "1.1.0"});
-        return *logger;
-    }
+    static constexpr auto Logger = Paper::ConstLoggerContext("config-utils");
 
     template <typename ValueType>
     struct Specialization {

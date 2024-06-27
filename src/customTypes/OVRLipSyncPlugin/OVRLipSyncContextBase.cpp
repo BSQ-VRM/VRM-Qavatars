@@ -24,7 +24,7 @@ namespace VRMQavatars::OVRLipSync
         }
         if (OVRLipSync::CreateContext(context, provider, 0, enableAcceleration) != ovrLipSyncSuccess)
         {
-            getLogger().error("OVRLipSyncContextBase.Start ERROR: Could not create Phoneme context.");
+            VRMLogger.error("OVRLipSyncContextBase.Start ERROR: Could not create Phoneme context.");
         }
     }
 
@@ -37,7 +37,7 @@ namespace VRMQavatars::OVRLipSync
     {
         if (OVRLipSync::DestroyContext(context) != ovrLipSyncSuccess)
         {
-            getLogger().error("OVRLipSyncContextBase.OnDestroy ERROR: Could not delete Phoneme context.");
+            VRMLogger.error("OVRLipSyncContextBase.OnDestroy ERROR: Could not delete Phoneme context.");
         }
     }
 
@@ -45,7 +45,7 @@ namespace VRMQavatars::OVRLipSync
     {
         if (OVRLipSync::SendSignal(context, ovrLipSyncSignals_LaughterAmount, amount, 0) != ovrLipSyncSuccess)
         {
-            getLogger().error("OVRLipSyncContextBase.SetLaughterBlend: An unexpected error occured.");
+            VRMLogger.error("OVRLipSyncContextBase.SetLaughterBlend: An unexpected error occured.");
         }
     }
 
@@ -56,10 +56,10 @@ namespace VRMQavatars::OVRLipSync
         {
             if (result == ovrLipSyncError_InvalidParam)
             {
-                getLogger().error("OVRLipSyncContextBase.SetVisemeBlend: Viseme ID is invalid.");
+                VRMLogger.error("OVRLipSyncContextBase.SetVisemeBlend: Viseme ID is invalid.");
                 return;
             }
-            getLogger().error("OVRLipSyncContextBase.SetVisemeBlend: An unexpected error occured.");
+            VRMLogger.error("OVRLipSyncContextBase.SetVisemeBlend: An unexpected error occured.");
         }
     }
 
@@ -70,11 +70,11 @@ namespace VRMQavatars::OVRLipSync
         {
             if (result == ovrLipSyncError_InvalidParam)
             {
-                getLogger().error("OVRLipSyncContextBase.SetSmoothing: A viseme smoothing parameter is invalid, it should be between 1 and 100!");
+                VRMLogger.error("OVRLipSyncContextBase.SetSmoothing: A viseme smoothing parameter is invalid, it should be between 1 and 100!");
             }
             else
             {
-                getLogger().error("OVRLipSyncContextBase.SetSmoothing: An unexpected error occured.");
+                VRMLogger.error("OVRLipSyncContextBase.SetSmoothing: An unexpected error occured.");
             }
         }
         _smoothing = value;

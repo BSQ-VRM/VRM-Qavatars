@@ -4,7 +4,8 @@
 #include "UnityEngine/Rendering/IndexFormat.hpp"
 
 #include "AssetLib/arrayUtils.hpp"
-namespace VRMQavatars {
+
+namespace AssetLib {
     class BoneMeshUtility
     {
         public:

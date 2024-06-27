@@ -1,20 +1,24 @@
 #include "customTypes/TargetManager.hpp"
 
-#include <chatplex-sdk-bs/shared/CP_SDK/ChatPlexSDK.hpp>
-#include <UnityEngine/PrimitiveType.hpp>
-#include <UnityEngine/Time.hpp>
+#include <bsml/shared/Helpers/utilities.hpp>
+
+#include "customTypes/GroundOffsetObject.hpp"
+
+#include "chatplex-sdk-bs/shared/CP_SDK/ChatPlexSDK.hpp"
 
 #include "SceneEventManager.hpp"
-#include "customTypes/WristTwistFix.hpp"
+#include "TPoseHelper.hpp"
 
-#include "UnityEngine/Camera.hpp"
-
+#include "GlobalNamespace/OVRSkeletonRenderer.hpp"
+#include "GlobalNamespace/OVRBody.hpp"
 #include "GlobalNamespace/OVRPlugin.hpp"
+#include "UnityEngine/Camera.hpp"
+#include "UnityEngine/Time.hpp"
 
 #include "config/ConfigManager.hpp"
 
 #include "conditional-dependencies/shared/main.hpp"
-#include "customTypes/GroundOffsetObject.hpp"
+
 #include "VMC/VMCClient.hpp"
 #include "VMC/VMCServer.hpp"
 
@@ -37,41 +41,42 @@ namespace VRMQavatars
     void TargetManager::Initialize()
     {
         leftHandTarget = UnityEngine::GameObject::New_ctor();
-        leftHandTarget->get_transform()->SetParent(get_transform(), false);
+        leftHandTarget->transform->SetParent(transform, false);
 
         rightHandTarget = UnityEngine::GameObject::New_ctor();
-        rightHandTarget->get_transform()->SetParent(get_transform(), false);
+        rightHandTarget->transform->SetParent(transform, false);
 
         headTarget = UnityEngine::GameObject::New_ctor();
-        headTarget->get_transform()->SetParent(get_transform(), false);
+        headTarget->transform->SetParent(transform, false);
 
         waistTracker = UnityEngine::GameObject::New_ctor();
-        waistTracker->get_transform()->SetParent(get_transform(), false);
+        waistTracker->transform->SetParent(transform, false);
 
         chestTracker = UnityEngine::GameObject::New_ctor();
-        chestTracker->get_transform()->SetParent(get_transform(), false);
+        chestTracker->transform->SetParent(transform, false);
 
         leftFootTracker = UnityEngine::GameObject::New_ctor();
-        leftFootTracker->get_transform()->SetParent(get_transform(), false);
+        leftFootTracker->transform->SetParent(transform, false);
 
         rightFootTracker = UnityEngine::GameObject::New_ctor();
-        rightFootTracker->get_transform()->SetParent(get_transform(), false);
+        rightFootTracker->transform->SetParent(transform, false);
 
         leftKneeTracker = UnityEngine::GameObject::New_ctor();
-        leftKneeTracker->get_transform()->SetParent(get_transform(), false);
+        leftKneeTracker->transform->SetParent(transform, false);
 
         rightKneeTracker = UnityEngine::GameObject::New_ctor();
-        rightKneeTracker->get_transform()->SetParent(get_transform(), false);
+        rightKneeTracker->transform->SetParent(transform, false);
 
         vrik->AutoDetectReferences();
 
         vrik->set_enabled(false);
 
-        get_gameObject()->AddComponent<GroundOffsetObject*>();
+        gameObject->AddComponent<GroundOffsetObject*>();
     }
 
     void TargetManager::Update()
     {
+
         if(!intialized)
             return;
 
@@ -93,10 +98,10 @@ namespace VRMQavatars
         const static auto replay = CondDeps::Find<bool>("replay", "IsInReplay");
         if(replay.has_value() && replay.value()())
         {
-            const auto camTrans = UnityEngine::GameObject::Find("PlayerTransformsHeadReplacement");
+            auto camTrans = UnityEngine::GameObject::Find("PlayerTransformsHeadReplacement");
             if(camTrans == nullptr) return;
-            headPos = camTrans->get_transform()->get_position();
-            headRot = camTrans->get_transform()->get_rotation();
+            headPos = camTrans->transform->position;
+            headRot = camTrans->transform->rotation;
 
             leftHandPos = replayLeftSaberPos;
             leftHandRot = replayLeftSaberRot;
@@ -131,15 +136,15 @@ namespace VRMQavatars
         {
             auto name = tracker.name;
             UnityEngine::Transform* transform = nullptr;
-            if(name == "human://WAIST") transform = waistTracker->get_transform();
-            if(name == "human://CHEST") transform = chestTracker->get_transform();
-            if(name == "human://LEFT_FOOT") transform = leftFootTracker->get_transform();
-            if(name == "human://RIGHT_FOOT") transform = rightFootTracker->get_transform();
-            if(name == "human://LEFT_KNEE") transform = leftKneeTracker->get_transform();
-            if(name == "human://RIGHT_KNEE") transform = rightKneeTracker->get_transform();
+            if(name == "human://WAIST") transform = waistTracker->transform;
+            if(name == "human://CHEST") transform = chestTracker->transform;
+            if(name == "human://LEFT_FOOT") transform = leftFootTracker->transform;
+            if(name == "human://RIGHT_FOOT") transform = rightFootTracker->transform;
+            if(name == "human://LEFT_KNEE") transform = leftKneeTracker->transform;
+            if(name == "human://RIGHT_KNEE") transform = rightKneeTracker->transform;
             if(transform != nullptr)
             {
-                Sombrero::FastVector3 lastPos = transform->get_position();
+                Sombrero::FastVector3 lastPos = transform->position;
                 transform->set_position(Sombrero::FastVector3::Lerp(lastPos, tracker.pos, UnityEngine::Time::get_deltaTime() * 20.0f));
                 transform->set_rotation(tracker.rot);
             }
@@ -149,12 +154,12 @@ namespace VRMQavatars
         {
             auto ikConfig = Config::ConfigManager::GetIKSettings();
 
-            auto pos = noodleTrack->get_transform()->get_position();
-            auto offsetPos = pos + UnityEngine::Vector3(0.0f, ikConfig.groundOffset, 0.0f);
+            auto pos = noodleTrack->transform->position;
+            auto offsetPos = UnityEngine::Vector3::op_Addition(pos, UnityEngine::Vector3(0.0f, ikConfig.groundOffset, 0.0f));
 
-            if(UnityEngine::Vector3::Distance(get_transform()->get_position(), offsetPos) > 0.05f)
+            if(UnityEngine::Vector3::Distance(transform->position, offsetPos) > 0.05f)
             {
-                get_transform()->set_position(offsetPos);
+                transform->position = offsetPos;
             }
             leftHandPos += pos;
             rightHandPos += pos;
@@ -167,20 +172,19 @@ namespace VRMQavatars
             GetComponent<GroundOffsetObject*>()->set_enabled(true);
         }
 
+        leftHandTarget->transform->position = leftHandPos;
+        leftHandTarget->transform->rotation = leftHandRot;
 
-        leftHandTarget->get_transform()->set_position(leftHandPos);
-        leftHandTarget->get_transform()->set_rotation(leftHandRot);
+        leftHandTarget->transform->Rotate({offset.rotX, offset.rotY, offset.rotZ});
+        leftHandTarget->transform->Translate({offset.posX, offset.posY, offset.posZ});
 
-        leftHandTarget->get_transform()->Rotate({offset.rotX, offset.rotY, offset.rotZ});
-        leftHandTarget->get_transform()->Translate({offset.posX, offset.posY, offset.posZ});
+        rightHandTarget->transform->position = rightHandPos;
+        rightHandTarget->transform->rotation = rightHandRot;
 
-        rightHandTarget->get_transform()->set_position(rightHandPos);
-        rightHandTarget->get_transform()->set_rotation(rightHandRot);
+        rightHandTarget->transform->Rotate({offset.rotX, offset.rotY, -offset.rotZ});
+        rightHandTarget->transform->Translate({-offset.posX, offset.posY, offset.posZ});
 
-        rightHandTarget->get_transform()->Rotate({offset.rotX, offset.rotY, -offset.rotZ});
-        rightHandTarget->get_transform()->Translate({-offset.posX, offset.posY, offset.posZ});
-
-        headTarget->get_transform()->set_position(headPos);
-        headTarget->get_transform()->set_rotation(headRot);
+        headTarget->transform->position = headPos;
+        headTarget->transform->rotation = headRot;
     }
 }

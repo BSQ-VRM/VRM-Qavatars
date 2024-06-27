@@ -1,4 +1,5 @@
 {
+  "version": "0.1.0",
   "sharedDir": "shared",
   "dependenciesDir": "extern",
   "info": {
@@ -11,77 +12,6 @@
       "cmake": true
     }
   },
-  "dependencies": [
-    {
-      "id": "beatsaber-hook",
-      "versionRange": "^3.8.0",
-      "additionalData": {
-        "extraFiles": [
-          "src/inline-hook"
-        ]
-      }
-    },
-    {
-      "id": "modloader",
-      "versionRange": "=1.2.3",
-      "additionalData": {}
-    },
-    {
-      "id": "codegen",
-      "versionRange": "^0.33.0",
-      "additionalData": {}
-    },
-    {
-      "id": "custom-types",
-      "versionRange": "=0.15.24",
-      "additionalData": {}
-    },
-    {
-      "id": "questui",
-      "versionRange": "^0.17.12",
-      "additionalData": {}
-    },
-    {
-      "id": "assimp",
-      "versionRange": "^5.3.3",
-      "additionalData": {}
-    },
-    {
-      "id": "bsml",
-      "versionRange": "^0.3.3",
-      "additionalData": {}
-    },
-    {
-      "id": "questui",
-      "versionRange": "^0.17.12",
-      "additionalData": {}
-    },
-    {
-      "id": "rapidjson-macros",
-      "versionRange": "^1.0.0",
-      "additionalData": {}
-    },
-    {
-      "id": "conditional-dependencies",
-      "versionRange": "^0.1.0",
-      "additionalData": {}
-    },
-    {
-      "id": "fmt",
-      "versionRange": "^10.0.0",
-      "additionalData": {}
-    },
-    {
-      "id": "sombrero",
-      "versionRange": "^0.1.37",
-      "additionalData": {}
-    },
-    {
-      "id": "chatplex-sdk-bs",
-      "versionRange": "^6.2.0",
-      "additionalData": {}
-    }
-  ],
   "workspace": {
     "scripts": {
       "build": [
@@ -106,6 +36,81 @@
       "tomb": [
         "pwsh ./scripts/pull-tombstone.ps1"
       ]
+    },
+    "qmodIncludeDirs": [],
+    "qmodIncludeFiles": [],
+    "qmodOutput": null
+  },
+  "dependencies": [
+    {
+      "id": "beatsaber-hook",
+      "versionRange": "^5.1.6",
+      "additionalData": {}
+    },
+    {
+      "id": "scotland2",
+      "versionRange": "^0.1.4",
+      "additionalData": {}
+    },
+    {
+      "id": "bs-cordl",
+      "versionRange": "^3601.0.0",
+      "additionalData": {}
+    },
+    {
+      "id": "custom-types",
+      "versionRange": "^0.17.0",
+      "additionalData": {}
+    },
+    {
+      "id": "assimp",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "bsml",
+      "versionRange": "^0.4.0",
+      "additionalData": {}
+    },
+    {
+      "id": "conditional-dependencies",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "fmt",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "sombrero",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "chatplex-sdk-bs",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "rapidjson-macros",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "kaleb",
+      "versionRange": "^0.1.9",
+      "additionalData": {}
+    },
+    {
+      "id": "paper",
+      "versionRange": "^3.6.3",
+      "additionalData": {}
+    },
+    {
+      "id": "lapiz",
+      "versionRange": "^0.2.9",
+      "additionalData": {}
     }
-  }
+  ]
 }

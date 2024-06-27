@@ -1,10 +1,13 @@
 #include "AvatarManager.hpp"
 
 #include <HandController.hpp>
+#include <future>
 
+#include "AssetLib/structure/VRM/VRMmodelContext.hpp"
 #include "CalibrationHelper.hpp"
 #include "TPoseHelper.hpp"
 #include "AssetLib/modelImporter.hpp"
+#include "bsml/shared/BSML/MainThreadScheduler.hpp"
 #include "config/ConfigManager.hpp"
 #include "customTypes/VRMWind.hpp"
 #include "customTypes/BlendShape/BlendShapeController.hpp"
@@ -12,9 +15,8 @@
 namespace VRMQavatars {
 
     AssetLib::Structure::VRM::VRMModelContext* AvatarManager::currentContext;
-    RootMotion::FinalIK::VRIK* AvatarManager::vrik;
+    FinalIK::VRIK* AvatarManager::vrik;
     TargetManager* AvatarManager::targetManager;
-    WristTwistFix* AvatarManager::_wristTwistFix;
     CP_SDK::Utils::Event<> AvatarManager::OnLoad;
 
     void AvatarManager::StartupLoad()
@@ -23,20 +25,23 @@ namespace VRMQavatars {
         if(globcon.hasSelected.GetValue())
         {
             const auto path = globcon.selectedFileName.GetValue();
-            getLogger().info("%s", (std::string(vrm_path) + "/" + path).c_str());
+            VRMLogger.info("{}", (std::string(vrm_path) + "/" + path).c_str());
             if(fileexists(std::string(vrm_path) + "/" + path))
             {
-                const auto ctx = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path, AssetLib::ModelImporter::mtoon.ptr());
-                SetContext(ctx);
-                auto& avaConfig = Config::ConfigManager::GetAvatarConfig();
-                if(avaConfig.HasCalibrated.GetValue())
-                {
-                    CalibrationHelper::Calibrate(avaConfig.CalibratedScale.GetValue());
-                }
+                std::shared_future<AssetLib::Structure::VRM::VRMModelContext*> future = AssetLib::ModelImporter::LoadVRM(std::string(vrm_path) + "/" + path);
+                BSML::MainThreadScheduler::AwaitFuture(future, [future](){
+                    AssetLib::Structure::VRM::VRMModelContext* ctx = future.get();
+                    SetContext(ctx);
+                    auto& avaConfig = Config::ConfigManager::GetAvatarConfig();
+                    if(avaConfig.HasCalibrated.GetValue())
+                    {
+                        CalibrationHelper::Calibrate(avaConfig.CalibratedScale.GetValue());
+                    }
+                });
             }
         }
     }
-
+ 
     void AvatarManager::SetContext(AssetLib::Structure::VRM::VRMModelContext* context)
     {
         if(currentContext != nullptr)
@@ -54,9 +59,8 @@ namespace VRMQavatars {
 
         const auto root = currentContext->rootGameObject;
 
-        vrik = root->GetComponent<RootMotion::FinalIK::VRIK*>();
+        vrik = root->GetComponent<FinalIK::VRIK*>();
         targetManager = root->GetComponent<TargetManager*>();
-        _wristTwistFix = root->GetComponent<WristTwistFix*>();
 
         const auto blendShapeMaster = root->GetComponent<BlendShape::BlendShapeController*>();
         blendShapeMaster->Init();
@@ -87,29 +91,13 @@ namespace VRMQavatars {
         targetManager->offset = pose;
     }
 
-    UnityEngine::Keyframe Frame(const float time, const float val)
-    {
-        UnityEngine::Keyframe frame;
-        frame.m_Time = time;
-        frame.m_Value = val;
-        return frame;
-    }
-
-    ArrayW<UnityEngine::Keyframe> StepHeightFrames(const float val) {
-
-        std::vector frames = {
-            Frame(0.0f, 0.0f),
-            Frame(0.5f, val),
-            Frame(1.0f, 0.0f)
-        };
-        return il2cpp_utils::vectorToArray(frames);
-    }
-
     void AvatarManager::UpdateVRIK()
     {
         if(vrik == nullptr || !vrik->solver->initiated) return;
         auto ikSettings = Config::ConfigManager::GetIKSettings();
         auto locoSettings = Config::ConfigManager::GetLocomotionSettings();
+
+        //vrik->fixTransforms = true;
         vrik->solver->spine->bodyPosStiffness = ikSettings.bodyStiffness;
         vrik->solver->spine->headClampWeight = 0.38f;
         vrik->solver->spine->maintainPelvisPosition = 0.0f;
@@ -131,9 +119,6 @@ namespace VRMQavatars {
         vrik->solver->locomotion->stepSpeed = 2.0f;
 
         vrik->solver->locomotion->offset = locoSettings.stepOffset;
-
-        vrik->solver->locomotion->stepHeight->set_keys(StepHeightFrames(locoSettings.stepHeight));
-        vrik->solver->locomotion->heelHeight->set_keys(StepHeightFrames(locoSettings.stepHeight + 0.1f));
 
         const auto vmcSettings = Config::ConfigManager::GetVMCSettings();
 

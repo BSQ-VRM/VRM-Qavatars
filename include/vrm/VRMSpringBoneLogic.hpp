@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sombrero/shared/FastVector3.hpp>
+#include <sombrero/shared/FastQuaternion.hpp>
 
 #include "main.hpp"
 
@@ -13,13 +14,10 @@
 #include "UnityEngine/Quaternion.hpp"
 #include "UnityEngine/Matrix4x4.hpp"
 
-#include "RootMotion/FinalIK/VRIK.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Arm.hpp"
-#include "RootMotion/FinalIK/IKSolverVR_Spine.hpp"
+#include "customTypes/FinalIK/VRIK.hpp"
+#include "customTypes/FinalIK/IKSolverVR.hpp"
 
 #include "GlobalNamespace/OVRPlugin.hpp"
-#include "GlobalNamespace/OVRPlugin_Node.hpp"
-#include "GlobalNamespace/OVRPlugin_Step.hpp"
 #include "GlobalNamespace/OVRPose.hpp"
 
 #include "vrm/vrmColliders.hpp"
@@ -41,14 +39,14 @@ namespace VRMQavatars
             length = localChildPosition.get_magnitude();
         }
 
-        UnityEngine::Quaternion ApplyRotation(Sombrero::FastVector3 nextTail);
+        Sombrero::FastQuaternion ApplyRotation(Sombrero::FastVector3 nextTail);
         void SetRadius(float radius);
         void Update(UnityEngine::Transform* center, float stiffnessForce, float dragForce, Sombrero::FastVector3 external, const std::vector<SphereColliderLogic>& colliders);
         Sombrero::FastVector3 Collision(const std::vector<SphereColliderLogic>& colliders, Sombrero::FastVector3 nextTail);
 
         Sombrero::FastVector3 GetTail();
-        UnityEngine::Quaternion GetParentRotation();
-        UnityEngine::Quaternion localRotation;
+        Sombrero::FastQuaternion GetParentRotation();
+        Sombrero::FastQuaternion localRotation;
         Sombrero::FastVector3 boneAxis;
         Sombrero::FastVector3 currentTail;
         float length;

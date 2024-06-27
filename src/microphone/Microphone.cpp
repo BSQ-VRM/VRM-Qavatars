@@ -7,13 +7,13 @@ namespace VRMQavatars {
     UnityEngine::AudioClip* Microphone::Start(StringW deviceName, bool loop, int lengthSec, int frequency) {
         int microphoneDeviceIDFromName = GetMicrophoneDeviceIDFromName(deviceName);
         if (microphoneDeviceIDFromName == -1)
-            getLogger().error("Couldn't acquire device ID for device name %s", std::string(deviceName).c_str());
+            VRMLogger.error("Couldn't acquire device ID for device name {}", std::string(deviceName).c_str());
         if (lengthSec <= 0)
-            getLogger().error("Length of recording must be greater than zero seconds (was: %d  seconds)", lengthSec);
+            VRMLogger.error("Length of recording must be greater than zero seconds (was: {}  seconds)", lengthSec);
         if (lengthSec > 3600)
-            getLogger().error("Length of recording must be less than one hour (was: %d seconds", lengthSec);
+            VRMLogger.error("Length of recording must be less than one hour (was: {} seconds", lengthSec);
         if (frequency <= 0)
-            getLogger().error("Frequency of recording must be greater than zero (was: %d Hz)", frequency);
+            VRMLogger.error("Frequency of recording must be greater than zero (was: {} Hz)", frequency);
         return StartRecord(microphoneDeviceIDFromName, loop, static_cast<float>(lengthSec), frequency);
     }
 

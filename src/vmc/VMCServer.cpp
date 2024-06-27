@@ -3,6 +3,8 @@
 #include "config/ConfigManager.hpp"
 #include "VMC/util.hpp"
 
+#include "main.hpp"
+
 namespace VRMQavatars::VMC
 {
     kissnet::udp_socket VMCServer::socket;
@@ -25,11 +27,11 @@ namespace VRMQavatars::VMC
 
             OSCPP::Server::ArgStream args(msg.args());
 
-            /*getLogger().info("packet address %s", msg.address());
+            /*VRMLogger.info("packet address {}", msg.address());
 
             if(msg == "/VMC/Ext/T")
             {
-                getLogger().info("time! %f", args.float32());
+                VRMLogger.info("time! {}", args.float32());
             }
 
             if(msg == "/VMC/Ext/Ok")
@@ -49,27 +51,27 @@ namespace VRMQavatars::VMC
                         }
                     }
                 }
-                getLogger().info("Ok! %d, %d, %d", loaded, calibState, calibMode);
+                VRMLogger.info("Ok! {}, {}, {}", loaded, calibState, calibMode);
             }
 
             if(msg == "/VMC/Ext/Root/Pos")
             {
-                getLogger().info("Root Pos! %s {%f %f %f} {%f %f %f %f}", args.string(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32());
+                VRMLogger.info("Root Pos! {} {{} {} {}} {{} {} {} {}}", args.string(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32());
             }
 
             if(msg == "/VMC/Ext/Bone/Pos")
             {
-                getLogger().info("Bone Pos! %s {%f %f %f} {%f %f %f %f}", args.string(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32());
+                VRMLogger.info("Bone Pos! {} {{} {} {}} {{} {} {} {}}", args.string(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32());
             }
 
             if(msg == "/VMC/Ext/Con/Pos")
             {
-                getLogger().info("Controller Pos! %s {%f %f %f} {%f %f %f %f}", args.string(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32());
+                VRMLogger.info("Controller Pos! {} {{} {} {}} {{} {} {} {}}", args.string(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32());
             }
 
             if(msg == "/VMC/Ext/Hmd/Pos")
             {
-                getLogger().info("Hmd Pos! %s {%f %f %f} {%f %f %f %f}", args.string(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32());
+                VRMLogger.info("Hmd Pos! {} {{} {} {}} {{} {} {} {}}", args.string(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32(), args.float32());
             }*/
 
             if(msg == "/VMC/Ext/Tra/Pos")
@@ -80,29 +82,29 @@ namespace VRMQavatars::VMC
 
                 availableTrackers.push_back({name, pos, rot});
                 const auto euler = rot.get_eulerAngles();
-                getLogger().info("Tracker Pos! %s {%f %f %f} {%f %f %f}", name.c_str(), pos.x, pos.y, pos.z, euler.x, euler.y, euler.z);
+                VRMLogger.info("Tracker Pos! {} [{} {} {}] [{} {} {}]", name.c_str(), pos.x, pos.y, pos.z, euler.x, euler.y, euler.z);
             }
         }
     }
 
     void VMCServer::InitServer()
     {
-        //getLogger().info("x1");
+        //VRMLogger.info("x1");
         if(socket)
         {
             socket.shutdown();
         }
         const auto config = Config::ConfigManager::GetVMCSettings();
-        //getLogger().info("x2 %s", config.recvPort.c_str());
+        //VRMLogger.info("x2 {}", config.recvPort.c_str());
         if(config.enableReceiver)
         {
-            //getLogger().info("x3 %d", IntUtil::to_int(config.recvPort.c_str()));
+            //VRMLogger.info("x3 {}", IntUtil::to_int(config.recvPort.c_str()));
             socket = kissnet::udp_socket(kissnet::endpoint("0.0.0.0", IntUtil::to_int(config.recvPort.c_str())));
-            //getLogger().info("x4");
+            //VRMLogger.info("x4");
             socket.bind();
-            //getLogger().info("x5");
+            //VRMLogger.info("x5");
             socket.listen();
-            //getLogger().info("x6");
+            //VRMLogger.info("x6");
         }
     }
 

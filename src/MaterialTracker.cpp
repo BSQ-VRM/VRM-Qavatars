@@ -10,13 +10,13 @@ namespace VRMQavatars
 
     void MaterialTracker::UpdateMaterials()
     {
-        getLogger().info("updating materials :3");
+        VRMLogger.info("updating materials :3");
         for(auto material : materials)
         {
-            getLogger().info("updating material");
+            VRMLogger.info("updating material");
             if(material)
             {
-                getLogger().info("valid material %s", static_cast<std::string>(material->get_name()).c_str());
+                VRMLogger.info("valid material {} {}", static_cast<std::string>(material->get_name()).c_str(), static_cast<std::string>(material->shader->get_name()).c_str());
                 material->SetInt("_BloomSupport", bloomEnabled ? 1 : 0);
                 material->SetInt("_ColorMask", bloomEnabled ? 14 : 15);
             }

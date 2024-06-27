@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AvatarManager.hpp"
+#include "sombrero/shared/FastVector3.hpp"
 #include "config/config.hpp"
 
 #define MANAGER_ITEM(type) \
