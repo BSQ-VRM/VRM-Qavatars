@@ -7,8 +7,8 @@
 #include "UnityEngine/Material.hpp"
 #include "UnityEngine/GameObject.hpp"
 
-DECLARE_CLASS_CODEGEN(VRMData, ShaderSO, UnityEngine::ScriptableObject,
+DECLARE_CLASS_CODEGEN(VRMData, ShaderSO, UnityEngine::ScriptableObject) {
     DECLARE_INSTANCE_FIELD(UnityEngine::Shader*, mToonShader);
     DECLARE_INSTANCE_FIELD(UnityEngine::Shader*, mirrorShader);
     DECLARE_INSTANCE_FIELD(UnityEngine::Material*, shadowMaterial);
-)
+};

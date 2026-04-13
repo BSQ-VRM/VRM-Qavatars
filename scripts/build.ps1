@@ -18,7 +18,7 @@ if ($help -eq $true) {
 # if user specified clean, remove all build files
 if ($clean.IsPresent) {
     if (Test-Path -Path "build") {
-        remove-item build -R
+        remove-item build -R -Force 
     }
 }
 
@@ -29,3 +29,4 @@ if (($clean.IsPresent) -or (-not (Test-Path -Path "build"))) {
 
 & cmake -G "Ninja" -DCMAKE_BUILD_TYPE="RelWithDebInfo" -B build
 & cmake --build ./build
+exit $LASTEXITCODE

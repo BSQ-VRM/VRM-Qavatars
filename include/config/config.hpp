@@ -1,7 +1,7 @@
 #include "mini-config-utils.hpp"
 #include "utils/structs/OffsetPose.hpp"
 
-DECLARE_JSON_CLASS(OffsetPoseConfig,
+DECLARE_JSON_STRUCT(OffsetPoseConfig) {
     VALUE(float, posX);
     VALUE(float, posY);
     VALUE(float, posZ);
@@ -33,9 +33,9 @@ DECLARE_JSON_CLASS(OffsetPoseConfig,
     }
     OffsetPoseConfig() = default;
     OffsetPoseConfig(float posX, float posY, float posZ, float rotX, float rotY, float rotZ) : posX(posX), posY(posY), posZ(posZ), rotX(rotX), rotY(rotY), rotZ(rotZ) {}
-)
+};
 
-DECLARE_JSON_CLASS(Color2,
+DECLARE_JSON_STRUCT(Color2) {
     VALUE_DEFAULT(float, r, {});
     VALUE_DEFAULT(float, g, {});
     VALUE_DEFAULT(float, b, {});
@@ -59,9 +59,9 @@ DECLARE_JSON_CLASS(Color2,
     {
         return UnityEngine::Color(r, g, b, a);
     }
-)
+};
 
-DECLARE_JSON_CLASS(VectorThree,
+DECLARE_JSON_STRUCT(VectorThree) {
     VALUE_DEFAULT(float, x, {});
     VALUE_DEFAULT(float, y, {});
     VALUE_DEFAULT(float, z, {});
@@ -92,9 +92,9 @@ DECLARE_JSON_CLASS(VectorThree,
     {
         return Sombrero::FastVector3(x, y, z);
     }
-)
+};
 
-DECLARE_JSON_CLASS(ControllerTriggerSettings,
+DECLARE_JSON_STRUCT(ControllerTriggerSettings) {
     VALUE_DEFAULT(std::string, A, "None");
     VALUE_DEFAULT(std::string, B, "None");
     VALUE_DEFAULT(std::string, X, "None");
@@ -104,16 +104,16 @@ DECLARE_JSON_CLASS(ControllerTriggerSettings,
     VALUE_DEFAULT(std::string, RGrip, "None");
     VALUE_DEFAULT(std::string, LTrigger, "None");
     VALUE_DEFAULT(std::string, RTrigger, "None");
-)
+};
 
-DECLARE_JSON_CLASS(BlendshapeSettings,
+DECLARE_JSON_STRUCT(BlendshapeSettings) {
     VALUE_DEFAULT(bool, autoBlink, true);
     VALUE_DEFAULT(float, waitTime, 2.0f);
     VALUE_DEFAULT(bool, mockEyeMovement, true);
     VALUE_DEFAULT(std::string, neutralExpression, "Neutral");
-)
+};
 
-DECLARE_JSON_CLASS(LightingSettings,
+DECLARE_JSON_STRUCT(LightingSettings) {
     VALUE_DEFAULT(Color2, globalColor, Color2(1.0f, 1.0f, 1.0f, 1.0f));
     VALUE_DEFAULT(float, globalLightIntensity, 1.0f);
     VALUE_DEFAULT(VectorThree, lightRotation, UnityEngine::Vector3(30.0f, 240.0f, 0.0f));
@@ -121,31 +121,31 @@ DECLARE_JSON_CLASS(LightingSettings,
     VALUE_DEFAULT(float, beatmapLightingColorIntensity, 0.25f);
     VALUE_DEFAULT(float, beatmapLightingBrightness, 0.5f);
     VALUE_DEFAULT(float, beatmapLightingMinimumBrightness, 0.75f);
-)
+};
 
-DECLARE_JSON_CLASS(LocomotionSettings,
+DECLARE_JSON_STRUCT(LocomotionSettings) {
     VALUE_DEFAULT(float, footDistance, 0.1f);
     VALUE_DEFAULT(float, stepThreshold, 0.1f);
     VALUE_DEFAULT(VectorThree, stepOffset, UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
-)
+};
 
-DECLARE_JSON_CLASS(IKSettings,
+DECLARE_JSON_STRUCT(IKSettings) {
     VALUE_DEFAULT(float, legSwivel, 0.0f);
     VALUE_DEFAULT(float, armSwivel, 0.0f);
     VALUE_DEFAULT(float, bodyStiffness, 0.75f);
     VALUE_DEFAULT(float, shoulderRotationWeight, 1.0f);
     VALUE_DEFAULT(float, groundOffset, 0.0f);
-)
+};
 
-DECLARE_JSON_CLASS(OffsetSettings,
+DECLARE_JSON_STRUCT(OffsetSettings) {
     VALUE_DEFAULT(OffsetPoseConfig, handOffset, OffsetPoseConfig(0.07f, 0.02f, -0.03f, -55.0f, 0.0f, 90.0f));
-)
+};
 
-DECLARE_JSON_CLASS(FingerPoseSettings,
+DECLARE_JSON_STRUCT(FingerPoseSettings) {
     VALUE_DEFAULT(std::string, grabPose, "-36,-43,-74,0,-66,-66,-74,0,-56,-73,-70,0,-46,-90,-51,0,-77,-47,-20,19");
-)
+};
 
-DECLARE_JSON_CLASS(VMCSettings,
+DECLARE_JSON_STRUCT(VMCSettings) {
     VALUE_DEFAULT(bool, enableSender, false);
     VALUE_DEFAULT(std::string, destIP, "127.0.0.1");
     VALUE_DEFAULT(std::string, destPort, "39540");
@@ -160,9 +160,9 @@ DECLARE_JSON_CLASS(VMCSettings,
     VALUE_DEFAULT(std::string, rightFoot, "None");
     VALUE_DEFAULT(std::string, leftKnee, "None");
     VALUE_DEFAULT(std::string, rightKnee, "None");
-)
+};
 
-DECLARE_JSON_CLASS(MirrorSettings,
+DECLARE_JSON_STRUCT(MirrorSettings) {
     VALUE_DEFAULT(bool, enabled, true);
     VALUE_DEFAULT(VectorThree, position, VectorThree(0, 1.5f, 2));
     VALUE_DEFAULT(VectorThree, rotation, VectorThree(15.0f, 180, 0));
@@ -177,13 +177,13 @@ DECLARE_JSON_CLASS(MirrorSettings,
     VALUE_DEFAULT(float, nearClip, 1.0f);
     VALUE_DEFAULT(Color2, borderColor, Color2(1.0f, 1.0f, 1.0f, 1.0f));
     VALUE_DEFAULT(bool, showHandle, true);
-)
+};
 
-DECLARE_JSON_CLASS(WindSettings,
+DECLARE_JSON_STRUCT(WindSettings) {
     VALUE_DEFAULT(bool, enabled, true);
     VALUE_DEFAULT(float, windStrength, 1.0f);
     VALUE_DEFAULT(float, timeFactor, 1.0f);
-)
+};
 
 //Access Global through ConfigManager::GetGlobal
 //Access Avatar through ConfigManager::GetAvatar

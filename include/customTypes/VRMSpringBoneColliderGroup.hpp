@@ -10,7 +10,7 @@
 
 #include <map>
 
-DECLARE_CLASS_CODEGEN(VRMQavatars, VRMSpringBoneColliderGroup, UnityEngine::MonoBehaviour,
+DECLARE_CLASS_CODEGEN(VRMQavatars, VRMSpringBoneColliderGroup, UnityEngine::MonoBehaviour) {
     public:
     std::vector<SphereCollider> colliders;
-)
+};

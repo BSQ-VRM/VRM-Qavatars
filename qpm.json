@@ -1,11 +1,12 @@
 {
+  "$schema": "https://raw.githubusercontent.com/QuestPackageManager/QPM.Package/refs/heads/main/qpm.schema.json",
   "version": "0.1.0",
   "sharedDir": "shared",
   "dependenciesDir": "extern",
   "info": {
     "name": "VRM Qavatars",
     "id": "vrm-qavatars",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "url": null,
     "additionalData": {
       "overrideSoName": "libvrm-qavatars.so",
@@ -37,6 +38,7 @@
         "pwsh ./scripts/pull-tombstone.ps1"
       ]
     },
+    "ndk": "^27.3.13750724",
     "qmodIncludeDirs": [],
     "qmodIncludeFiles": [],
     "qmodOutput": null
@@ -44,22 +46,22 @@
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "^5.1.6",
+      "versionRange": "^6.4.2",
       "additionalData": {}
     },
     {
       "id": "scotland2",
-      "versionRange": "^0.1.4",
+      "versionRange": "^0.1.6",
       "additionalData": {}
     },
     {
       "id": "bs-cordl",
-      "versionRange": "^3601.0.0",
+      "versionRange": "^4008.0.0",
       "additionalData": {}
     },
     {
       "id": "custom-types",
-      "versionRange": "^0.17.0",
+      "versionRange": "^0.18.3",
       "additionalData": {}
     },
     {
@@ -69,7 +71,12 @@
     },
     {
       "id": "bsml",
-      "versionRange": "^0.4.0",
+      "versionRange": "^0.4.55",
+      "additionalData": {}
+    },
+    {
+      "id": "gif-lib",
+      "versionRange": "^5.2.2",
       "additionalData": {}
     },
     {
@@ -79,22 +86,22 @@
     },
     {
       "id": "fmt",
-      "versionRange": "*",
+      "versionRange": "^11.0.2",
       "additionalData": {}
     },
     {
       "id": "sombrero",
-      "versionRange": "*",
+      "versionRange": "^0.1.43",
       "additionalData": {}
     },
     {
       "id": "chatplex-sdk-bs",
-      "versionRange": "*",
+      "versionRange": "^6.4.1",
       "additionalData": {}
     },
     {
       "id": "rapidjson-macros",
-      "versionRange": "*",
+      "versionRange": "^3.0.0",
       "additionalData": {}
     },
     {
@@ -103,13 +110,13 @@
       "additionalData": {}
     },
     {
-      "id": "paper",
-      "versionRange": "^3.6.3",
+      "id": "paper2_scotland2",
+      "versionRange": "^4.6.4",
       "additionalData": {}
     },
     {
       "id": "lapiz",
-      "versionRange": "^0.2.9",
+      "versionRange": "^0.2.23",
       "additionalData": {}
     }
   ]

@@ -1,6 +1,9 @@
 #pragma once
 #include <sombrero/shared/FastVector3.hpp>
 
+// Ensure HumanBone/SkeletonBone are fully defined before Avatar.hpp triggers HumanDescription_impl
+#include "UnityEngine/zzzz__HumanBone_impl.hpp"
+#include "UnityEngine/zzzz__SkeletonBone_impl.hpp"
 #include "UnityEngine/Avatar.hpp"
 
 #include "UnityEngine/Transform.hpp"

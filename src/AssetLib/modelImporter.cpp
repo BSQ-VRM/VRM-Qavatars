@@ -10,7 +10,7 @@
 #include "customTypes/BlendShape/BlendShapeController.hpp"
 
 #include "main.hpp"
-#include "paper/shared/Profiler.hpp"
+#include "paper2_scotland2/shared/Profiler.hpp"
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include <assimp/scene.h>

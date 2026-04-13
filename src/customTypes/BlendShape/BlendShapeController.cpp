@@ -271,7 +271,7 @@ namespace VRMQavatars::BlendShape
             if(UnityEngine::Time::get_time() > time)
             {
                 //Switch eye positions
-                Sombrero::FastVector3 unitPos = UnityEngine::Random::get_insideUnitSphere(); //random lookdir
+                Sombrero::FastVector3 unitPos = UnityEngine::Random::get_onUnitSphere(); //random lookdir
                 eyeVec.x = unitPos.x * 2.5f; //vert
                 eyeVec.y = unitPos.y * 5.0f; //horz
                 eyeVec.z = 0.0f;

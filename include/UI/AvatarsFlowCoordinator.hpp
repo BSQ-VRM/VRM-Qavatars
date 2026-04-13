@@ -12,7 +12,7 @@
 
 using namespace VRMQavatars::UI;
 
-DECLARE_CLASS_CODEGEN(VRMQavatars::UI::FlowCoordinators, AvatarsFlowCoordinator, HMUI::FlowCoordinator,
+DECLARE_CLASS_CODEGEN(VRMQavatars::UI::FlowCoordinators, AvatarsFlowCoordinator, HMUI::FlowCoordinator) {
     DECLARE_INSTANCE_FIELD(ViewControllers::MirrorViewController*, MirrorViewController);
     DECLARE_INSTANCE_FIELD(ViewControllers::AvatarSettingsViewController*, AvatarSettingsViewController);
     DECLARE_INSTANCE_FIELD(ViewControllers::AvatarSelectionViewController*, AvatarSelectionViewController);
@@ -21,4 +21,4 @@ DECLARE_CLASS_CODEGEN(VRMQavatars::UI::FlowCoordinators, AvatarsFlowCoordinator,
 
     DECLARE_OVERRIDE_METHOD(void, DidActivate, GET_FIND_METHOD(&HMUI::FlowCoordinator::DidActivate), bool firstActivation, bool addedToHeirarchy, bool screenSystemEnabling);
     DECLARE_OVERRIDE_METHOD(void, BackButtonWasPressed, GET_FIND_METHOD(&HMUI::FlowCoordinator::BackButtonWasPressed), HMUI::ViewController* topViewController);
-)
+};

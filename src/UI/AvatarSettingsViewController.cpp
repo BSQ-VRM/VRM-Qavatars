@@ -21,7 +21,7 @@
 #include "VMC/VMCClient.hpp"
 #include "VMC/VMCServer.hpp"
 
-#include "paper/shared/utfcpp/source/utf8.h"
+#include "paper2_scotland2/shared/utfcpp/source/utf8.h"
 
 namespace VRMQavatars::UI::ViewControllers {
     CP_SDK_IL2CPP_INHERIT_INIT(AvatarSettingsViewController);

@@ -19,7 +19,7 @@
 
 #include "sombrero/shared/FastQuaternion.hpp"
 
-DECLARE_CLASS_CODEGEN(VRMQavatars, VRMSpringBone, UnityEngine::MonoBehaviour,
+DECLARE_CLASS_CODEGEN(VRMQavatars, VRMSpringBone, UnityEngine::MonoBehaviour) {
     DECLARE_INSTANCE_METHOD(void, Awake);
     DECLARE_INSTANCE_METHOD(ArrayW<UnityEngine::Transform*>, GetChildren, UnityEngine::Transform* parent);
     DECLARE_INSTANCE_METHOD(void, FixedUpdate);
@@ -42,4 +42,4 @@ DECLARE_CLASS_CODEGEN(VRMQavatars, VRMSpringBone, UnityEngine::MonoBehaviour,
     std::vector<VRMQavatars::VRMSpringBoneLogic*> verlet;
     std::vector<VRMQavatars::VRMSpringBoneColliderGroup*> colliderGroups;
     std::map<UnityEngine::Transform*, Sombrero::FastQuaternion> initialLocalRotationMap;
-)
+};

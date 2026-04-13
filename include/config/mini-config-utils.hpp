@@ -4,8 +4,7 @@
 #include "rapidjson-macros/shared/macros.hpp"
 
 #define DECLARE_CONFIG(name, ...) \
-DECLARE_JSON_CLASS(name##_t, \
-    DISCARD_EXTRA_FIELDS \
+DECLARE_JSON_STRUCT(name##_t) { \
     __VA_ARGS__ \
     public: \
     static inline std::string __config_path = ""; \
@@ -36,14 +35,14 @@ DECLARE_JSON_CLASS(name##_t, \
             ConfigUtils::Logger.error("Error saving config: {} (to {})", err.what(), __config_path.c_str()); \
         } \
     } \
-) \
+}; \
 inline name##_t& get##name() { \
     return name##_t::GetInstance(); \
 }
 
 #define CONFIG_VALUE(name, type, jsonName, def, ...) \
 private: \
-NAMED_VALUE_DEFAULT(ConfigUtils::Specialization<type>::JSONType, __##name, def, jsonName) \
+NAMED_VALUE_DEFAULT(ConfigUtils::Specialization<type>::JSONType, __##name, def, jsonName); \
 public: \
 ConfigUtils::ConfigValue<type> name = {&this->Save, &__##name, jsonName, def __VA_OPT__(,) __VA_ARGS__};
 
@@ -141,54 +140,54 @@ clazz(const UnityEngine::clazz& other) { construct; } \
 clazz& operator=(const UnityEngine::clazz& other) { construct; return *this; } \
 operator UnityEngine::clazz() const { return UnityEngine::clazz convert; }
 
-DECLARE_JSON_CLASS(Vector2,
-    VALUE(float, x)
-    VALUE(float, y)
+DECLARE_JSON_STRUCT(Vector2) {
+    VALUE(float, x);
+    VALUE(float, y);
     CONVERSION(Vector2,
         x = other.x; y = other.y;,
         (x, y)
     )
     Vector2() = default;
     Vector2(float x, float y) : x(x), y(y) {}
-)
+};
 
-DECLARE_JSON_CLASS(Vector3,
-    VALUE(float, x)
-    VALUE(float, y)
-    VALUE(float, z)
+DECLARE_JSON_STRUCT(Vector3) {
+    VALUE(float, x);
+    VALUE(float, y);
+    VALUE(float, z);
     CONVERSION(Vector3,
         x = other.x; y = other.y; z = other.z;,
         (x, y, z)
     )
     Vector3() = default;
     Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
-)
+};
 
-DECLARE_JSON_CLASS(Vector4,
-    VALUE(float, x)
-    VALUE(float, y)
-    VALUE(float, z)
-    VALUE(float, w)
+DECLARE_JSON_STRUCT(Vector4) {
+    VALUE(float, x);
+    VALUE(float, y);
+    VALUE(float, z);
+    VALUE(float, w);
     CONVERSION(Vector4,
         x = other.x; y = other.y; z = other.z; w = other.w;,
         (x, y, z, w)
     )
     Vector4() = default;
     Vector4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
-)
+};
 
-DECLARE_JSON_CLASS(Color,
-    VALUE(float, r)
-    VALUE(float, g)
-    VALUE(float, b)
-    VALUE(float, a)
+DECLARE_JSON_STRUCT(Color) {
+    VALUE(float, r);
+    VALUE(float, g);
+    VALUE(float, b);
+    VALUE(float, a);
     CONVERSION(Color,
         r = other.r; g = other.g; b = other.b; a = other.a;,
         (r, g, b, a)
     )
     Color() = default;
     Color(float r, float g, float b, float a) : r(r), g(g), b(b), a(a) {}
-)
+};
 
 #pragma endregion
 

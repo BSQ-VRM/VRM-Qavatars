@@ -2,6 +2,11 @@
 
 #include "AssetLib/VRMConcepts.hpp"
 
+// Include System/String.hpp first to break circular include: HumanBone_impl -> IEquatable_1_def -> typedefs.h -> String.hpp -> IEquatable_1 (not yet declared)
+#include "System/String.hpp"
+// Ensure HumanBone/SkeletonBone are fully defined before Avatar.hpp triggers HumanDescription_impl
+#include "UnityEngine/zzzz__HumanBone_impl.hpp"
+#include "UnityEngine/zzzz__SkeletonBone_impl.hpp"
 #include "UnityEngine/Avatar.hpp"
 #include "UnityEngine/GameObject.hpp"
 

@@ -60,12 +60,21 @@ add_compile_definitions(MOD_ID=\"${MOD_ID}\")
 RECURSE_FILES(cpp_file_list ${SOURCE_DIR}/*.cpp)
 RECURSE_FILES(c_file_list ${SOURCE_DIR}/*.c)
 
+# beatsaber-hook v6 inline hook sources (provide A64HookFunction)
+set(INLINE_HOOK_DIR ${EXTERN_DIR}/includes/beatsaber-hook/shared/inline-hook)
+set(inline_hook_sources
+    ${INLINE_HOOK_DIR}/And64InlineHook.cpp
+    ${INLINE_HOOK_DIR}/inlineHook.c
+    ${INLINE_HOOK_DIR}/relocate.c
+)
+
 # add all src files to compile
 add_library(
         ${COMPILE_ID}
         SHARED
         ${cpp_file_list}
         ${c_file_list}
+        ${inline_hook_sources}
 )
 
 # Add any assets

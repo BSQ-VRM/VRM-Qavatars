@@ -9,7 +9,7 @@
 #include "UI/AvatarSelectionViewController.hpp"
 #include "UI/AvatarSettingsViewController.hpp"
 
-#include "paper/shared/utfcpp/source/utf8.h"
+#include "paper2_scotland2/shared/utfcpp/source/utf8.h"
 
 namespace VRMQavatars::UI::Modals {
 

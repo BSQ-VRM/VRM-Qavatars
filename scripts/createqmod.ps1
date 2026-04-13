@@ -21,7 +21,6 @@ $mod = "./mod.json"
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
-
 $modJson = Get-Content $mod -Raw | ConvertFrom-Json
 
 if ($qmodName -eq "") {
@@ -47,6 +46,19 @@ foreach ($mod in $modJson.modFiles) {
     $filelist += $path
 }
 
+foreach ($mod in $modJson.lateModFiles) {
+    $path = "./build/" + $mod
+    if (-not (Test-Path $path)) {
+        $path = "./extern/libs/" + $mod
+    }
+    if (-not (Test-Path $path)) {
+        Write-Output "Error: could not find dependency: $path"
+        exit 1
+    }
+    $filelist += $path
+}
+
+
 foreach ($lib in $modJson.libraryFiles) {
     $path = "./build/" + $lib
     if (-not (Test-Path $path)) {
@@ -62,7 +74,7 @@ foreach ($lib in $modJson.libraryFiles) {
     $filelist += $path
 }
 
-$filelist += "./shaders.sbund";
+$filelist += "./shaders.sbund"
 
 $zip = $qmodName + ".zip"
 $qmod = $qmodName + ".qmod"

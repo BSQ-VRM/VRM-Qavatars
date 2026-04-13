@@ -4,7 +4,6 @@
 #include <HMUI/ImageView.hpp>
 
 #include <GlobalNamespace/MainCamera.hpp>
-#include <GlobalNamespace/VisualEffectsController.hpp>
 
 #include <UnityEngine/RenderTextureFormat.hpp>
 #include <UnityEngine/Shader.hpp>
@@ -119,7 +118,6 @@ namespace VRMQavatars
         const auto camcomp = newCamera->GetComponent<UnityEngine::Camera*>();
         UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<UnityEngine::AudioListener*>());
         UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<GlobalNamespace::MainCamera*>());
-        UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<GlobalNamespace::VisualEffectsController*>());
         UnityEngine::GameObject::DestroyImmediate(newCamera->GetComponent<UnityEngine::SpatialTracking::TrackedPoseDriver*>());
         camcomp->set_nearClipPlane(1.0f);
 
