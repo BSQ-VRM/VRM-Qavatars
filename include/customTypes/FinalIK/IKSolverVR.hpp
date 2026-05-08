@@ -32,15 +32,15 @@ namespace VRMQavatars::FinalIK {
         void SetIKPositionWeight(float weight);
         void Update();
 
-        bool initiated;
-        bool firstInitiation;
+        bool initiated = false;
+        bool firstInitiation = true;
         Sombrero::FastVector3 IKPosition;
         float IKPositionWeight = 1.0f;
         std::function<void()> OnPostInitiate;
         std::function<void()> OnPostUpdate;
         std::function<void()> OnPreInitiate;
         std::function<void()> OnPreUpdate;
-        UnityEngine::Transform* root;
+        UnityEngine::Transform* root = nullptr;
 
         // IKSolverVR
 
@@ -76,11 +76,11 @@ namespace VRMQavatars::FinalIK {
 		std::vector<Sombrero::FastVector3> defaultLocalPositions = std::vector<Sombrero::FastVector3>(21);
 		Sombrero::FastVector3 rootVelocity = Sombrero::FastVector3::zero();
 		Sombrero::FastVector3 bodyOffset = Sombrero::FastVector3::zero();
-		int supportLegIndex = 0;
+		int supportLegIndex = -1;
 		int lastLOD = 0;
 		int LOD = 0;
 		bool plantFeet = true;
-		VirtualBone* rootBone;
+		VirtualBone* rootBone = nullptr;
 		Spine* spine = new Spine();
 		Arm* leftArm = new Arm();
 		Arm* rightArm = new Arm();
